@@ -424,10 +424,10 @@ void button_led_hw_update_pwm(uint32_t duty_cycle, LED_TYPE led, PUSH_BUTTON_TYP
     } else if (button == UV_BUTTON) {
         switch(led) {
             case RED_LED:
-                htim8.Instance->CCR2 = duty_cycle;
+                htim8.Instance->CCR3 = duty_cycle;
                 break;
             case GREEN_LED:
-                htim8.Instance->CCR3 = duty_cycle;
+                htim8.Instance->CCR2 = duty_cycle;
                 break;
             case BLUE_LED:
                 htim1.Instance->CCR4 = duty_cycle;

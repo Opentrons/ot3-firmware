@@ -11,3 +11,7 @@ auto LightControlHardware::initialize() -> void { button_led_hw_initialize_leds(
 void LightControlHardware::set_led_power(uint8_t button, uint8_t led, uint32_t duty_cycle) {
     button_led_hw_update_pwm(duty_cycle, static_cast<LED_TYPE>(led), static_cast<PUSH_BUTTON_TYPE>(button));
 }
+
+void LightControlHardware::set_button_led_power(uint8_t button, uint32_t r, uint32_t g, uint32_t b, uint32_t w) {
+    set_button_led_pwm(static_cast<PUSH_BUTTON_TYPE>(button), r, g, b, w);
+}

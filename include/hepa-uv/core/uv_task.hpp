@@ -4,21 +4,27 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "hepa-uv/core/constants.h"
+#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "messages.hpp"
+#include "hepa-uv/firmware/light_control_hardware.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
 
 namespace uv_task {
 
 // How long to keep the UV light on in ms.
-static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
+// static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
+static constexpr uint32_t DELAY_MS = 5000;  // FOR TESTING
 
 using TaskMessage = interrupt_task_messages::TaskMessage;
 
 class UVMessageHandler {
   public:
-    explicit UVMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins)
+    explicit UVMessageHandler(
+        gpio_drive_hardware::GpioDrivePins &drive_pins,
+        light_control_hardware::LightControlHardware &led_hardware)
         : drive_pins{drive_pins},
+        led_hardware{led_hardware},
           _timer(
               "UVTask", [ThisPtr = this] { ThisPtr->timer_callback(); },
               DELAY_MS) {
@@ -43,6 +49,7 @@ class UVMessageHandler {
     // call back to turn off the UV ballast
     auto timer_callback() -> void {
         gpio::reset(drive_pins.uv_on_off);
+        led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 0, 50);
         uv_push_button = false;
         uv_fan_on = false;
     }
@@ -67,17 +74,19 @@ class UVMessageHandler {
 
         // reset push button state if the door is opened or the reed switch is
         // not set
-        if (!door_closed || !reed_switch_set) uv_push_button = false;
+        // if (!door_closed || !reed_switch_set) uv_push_button = false;
 
         // set the UV Ballast
-        if (door_closed && reed_switch_set && uv_push_button) {
+        if (uv_push_button) {
             gpio::set(drive_pins.uv_on_off);
+            led_hardware.set_button_led_power(UV_BUTTON, 0, 50, 0, 0);
             // start the turn off timer
             if (_timer.is_running()) _timer.stop();
             _timer.start();
             uv_fan_on = true;
         } else {
             gpio::reset(drive_pins.uv_on_off);
+            led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 0, 50);
             if (_timer.is_running()) _timer.stop();
             uv_fan_on = false;
         }
@@ -92,6 +101,7 @@ class UVMessageHandler {
     bool uv_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
+    light_control_hardware::LightControlHardware &led_hardware;
     ot_utils::freertos_timer::FreeRTOSTimer _timer;
 };
 
@@ -115,8 +125,9 @@ class UVTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(
-        gpio_drive_hardware::GpioDrivePins *drive_pins) {
-        auto handler = UVMessageHandler{*drive_pins};
+        gpio_drive_hardware::GpioDrivePins *drive_pins,
+        light_control_hardware::LightControlHardware *led_hardware) {
+        auto handler = UVMessageHandler{*drive_pins, *led_hardware};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

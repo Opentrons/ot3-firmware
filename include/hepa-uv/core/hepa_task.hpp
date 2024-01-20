@@ -5,8 +5,10 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/firmware/gpio.hpp"
+#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "messages.hpp"
+#include "hepa-uv/firmware/light_control_hardware.hpp"
+#include "hepa-uv/core/constants.h"
 
 namespace hepa_task {
 
@@ -14,8 +16,11 @@ using TaskMessage = interrupt_task_messages::TaskMessage;
 
 class HepaMessageHandler {
   public:
-    explicit HepaMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins)
-        : drive_pins{drive_pins} {
+    explicit HepaMessageHandler(
+        gpio_drive_hardware::GpioDrivePins &drive_pins,
+        light_control_hardware::LightControlHardware &led_hardware
+    )
+        : drive_pins{drive_pins}, led_hardware{led_hardware} {
         // get current state
         hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
         // turn off the HEPA fan
@@ -42,8 +47,10 @@ class HepaMessageHandler {
             // handle state changes here
             if (hepa_push_button) {
                 gpio::set(drive_pins.hepa_on_off);
+                led_hardware.set_button_led_power(HEPA_BUTTON, 0, 50, 0, 0);
             } else {
                 gpio::reset(drive_pins.hepa_on_off);
+                led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
             }
         }
 
@@ -55,6 +62,7 @@ class HepaMessageHandler {
     bool hepa_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
+    light_control_hardware::LightControlHardware &led_hardware;
 };
 
 /**
@@ -77,8 +85,9 @@ class HepaTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(
-        gpio_drive_hardware::GpioDrivePins *drive_pins) {
-        auto handler = HepaMessageHandler{*drive_pins};
+        gpio_drive_hardware::GpioDrivePins *drive_pins,
+        light_control_hardware::LightControlHardware *led_hardware) {
+        auto handler = HepaMessageHandler{*drive_pins, *led_hardware};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
