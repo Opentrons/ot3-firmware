@@ -3,8 +3,8 @@
 #include "common/core/freertos_timer.hpp"
 #include "hepa-uv/core/hepa_task.hpp"
 #include "hepa-uv/core/uv_task.hpp"
-#include "hepa-uv/core/light_control_task.hpp"
-#include "hepa-uv/firmware/light_control_hardware.hpp"
+#include "hepa-uv/core/led_control_task.hpp"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 
 namespace hepauv_tasks {
@@ -14,7 +14,7 @@ namespace hepauv_tasks {
  */
 void start_tasks(can::bus::CanBus& can_bus,
                  gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
-                 light_control_hardware::LightControlHardware& led_hardware);
+                 led_control_hardware::LEDControlHardware& led_hardware);
 
 /**
  * Access to all the message queues in the system.
@@ -24,7 +24,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_hepa_message(const hepa_task::TaskMessage& m);
     void send_uv_message(const uv_task::TaskMessage& m);
-    void send_light_control_message(const light_control_task::TaskMessage& m);
+    void send_led_control_message(const led_control_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<hepa_task::TaskMessage>*
         hepa_queue{nullptr};
@@ -32,8 +32,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<uv_task::TaskMessage>*
         uv_queue{nullptr};
 
-    freertos_message_queue::FreeRTOSMessageQueue<light_control_task::TaskMessage>*
-        light_control_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<led_control_task::TaskMessage>*
+        led_control_queue{nullptr};
 };
 
 /**
@@ -49,8 +49,8 @@ struct AllTask {
     uv_task::UVTask<freertos_message_queue::FreeRTOSMessageQueue>*
         uv_task_handler{nullptr};
 
-    light_control_task::LightControlTask<freertos_message_queue::FreeRTOSMessageQueue>*
-        light_control_task_handler{nullptr};
+    led_control_task::LEDControlTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        led_control_task_handler{nullptr};
 };
 
 /**

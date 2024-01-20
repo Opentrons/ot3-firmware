@@ -7,14 +7,13 @@
 #include "hepa-uv/core/constants.h"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "hepa-uv/firmware/light_control_hardware.hpp"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
 
 namespace uv_task {
 
 // How long to keep the UV light on in ms.
-// static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
-static constexpr uint32_t DELAY_MS = 5000;  // FOR TESTING
+static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
 
 using TaskMessage = interrupt_task_messages::TaskMessage;
 
@@ -22,7 +21,7 @@ class UVMessageHandler {
   public:
     explicit UVMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
-        light_control_hardware::LightControlHardware &led_hardware)
+        led_control_hardware::LEDControlHardware &led_hardware)
         : drive_pins{drive_pins},
         led_hardware{led_hardware},
           _timer(
@@ -74,7 +73,14 @@ class UVMessageHandler {
 
         // reset push button state if the door is opened or the reed switch is
         // not set
-        // if (!door_closed || !reed_switch_set) uv_push_button = false;
+        if (!door_closed || !reed_switch_set) {
+            uv_push_button = false;
+            gpio::set(drive_pins.uv_on_off);
+            // TODO: Pulse this instead of solid blue
+            led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 50, 0);
+            if (_timer.is_running()) _timer.stop();
+            return;
+        }
 
         // set the UV Ballast
         if (uv_push_button) {
@@ -101,7 +107,7 @@ class UVMessageHandler {
     bool uv_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
-    light_control_hardware::LightControlHardware &led_hardware;
+    led_control_hardware::LEDControlHardware &led_hardware;
     ot_utils::freertos_timer::FreeRTOSTimer _timer;
 };
 
@@ -126,7 +132,7 @@ class UVTask {
      */
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins *drive_pins,
-        light_control_hardware::LightControlHardware *led_hardware) {
+        led_control_hardware::LEDControlHardware *led_hardware) {
         auto handler = UVMessageHandler{*drive_pins, *led_hardware};
         TaskMessage message{};
         for (;;) {

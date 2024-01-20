@@ -24,7 +24,7 @@
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 #include "hepa-uv/firmware/led_hardware.h"
-#include "hepa-uv/firmware/light_control_hardware.hpp"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -117,7 +117,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
 }
 
-static auto led_hardware = light_control_hardware::LightControlHardware();
+static auto led_hardware = led_control_hardware::LEDControlHardware();
 
 auto main() -> int {
     HardwareInit();

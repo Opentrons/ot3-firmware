@@ -7,7 +7,7 @@
 #include "common/firmware/gpio.hpp"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "hepa-uv/firmware/light_control_hardware.hpp"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/core/constants.h"
 
 namespace hepa_task {
@@ -18,7 +18,7 @@ class HepaMessageHandler {
   public:
     explicit HepaMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
-        light_control_hardware::LightControlHardware &led_hardware
+        led_control_hardware::LEDControlHardware &led_hardware
     )
         : drive_pins{drive_pins}, led_hardware{led_hardware} {
         // get current state
@@ -62,7 +62,7 @@ class HepaMessageHandler {
     bool hepa_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
-    light_control_hardware::LightControlHardware &led_hardware;
+    led_control_hardware::LEDControlHardware &led_hardware;
 };
 
 /**
@@ -86,7 +86,7 @@ class HepaTask {
      */
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins *drive_pins,
-        light_control_hardware::LightControlHardware *led_hardware) {
+        led_control_hardware::LEDControlHardware *led_hardware) {
         auto handler = HepaMessageHandler{*drive_pins, *led_hardware};
         TaskMessage message{};
         for (;;) {
