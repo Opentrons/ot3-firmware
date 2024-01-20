@@ -16,11 +16,11 @@ class LEDControlInterface {
     LEDControlInterface(const LEDControlInterface&) = delete;
     LEDControlInterface(LEDControlInterface&&) = delete;
     auto operator=(LEDControlInterface&&) -> LEDControlInterface& = delete;
-    auto operator=(const LEDControlInterface&)
-        -> LEDControlInterface& = delete;
+    auto operator=(const LEDControlInterface&) -> LEDControlInterface& = delete;
     virtual ~LEDControlInterface() = default;
 
-    virtual auto set_button_led_power(uint8_t button, uint32_t r, uint32_t g, uint32_t b, uint32_t w) -> void = 0;
+    virtual auto set_button_led_power(uint8_t button, uint32_t r, uint32_t g,
+                                      uint32_t b, uint32_t w) -> void = 0;
 };
 
 class LEDControlMessageHandler {
@@ -36,14 +36,11 @@ class LEDControlMessageHandler {
     auto handle(std::monostate&) -> void {}
 
     auto handle(const led_control_task_messages::PushButtonLED& msg) -> void {
-      // Sets the Push button LED colors
-      _hardware.set_button_led_power(
-        msg.button,
-        static_cast<uint32_t>(msg.r),
-        static_cast<uint32_t>(msg.g),
-        static_cast<uint32_t>(msg.b),
-        static_cast<uint32_t>(msg.w)
-      );
+        // Sets the Push button LED colors
+        _hardware.set_button_led_power(msg.button, static_cast<uint32_t>(msg.r),
+                                       static_cast<uint32_t>(msg.g),
+                                       static_cast<uint32_t>(msg.b),
+                                       static_cast<uint32_t>(msg.w));
     }
 
     LEDControlInterface& _hardware;
@@ -69,8 +66,7 @@ class LEDControlTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(LEDControlInterface* hardware_handle) {
-        auto handler =
-            LEDControlMessageHandler(*hardware_handle);
+        auto handler = LEDControlMessageHandler(*hardware_handle);
         TaskMessage message{};
 
         for (;;) {

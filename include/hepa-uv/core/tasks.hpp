@@ -2,10 +2,10 @@
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "hepa-uv/core/hepa_task.hpp"
-#include "hepa-uv/core/uv_task.hpp"
 #include "hepa-uv/core/led_control_task.hpp"
-#include "hepa-uv/firmware/led_control_hardware.hpp"
+#include "hepa-uv/core/uv_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 
 namespace hepauv_tasks {
 
@@ -49,8 +49,9 @@ struct AllTask {
     uv_task::UVTask<freertos_message_queue::FreeRTOSMessageQueue>*
         uv_task_handler{nullptr};
 
-    led_control_task::LEDControlTask<freertos_message_queue::FreeRTOSMessageQueue>*
-        led_control_task_handler{nullptr};
+    led_control_task::LEDControlTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* led_control_task_handler{
+        nullptr};
 };
 
 /**

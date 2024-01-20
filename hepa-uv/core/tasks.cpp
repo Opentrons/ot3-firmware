@@ -34,9 +34,12 @@ void hepauv_tasks::start_tasks(
     can_task::start_reader(can_bus);
 
     // TODO: including led_hardware for testing, this should be a AssesorClient
-    auto& hepa_task = hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins, led_hardware);
-    auto& uv_task = uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, led_hardware);
-    auto& led_control_task = led_control_task_builder.start(5, "push_button_leds", led_hardware);
+    auto& hepa_task =
+        hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins, led_hardware);
+    auto& uv_task =
+        uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, led_hardware);
+    auto& led_control_task =
+        led_control_task_builder.start(5, "push_button_leds", led_hardware);
 
     tasks.hepa_task_handler = &hepa_task;
     tasks.uv_task_handler = &uv_task;
@@ -61,7 +64,8 @@ void hepauv_tasks::QueueClient::send_uv_message(const uv_task::TaskMessage& m) {
     uv_queue->try_write(m);
 }
 
-void hepauv_tasks::QueueClient::send_led_control_message(const led_control_task::TaskMessage& m) {
+void hepauv_tasks::QueueClient::send_led_control_message(
+    const led_control_task::TaskMessage& m) {
     led_control_queue->try_write(m);
 }
 

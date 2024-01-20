@@ -5,10 +5,10 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/firmware/gpio.hpp"
+#include "hepa-uv/core/constants.h"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
-#include "hepa-uv/core/constants.h"
 
 namespace hepa_task {
 
@@ -18,8 +18,7 @@ class HepaMessageHandler {
   public:
     explicit HepaMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
-        led_control_hardware::LEDControlHardware &led_hardware
-    )
+        led_control_hardware::LEDControlHardware &led_hardware)
         : drive_pins{drive_pins}, led_hardware{led_hardware} {
         // get current state
         hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);

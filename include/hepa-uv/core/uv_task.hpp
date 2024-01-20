@@ -23,7 +23,7 @@ class UVMessageHandler {
         gpio_drive_hardware::GpioDrivePins &drive_pins,
         led_control_hardware::LEDControlHardware &led_hardware)
         : drive_pins{drive_pins},
-        led_hardware{led_hardware},
+          led_hardware{led_hardware},
           _timer(
               "UVTask", [ThisPtr = this] { ThisPtr->timer_callback(); },
               DELAY_MS) {
