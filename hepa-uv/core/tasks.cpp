@@ -4,6 +4,7 @@
 #include "common/core/freertos_timer.hpp"
 #include "hepa-uv/core/can_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
+#include "hepa-uv/firmware/hepa_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 
 #pragma GCC diagnostic push
@@ -29,13 +30,14 @@ static auto led_control_task_builder =
 void hepauv_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
-    led_control_hardware::LEDControlHardware& led_hardware) {
+    led_control_hardware::LEDControlHardware& led_hardware,
+    hepa_control_hardware::HepaControlHardware& hepa_hardware) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
     // TODO: including led_hardware for testing, this should be a AssesorClient
     auto& hepa_task =
-        hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins, led_hardware);
+        hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins, led_hardware, hepa_hardware);
     auto& uv_task =
         uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, led_hardware);
     auto& led_control_task =

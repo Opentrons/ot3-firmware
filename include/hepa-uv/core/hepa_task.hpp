@@ -9,6 +9,7 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
+#include "hepa-uv/firmware/hepa_control_hardware.hpp"
 
 namespace hepa_task {
 
@@ -18,8 +19,9 @@ class HepaMessageHandler {
   public:
     explicit HepaMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
-        led_control_hardware::LEDControlHardware &led_hardware)
-        : drive_pins{drive_pins}, led_hardware{led_hardware} {
+        led_control_hardware::LEDControlHardware &led_hardware,
+        hepa_control_hardware::HepaControlHardware &hepa_hardware)
+        : drive_pins{drive_pins}, led_hardware{led_hardware}, hepa_hardware{hepa_hardware} {
         // get current state
         hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
         // turn off the HEPA fan
@@ -45,9 +47,11 @@ class HepaMessageHandler {
             hepa_push_button = !hepa_push_button;
             // handle state changes here
             if (hepa_push_button) {
+                hepa_hardware.set_hepa_fan_speed(50);
                 gpio::set(drive_pins.hepa_on_off);
                 led_hardware.set_button_led_power(HEPA_BUTTON, 0, 50, 0, 0);
             } else {
+                hepa_hardware.set_hepa_fan_speed(0);
                 gpio::reset(drive_pins.hepa_on_off);
                 led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
             }
@@ -62,6 +66,7 @@ class HepaMessageHandler {
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
     led_control_hardware::LEDControlHardware &led_hardware;
+    hepa_control_hardware::HepaControlHardware &hepa_hardware;
 };
 
 /**
@@ -85,8 +90,9 @@ class HepaTask {
      */
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins *drive_pins,
-        led_control_hardware::LEDControlHardware *led_hardware) {
-        auto handler = HepaMessageHandler{*drive_pins, *led_hardware};
+        led_control_hardware::LEDControlHardware *led_hardware,
+        hepa_control_hardware::HepaControlHardware *hepa_hardware) {
+        auto handler = HepaMessageHandler{*drive_pins, *led_hardware, *hepa_hardware};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

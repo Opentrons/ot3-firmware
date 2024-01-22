@@ -6,6 +6,7 @@
 #include "hepa-uv/core/uv_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
+#include "hepa-uv/firmware/hepa_control_hardware.hpp"
 
 namespace hepauv_tasks {
 
@@ -14,7 +15,8 @@ namespace hepauv_tasks {
  */
 void start_tasks(can::bus::CanBus& can_bus,
                  gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
-                 led_control_hardware::LEDControlHardware& led_hardware);
+                 led_control_hardware::LEDControlHardware& led_hardware,
+                 hepa_control_hardware::HepaControlHardware& hepa_hardware);
 
 /**
  * Access to all the message queues in the system.

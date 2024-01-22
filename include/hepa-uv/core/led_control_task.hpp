@@ -5,23 +5,13 @@
 #include "common/core/message_queue.hpp"
 #include "hepa-uv/core/constants.h"
 #include "hepa-uv/core/messages.hpp"
+#include "hepa-uv/core/interfaces.hpp"
 
 namespace led_control_task {
 
+using namespace led_control;
+
 using TaskMessage = led_control_task_messages::TaskMessage;
-
-class LEDControlInterface {
-  public:
-    LEDControlInterface() = default;
-    LEDControlInterface(const LEDControlInterface&) = delete;
-    LEDControlInterface(LEDControlInterface&&) = delete;
-    auto operator=(LEDControlInterface&&) -> LEDControlInterface& = delete;
-    auto operator=(const LEDControlInterface&) -> LEDControlInterface& = delete;
-    virtual ~LEDControlInterface() = default;
-
-    virtual auto set_button_led_power(uint8_t button, uint32_t r, uint32_t g,
-                                      uint32_t b, uint32_t w) -> void = 0;
-};
 
 class LEDControlMessageHandler {
   public:

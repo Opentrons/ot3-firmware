@@ -448,7 +448,7 @@ void set_button_led_pwm(PUSH_BUTTON_TYPE button, uint32_t red, uint32_t green, u
     button_led_hw_update_pwm(white, WHITE_LED, button);
 }
 
-void button_led_hw_initialize_leds() {
+void button_hw_initialize_leds() {
     MX_TIM1_Init();
     MX_TIM8_Init();
     MX_TIM16_Init();

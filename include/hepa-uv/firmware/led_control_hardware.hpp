@@ -1,10 +1,10 @@
 #pragma once
 
-#include "hepa-uv/core/led_control_task.hpp"
+#include "hepa-uv/core/interfaces.hpp"
 
 namespace led_control_hardware {
 
-class LEDControlHardware : public led_control_task::LEDControlInterface {
+class LEDControlHardware : public led_control::LEDControlInterface {
   public:
     LEDControlHardware() = default;
     LEDControlHardware(const LEDControlHardware&) = delete;
