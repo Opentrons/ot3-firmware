@@ -102,64 +102,110 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
 }
 
 /**
- * @brief TIM1 Initialization Function for HEPA_R_CTRL, HEPA_W_CTRL, and UV_B_CTRL
- * @param None
+ * @brief TIM1 Initialization Function for the LED timers.
+ * @param tim Pointer to the timer we are configuring
  * @retval None
  */
-static void MX_TIM1_Init(void) {
+static void MX_TIM_Init(TIM_TypeDef* tim) {
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-    htim1.State = HAL_TIM_STATE_RESET;
-    htim1.Instance = TIM1;
+    TIM_HandleTypeDef* htim;
+    TIM_OC_InitTypeDef* htim_sConfigOC;
+    unsigned int channels[3];
+    int channels_size = 0;
+    if (tim == TIM1){
+        htim = &htim1;
+        htim_sConfigOC = &htim1_sConfigOC;
+        /* Channels
+        HEPA_R_CTRL -> ch2
+        HEPA_W_CTRL -> ch3
+        UV_B_CTRL   -> ch4
+        */
+        channels_size = 3;
+        channels[0] = TIM_CHANNEL_2;
+        channels[1] = TIM_CHANNEL_3;
+        channels[2] = TIM_CHANNEL_4;
+    } else if (tim == TIM8) {
+        htim = &htim8;
+        htim_sConfigOC = &htim8_sConfigOC;
+        /* Channels
+        HEPA_G_CTRL -> ch1
+        UV_G_CTRL   -> ch2
+        UV_R_CTRL   -> ch3
+        */
+        channels_size = 3;
+        channels[0] = TIM_CHANNEL_1;
+        channels[1] = TIM_CHANNEL_2;
+        channels[2] = TIM_CHANNEL_3;
+    } else if (tim == TIM16) {
+        htim = &htim16;
+        htim_sConfigOC = &htim16_sConfigOC;
+        /* Channels
+        HEPA_B_CTRL -> ch1
+        */
+        channels_size = 1;
+        channels[0] = TIM_CHANNEL_1;
+    } else if (tim == TIM20) {
+        htim = &htim20;
+        htim_sConfigOC = &htim20_sConfigOC;
+        /* Channels
+        UV_W_CTRL -> ch1
+        */
+        channels_size = 1;
+        channels[0] = TIM_CHANNEL_1;
+    } else {
+        Error_Handler();
+        return;
+    }
+
+    htim->State = HAL_TIM_STATE_RESET;
+    htim->Instance = tim;
     /*
      * Setting counter clock frequency to 2 kHz
      */
-    htim1.Init.Prescaler =
+    htim->Init.Prescaler =
         calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = LED_PWM_WIDTH - 1;
-    htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim1.Init.RepetitionCounter = 0;
-    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_Base_Init(&htim1) != HAL_OK) {
+    htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim->Init.Period = LED_PWM_WIDTH - 1;
+    htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim->Init.RepetitionCounter = 0;
+    htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(htim) != HAL_OK) {
         Error_Handler();
     }
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK) {
+    if (HAL_TIM_ConfigClockSource(htim, &sClockSourceConfig) != HAL_OK) {
         Error_Handler();
     }
-    if (HAL_TIM_PWM_Init(&htim1) != HAL_OK) {
+    if (HAL_TIM_PWM_Init(htim) != HAL_OK) {
         Error_Handler();
     }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) !=
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) !=
         HAL_OK) {
         Error_Handler();
     }
-    htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    htim_sConfigOC->OCMode = TIM_OCMODE_PWM1;
     /* Set duty cycle at 0% */
-    htim1_sConfigOC.Pulse = 0;
-    htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-    htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    htim1_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    htim1_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim1, &htim1_sConfigOC, TIM_CHANNEL_2) !=
-        HAL_OK) {
-        Error_Handler();
+    htim_sConfigOC->Pulse = 0;
+    htim_sConfigOC->OCPolarity = TIM_OCPOLARITY_HIGH;
+    htim_sConfigOC->OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    htim_sConfigOC->OCFastMode = TIM_OCFAST_DISABLE;
+    htim_sConfigOC->OCIdleState = TIM_OCIDLESTATE_RESET;
+    htim_sConfigOC->OCNIdleState = TIM_OCNIDLESTATE_RESET;
+
+    // Enable the corresponding channels for this timer
+    for (int i = 0; i < channels_size; i++) {
+        if (HAL_TIM_PWM_ConfigChannel(htim, htim_sConfigOC, channels[i]) !=
+            HAL_OK) {
+            Error_Handler();
+        }
     }
-    if (HAL_TIM_PWM_ConfigChannel(&htim1, &htim1_sConfigOC, TIM_CHANNEL_3) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_ConfigChannel(&htim1, &htim1_sConfigOC, TIM_CHANNEL_4) !=
-        HAL_OK) {
-        Error_Handler();
-    }
+
     sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
     sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -173,232 +219,11 @@ static void MX_TIM1_Init(void) {
     sBreakDeadTimeConfig.Break2Filter = 0;
     sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
     sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) !=
+    if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) !=
         HAL_OK) {
         Error_Handler();
     }
-    HAL_TIM_MspPostInit(&htim1);
-}
-
-/**
- * @brief TIM8 Initialization Function for HEPA_G_CTRL, UV_G_CTRL, and UV_R_CTRL
- * @param None
- * @retval None
- */
-static void MX_TIM8_Init(void) {
-    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-
-    htim8.State = HAL_TIM_STATE_RESET;
-    htim8.Instance = TIM8;
-    /*
-     * Setting counter clock frequency to 2 kHz
-     */
-    htim8.Init.Prescaler =
-        calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim8.Init.Period = LED_PWM_WIDTH - 1;
-    htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim8.Init.RepetitionCounter = 0;
-    htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_Base_Init(&htim8) != HAL_OK) {
-        Error_Handler();
-    }
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_Init(&htim8) != HAL_OK) {
-        Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    htim8_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 0% */
-    htim8_sConfigOC.Pulse = 0;
-    htim8_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    htim8_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-    htim8_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    htim8_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    htim8_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim8, &htim8_sConfigOC, TIM_CHANNEL_1) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_ConfigChannel(&htim8, &htim8_sConfigOC, TIM_CHANNEL_2) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_ConfigChannel(&htim8, &htim8_sConfigOC, TIM_CHANNEL_3) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-    sBreakDeadTimeConfig.DeadTime = 0;
-    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-    sBreakDeadTimeConfig.BreakFilter = 0;
-    sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-    sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-    sBreakDeadTimeConfig.Break2Filter = 0;
-    sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    HAL_TIM_MspPostInit(&htim8);
-}
-
-/**
- * @brief TIM16 Initialization Function for HEPA_B_CTRL
- * @param None
- * @retval None
- */
-static void MX_TIM16_Init(void) {
-    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-
-    htim16.State = HAL_TIM_STATE_RESET;
-    htim16.Instance = TIM16;
-    /*
-     * Setting counter clock frequency to 2 kHz
-     */
-    htim16.Init.Prescaler =
-        calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim16.Init.Period = LED_PWM_WIDTH - 1;
-    htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim16.Init.RepetitionCounter = 0;
-    htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_Base_Init(&htim16) != HAL_OK) {
-        Error_Handler();
-    }
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim16, &sClockSourceConfig) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_Init(&htim16) != HAL_OK) {
-        Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim16, &sMasterConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    htim16_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 0% */
-    htim16_sConfigOC.Pulse = 0;
-    htim16_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    htim16_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-    htim16_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    htim16_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    htim16_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim16, &htim16_sConfigOC, TIM_CHANNEL_1) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-    sBreakDeadTimeConfig.DeadTime = 0;
-    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-    sBreakDeadTimeConfig.BreakFilter = 0;
-    sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-    sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-    sBreakDeadTimeConfig.Break2Filter = 0;
-    sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    if (HAL_TIMEx_ConfigBreakDeadTime(&htim16, &sBreakDeadTimeConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    HAL_TIM_MspPostInit(&htim16);
-}
-
-/**
- * @brief TIM20 Initialization Function for UV_W_CTRL
- * @param None
- * @retval None
- */
-static void MX_TIM20_Init(void) {
-    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-
-    htim20.State = HAL_TIM_STATE_RESET;
-    htim20.Instance = TIM20;
-    /*
-     * Setting counter clock frequency to 2 kHz
-     */
-    htim20.Init.Prescaler =
-        calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim20.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim20.Init.Period = LED_PWM_WIDTH - 1;
-    htim20.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim20.Init.RepetitionCounter = 0;
-    htim20.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_Base_Init(&htim20) != HAL_OK) {
-        Error_Handler();
-    }
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim20, &sClockSourceConfig) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_TIM_PWM_Init(&htim20) != HAL_OK) {
-        Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim20, &sMasterConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    htim20_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 0% */
-    htim20_sConfigOC.Pulse = 0;
-    htim20_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    htim20_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-    htim20_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    htim20_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    htim20_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim20, &htim20_sConfigOC, TIM_CHANNEL_1) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-    sBreakDeadTimeConfig.DeadTime = 0;
-    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-    sBreakDeadTimeConfig.BreakFilter = 0;
-    sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-    sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-    sBreakDeadTimeConfig.Break2Filter = 0;
-    sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
-    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-    if (HAL_TIMEx_ConfigBreakDeadTime(&htim20, &sBreakDeadTimeConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-    HAL_TIM_MspPostInit(&htim20);
+    HAL_TIM_MspPostInit(htim);
 }
 
 void button_led_hw_update_pwm(uint32_t duty_cycle, LED_TYPE led, PUSH_BUTTON_TYPE button) {
@@ -449,10 +274,11 @@ void set_button_led_pwm(PUSH_BUTTON_TYPE button, uint32_t red, uint32_t green, u
 }
 
 void button_led_hw_initialize_leds() {
-    MX_TIM1_Init();
-    MX_TIM8_Init();
-    MX_TIM16_Init();
-    MX_TIM20_Init();
+    // Initialize the timers and channels
+    MX_TIM_Init(TIM1);
+    MX_TIM_Init(TIM8);
+    MX_TIM_Init(TIM16);
+    MX_TIM_Init(TIM20);
 
     // Set the the button LEDS to idle (white)
     set_button_led_pwm(HEPA_BUTTON, 0, 0, 0, 50);
