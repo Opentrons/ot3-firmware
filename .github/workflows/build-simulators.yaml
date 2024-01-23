@@ -24,7 +24,6 @@ jobs:
           gantry-y,
           gripper,
           head,
-          hepa-uv,
           pipettes-single,
           pipettes-multi,
           pipettes-96,

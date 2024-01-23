@@ -241,8 +241,7 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "gripper-simulator",
-        "hepa-uv-simulator"
+        "gripper-simulator"
       ]
     },
     {
@@ -260,8 +259,7 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "gripper-simulator",
-        "hepa-uv-simulator"
+        "gripper-simulator"
       ]
     }
   ]
