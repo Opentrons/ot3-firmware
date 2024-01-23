@@ -17,7 +17,7 @@ class LEDControlInterface {
                                       uint32_t b, uint32_t w) -> void = 0;
 };
 
-} // led_control namespace
+}  // namespace led_control
 
 namespace hepa_control {
 
@@ -27,9 +27,10 @@ class HepaControlInterface {
     HepaControlInterface(const HepaControlInterface&) = delete;
     HepaControlInterface(HepaControlInterface&&) = delete;
     auto operator=(HepaControlInterface&&) -> HepaControlInterface& = delete;
-    auto operator=(const HepaControlInterface&) -> HepaControlInterface& = delete;
+    auto operator=(const HepaControlInterface&)
+        -> HepaControlInterface& = delete;
     virtual ~HepaControlInterface() = default;
 
     virtual void set_hepa_fan_speed(uint32_t duty_cycle);
-}; 
-} // hepa_control namespace
+};
+}  // namespace hepa_control

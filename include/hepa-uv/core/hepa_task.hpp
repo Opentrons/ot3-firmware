@@ -6,8 +6,8 @@
 #include "common/core/message_queue.hpp"
 #include "common/firmware/gpio.hpp"
 #include "hepa-uv/core/constants.h"
-#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/led_control_task.hpp"
+#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 
@@ -18,10 +18,13 @@ using TaskMessage = interrupt_task_messages::TaskMessage;
 template <led_control_task::TaskClient LEDControlClient>
 class HepaMessageHandler {
   public:
-    explicit HepaMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins,
-                                hepa_control_hardware::HepaControlHardware &hepa_hardware,
-                                LEDControlClient &led_control_client)
-        : drive_pins{drive_pins}, hepa_hardware{hepa_hardware}, led_control_client{led_control_client} {
+    explicit HepaMessageHandler(
+        gpio_drive_hardware::GpioDrivePins &drive_pins,
+        hepa_control_hardware::HepaControlHardware &hepa_hardware,
+        LEDControlClient &led_control_client)
+        : drive_pins{drive_pins},
+          hepa_hardware{hepa_hardware},
+          led_control_client{led_control_client} {
         // get current state
         hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
         // turn off the HEPA fan
@@ -93,10 +96,12 @@ class HepaTask {
      * Task entry point.
      */
     template <led_control_task::TaskClient LEDControlClient>
-    [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
-                                hepa_control_hardware::HepaControlHardware *hepa_hardware,
-                                LEDControlClient *led_control_client) {
-        auto handler = HepaMessageHandler{*drive_pins, *hepa_hardware, *led_control_client};
+    [[noreturn]] void operator()(
+        gpio_drive_hardware::GpioDrivePins *drive_pins,
+        hepa_control_hardware::HepaControlHardware *hepa_hardware,
+        LEDControlClient *led_control_client) {
+        auto handler = HepaMessageHandler{*drive_pins, *hepa_hardware,
+                                          *led_control_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

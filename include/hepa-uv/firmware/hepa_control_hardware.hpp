@@ -19,4 +19,4 @@ class HepaControlHardware : public HepaControlInterface {
     void set_hepa_fan_speed(uint32_t duty_cycle);
 };
 
-}  // namespace led_control_hardware
+}  // namespace hepa_control_hardware

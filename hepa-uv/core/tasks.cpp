@@ -36,8 +36,8 @@ void hepauv_tasks::start_tasks(
     can_task::start_reader(can_bus);
 
     // TODO: including led_hardware for testing, this should be a AssesorClient
-    auto& hepa_task =
-        hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins, hepa_hardware, queues);
+    auto& hepa_task = hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins,
+                                              hepa_hardware, queues);
     auto& uv_task =
         uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, queues);
     auto& led_control_task =

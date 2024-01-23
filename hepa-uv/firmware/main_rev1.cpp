@@ -22,9 +22,9 @@
 #include "common/firmware/utility_gpio.h"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
-#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 #include "hepa-uv/firmware/hepauv_hardware.h"
+#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -131,7 +131,8 @@ auto main() -> int {
 
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware, led_hardware);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware,
+                              led_hardware);
 
     iWatchdog.start(6);
 

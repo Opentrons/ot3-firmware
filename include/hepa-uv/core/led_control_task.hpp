@@ -4,8 +4,8 @@
 
 #include "common/core/message_queue.hpp"
 #include "hepa-uv/core/constants.h"
-#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/interfaces.hpp"
+#include "hepa-uv/core/messages.hpp"
 
 namespace led_control_task {
 
