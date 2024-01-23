@@ -102,7 +102,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
 }
 
 /**
- * @brief TIM1 Initialization Function for the LED timers.
+ * @brief TIM Initialization Function for the LED timers.
  * @param tim Pointer to the timer we are configuring
  * @retval None
  */

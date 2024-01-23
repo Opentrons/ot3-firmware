@@ -5,10 +5,10 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "hepa-uv/core/constants.h"
+#include "hepa-uv/core/led_control_task.hpp"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
-#include "hepa-uv/core/led_control_task.hpp"
 
 namespace uv_task {
 
@@ -20,9 +20,8 @@ using TaskMessage = interrupt_task_messages::TaskMessage;
 template <led_control_task::TaskClient LEDControlClient>
 class UVMessageHandler {
   public:
-    explicit UVMessageHandler(
-        gpio_drive_hardware::GpioDrivePins &drive_pins,
-        LEDControlClient &led_control_client)
+    explicit UVMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins,
+                              LEDControlClient &led_control_client)
         : drive_pins{drive_pins},
           led_control_client{led_control_client},
           _timer(
@@ -51,8 +50,7 @@ class UVMessageHandler {
         gpio::reset(drive_pins.uv_on_off);
         // Set the push button LED's to idle (white)
         led_control_client.send_led_control_message(
-            led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0, 50)
-        );
+            led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0, 50));
         uv_push_button = false;
         uv_fan_on = false;
     }
@@ -83,8 +81,8 @@ class UVMessageHandler {
             // TODO: Pulse this instead of solid blue
             // Set the push button LED's to user intervention (blue)
             led_control_client.send_led_control_message(
-                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50, 0)
-            );
+                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50,
+                                                         0));
             if (_timer.is_running()) _timer.stop();
             return;
         }
@@ -94,8 +92,8 @@ class UVMessageHandler {
             gpio::set(drive_pins.uv_on_off);
             // Set the push button LED's to running (green)
             led_control_client.send_led_control_message(
-                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 50, 0, 0)
-            );
+                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 50, 0,
+                                                         0));
             if (_timer.is_running()) _timer.stop();
             _timer.start();
             uv_fan_on = true;
@@ -103,8 +101,8 @@ class UVMessageHandler {
             gpio::reset(drive_pins.uv_on_off);
             // Set the push button LED's to idle (white)
             led_control_client.send_led_control_message(
-                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0, 50)
-            );
+                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0,
+                                                         50));
             if (_timer.is_running()) _timer.stop();
             uv_fan_on = false;
         }
@@ -143,9 +141,8 @@ class UVTask {
      * Task entry point.
      */
     template <led_control_task::TaskClient LEDControlClient>
-    [[noreturn]] void operator()(
-        gpio_drive_hardware::GpioDrivePins *drive_pins,
-        LEDControlClient *led_control_client) {
+    [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
+                                 LEDControlClient *led_control_client) {
         auto handler = UVMessageHandler{*drive_pins, *led_control_client};
         TaskMessage message{};
         for (;;) {

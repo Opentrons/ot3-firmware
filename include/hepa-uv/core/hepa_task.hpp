@@ -47,11 +47,13 @@ class HepaMessageHandler {
             if (hepa_push_button) {
                 gpio::set(drive_pins.hepa_on_off);
                 led_control_client.send_led_control_message(
-                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50, 0, 0});
+                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50,
+                                                             0, 0});
             } else {
                 gpio::reset(drive_pins.hepa_on_off);
                 led_control_client.send_led_control_message(
-                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0, 0, 50});
+                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0,
+                                                             0, 50});
             }
         }
 
