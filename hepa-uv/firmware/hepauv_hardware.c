@@ -1,4 +1,4 @@
-#include "hepa-uv/firmware/led_hardware.h"
+#include "hepa-uv/firmware/hepauv_hardware.h"
 #include "hepa-uv/firmware/utility_gpio.h"
 #include "common/firmware/errors.h"
 
@@ -6,11 +6,13 @@
 #include "system_stm32g4xx.h"
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim16;
 TIM_HandleTypeDef htim20;
 
 TIM_OC_InitTypeDef htim1_sConfigOC = {0};
+TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 TIM_OC_InitTypeDef htim8_sConfigOC = {0};
 TIM_OC_InitTypeDef htim16_sConfigOC = {0};
 TIM_OC_InitTypeDef htim20_sConfigOC = {0};
@@ -26,14 +28,16 @@ uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
                : 0U;
 }
 
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_pwm) {
-    if(htim_pwm->Instance == TIM1) {
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
+    if(htim->Instance == TIM1) {
         __HAL_RCC_TIM1_CLK_ENABLE();
-    } else if(htim_pwm->Instance == TIM8) {
+    } else if(htim->Instance == TIM3) {
+        __HAL_RCC_TIM3_CLK_ENABLE();
+    } else if(htim->Instance == TIM8) {
         __HAL_RCC_TIM8_CLK_ENABLE();
-    } else if(htim_pwm->Instance == TIM16) {
+    } else if(htim->Instance == TIM16) {
         __HAL_RCC_TIM16_CLK_ENABLE();
-    } else if(htim_pwm->Instance == TIM20) {
+    } else if(htim->Instance == TIM20) {
         __HAL_RCC_TIM20_CLK_ENABLE();
     }
 }
@@ -57,6 +61,17 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         // PC5     ------> TIM1_CH4N
         GPIO_InitStruct.Pin = UV_B_CTRL_PIN;
         HAL_GPIO_Init(UV_B_CTRL_PORT, &GPIO_InitStruct);
+    } else if (htim->Instance == TIM3) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /**TIM3 GPIO Configuration
+        PA6     ------> TIM3_CH1
+        */
+        GPIO_InitStruct.Pin = HEPA_PWM_PIN;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+        HAL_GPIO_Init(HEPA_PWM_PORT, &GPIO_InitStruct);
     } else if (htim->Instance == TIM8) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
         __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -70,7 +85,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF4_TIM8;
         HAL_GPIO_Init(UV_G_CTRL_PORT, &GPIO_InitStruct);
-
         /*
         PC6     ------> TIM8_CH1
         */
@@ -127,6 +141,26 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
         channels[0] = TIM_CHANNEL_2;
         channels[1] = TIM_CHANNEL_3;
         channels[2] = TIM_CHANNEL_4;
+    } else if (tim == TIM3) {
+        htim = &htim3;
+        htim_sConfigOC = &htim3_sConfigOC;
+        /* Channels
+        HEPA_PWM    -> ch1
+        */
+        channels_size = 1;
+        channels[0] = TIM_CHANNEL_1;
+    } else if (tim == TIM8) {
+        htim = &htim8;
+        htim_sConfigOC = &htim8_sConfigOC;
+        /* Channels
+        HEPA_G_CTRL -> ch1
+        UV_G_CTRL   -> ch2
+        UV_R_CTRL   -> ch3
+        */
+        channels_size = 3;
+        channels[0] = TIM_CHANNEL_1;
+        channels[1] = TIM_CHANNEL_2;
+        channels[2] = TIM_CHANNEL_3;
     } else if (tim == TIM8) {
         htim = &htim8;
         htim_sConfigOC = &htim8_sConfigOC;
@@ -162,13 +196,18 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
 
     htim->State = HAL_TIM_STATE_RESET;
     htim->Instance = tim;
-    /*
-     * Setting counter clock frequency to 2 kHz
-     */
-    htim->Init.Prescaler =
-        calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim->Init.Period = LED_PWM_WIDTH - 1;
+
+    // Set prescaler and period for hepa_pwm timer (TIM3)
+    if (tim == TIM3) {
+        htim->Init.Prescaler = 64 - 1;
+        htim->Init.Period = 40 - 1;
+    } else {
+        // Setting counter clock frequency to 2 kHz for push button LED's
+        htim->Init.Prescaler =
+            calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
+        htim->Init.Period = LED_PWM_WIDTH - 1;
+    }
     htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim->Init.RepetitionCounter = 0;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -273,12 +312,21 @@ void set_button_led_pwm(PUSH_BUTTON_TYPE button, uint32_t red, uint32_t green, u
     button_led_hw_update_pwm(white, WHITE_LED, button);
 }
 
-void button_led_hw_initialize_leds() {
+void set_hepa_fan_pwm(uint32_t duty_cycle) {
+    // update hepa fan speed
+    htim3.Instance->CCR1 = duty_cycle;
+}
+
+void initialize_hepauv_hardware() {
     // Initialize the timers and channels
     MX_TIM_Init(TIM1);
+    MX_TIM_Init(TIM3);
     MX_TIM_Init(TIM8);
     MX_TIM_Init(TIM16);
     MX_TIM_Init(TIM20);
+
+    // Set the hepa fan speed to 0
+    set_hepa_fan_pwm(0);
 
     // Set the the button LEDS to idle (white)
     set_button_led_pwm(HEPA_BUTTON, 0, 0, 0, 50);
@@ -287,6 +335,7 @@ void button_led_hw_initialize_leds() {
     // Activate the channels
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim20, TIM_CHANNEL_1);

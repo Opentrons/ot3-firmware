@@ -23,7 +23,7 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
-#include "hepa-uv/firmware/led_hardware.h"
+#include "hepa-uv/firmware/hepauv_hardware.h"
 #include "hepa-uv/firmware/utility_gpio.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -123,7 +123,7 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
-    button_led_hw_initialize_leds();
+    initialize_hepauv_hardware();
 
     app_update_clear_flags();
 
