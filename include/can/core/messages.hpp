@@ -1237,8 +1237,8 @@ using TipStatusQueryRequest = Empty<MessageId::get_tip_status_request>;
 
 struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
-    uint32_t message_index;
-    uint8_t ejector_flag_status;
+    uint32_t message_index = 0;
+    uint8_t ejector_flag_status = 0;
     can::ids::SensorId sensor_id{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -1476,8 +1476,8 @@ using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
 
 struct GetMotorUsageResponse
     : BaseMessage<MessageId::get_motor_usage_response> {
-    uint32_t message_index;
-    uint8_t num_keys;
+    uint32_t message_index = 0;
+    uint8_t num_keys = 0;
     struct __attribute__((__packed__)) UsageValueField {
         uint16_t key;
         uint16_t len;
