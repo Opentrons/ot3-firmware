@@ -126,7 +126,7 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
-    button_hw_initialize_leds();
+    button_led_hw_initialize();
     initialize_hardware();
 
     app_update_clear_flags();

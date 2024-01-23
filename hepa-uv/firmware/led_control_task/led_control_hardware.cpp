@@ -7,7 +7,7 @@ using namespace led_control_hardware;
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto LEDControlHardware::initialize() -> void {
-    button_hw_initialize_leds();
+    button_led_hw_initialize();
 }
 
 void LEDControlHardware::set_button_led_power(uint8_t button, uint32_t r,

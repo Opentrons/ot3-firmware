@@ -7,21 +7,21 @@
 #include "common/firmware/gpio.hpp"
 #include "hepa-uv/core/constants.h"
 #include "hepa-uv/core/messages.hpp"
+#include "hepa-uv/core/led_control_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 
 namespace hepa_task {
 
 using TaskMessage = interrupt_task_messages::TaskMessage;
 
+template <led_control_task::TaskClient LEDControlClient>
 class HepaMessageHandler {
   public:
-    explicit HepaMessageHandler(
-        gpio_drive_hardware::GpioDrivePins &drive_pins,
-        led_control_hardware::LEDControlHardware &led_hardware,
-        hepa_control_hardware::HepaControlHardware &hepa_hardware)
-        : drive_pins{drive_pins}, led_hardware{led_hardware}, hepa_hardware{hepa_hardware} {
+    explicit HepaMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins,
+                                hepa_control_hardware::HepaControlHardware &hepa_hardware,
+                                LEDControlClient &led_control_client)
+        : drive_pins{drive_pins}, hepa_hardware{hepa_hardware}, led_control_client{led_control_client} {
         // get current state
         hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
         // turn off the HEPA fan
@@ -49,11 +49,15 @@ class HepaMessageHandler {
             if (hepa_push_button) {
                 hepa_hardware.set_hepa_fan_speed(50);
                 gpio::set(drive_pins.hepa_on_off);
-                led_hardware.set_button_led_power(HEPA_BUTTON, 0, 50, 0, 0);
+                led_control_client.send_led_control_message(
+                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50,
+                                                             0, 0});
             } else {
                 hepa_hardware.set_hepa_fan_speed(0);
                 gpio::reset(drive_pins.hepa_on_off);
-                led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
+                led_control_client.send_led_control_message(
+                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0,
+                                                             0, 50});
             }
         }
 
@@ -65,8 +69,8 @@ class HepaMessageHandler {
     bool hepa_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
-    led_control_hardware::LEDControlHardware &led_hardware;
     hepa_control_hardware::HepaControlHardware &hepa_hardware;
+    LEDControlClient &led_control_client;
 };
 
 /**
@@ -88,11 +92,11 @@ class HepaTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(
-        gpio_drive_hardware::GpioDrivePins *drive_pins,
-        led_control_hardware::LEDControlHardware *led_hardware,
-        hepa_control_hardware::HepaControlHardware *hepa_hardware) {
-        auto handler = HepaMessageHandler{*drive_pins, *led_hardware, *hepa_hardware};
+    template <led_control_task::TaskClient LEDControlClient>
+    [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
+                                hepa_control_hardware::HepaControlHardware *hepa_hardware,
+                                LEDControlClient *led_control_client) {
+        auto handler = HepaMessageHandler{*drive_pins, *hepa_hardware, *led_control_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
