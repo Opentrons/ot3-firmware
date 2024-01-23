@@ -25,8 +25,7 @@ set(HEPAUV_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hepauv_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
