@@ -133,7 +133,7 @@ auto main() -> int {
 
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, led_hardware, hepa_hardware);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware, led_hardware);
 
     iWatchdog.start(6);
 

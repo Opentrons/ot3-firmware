@@ -15,8 +15,8 @@ namespace hepauv_tasks {
  */
 void start_tasks(can::bus::CanBus& can_bus,
                  gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
-                 led_control_hardware::LEDControlHardware& led_hardware,
-                 hepa_control_hardware::HepaControlHardware& hepa_hardware);
+                 hepa_control_hardware::HepaControlHardware& hepa_hardware,
+                 led_control_hardware::LEDControlHardware& led_hardware);
 
 /**
  * Access to all the message queues in the system.

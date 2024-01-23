@@ -30,8 +30,8 @@ static auto led_control_task_builder =
 void hepauv_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
-    led_control_hardware::LEDControlHardware& led_hardware,
-    hepa_control_hardware::HepaControlHardware& hepa_hardware) {
+    hepa_control_hardware::HepaControlHardware& hepa_hardware,
+    led_control_hardware::LEDControlHardware& led_hardware) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
