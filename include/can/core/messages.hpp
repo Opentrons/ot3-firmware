@@ -1235,10 +1235,11 @@ struct BindSensorOutputResponse
 
 using TipStatusQueryRequest = Empty<MessageId::get_tip_status_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
-    uint32_t message_index = 0;
-    uint8_t ejector_flag_status = 0;
+    uint32_t message_index;
+    uint8_t ejector_flag_status;
     can::ids::SensorId sensor_id{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -1474,10 +1475,11 @@ struct SetGripperErrorToleranceRequest
 
 using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GetMotorUsageResponse
     : BaseMessage<MessageId::get_motor_usage_response> {
-    uint32_t message_index = 0;
-    uint8_t num_keys = 0;
+    uint32_t message_index;
+    uint8_t num_keys;
     struct __attribute__((__packed__)) UsageValueField {
         uint16_t key;
         uint16_t len;
