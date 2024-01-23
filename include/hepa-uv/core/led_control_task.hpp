@@ -82,4 +82,13 @@ class LEDControlTask {
     QueueType& queue;
 };
 
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_led_control_message(m)};
+};
+
 }  // namespace led_control_task
