@@ -198,16 +198,11 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
     htim->Instance = tim;
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
 
-    // Set prescaler and period for hepa_pwm timer (TIM3)
-    if (tim == TIM3) {
-        htim->Init.Prescaler = 64 - 1;
-        htim->Init.Period = 40 - 1;
-    } else {
-        // Setting counter clock frequency to 2 kHz for push button LED's
-        htim->Init.Prescaler =
-            calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-        htim->Init.Period = LED_PWM_WIDTH - 1;
-    }
+    // Set the counter clock frequency to 25kHz for the HEPA fan pwm.
+    if (tim == TIM3) htim->Init.Prescaler = calc_prescaler(SystemCoreClock, HEPA_TIMER_FREQ);
+    // Setting counter clock frequency to 2 kHz for push button LED's
+    else htim->Init.Prescaler = calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
+    htim->Init.Period = PWM_WIDTH - 1;
     htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim->Init.RepetitionCounter = 0;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -312,9 +307,15 @@ void set_button_led_pwm(PUSH_BUTTON_TYPE button, uint32_t red, uint32_t green, u
     button_led_hw_update_pwm(white, WHITE_LED, button);
 }
 
+static uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
+    if (val < min) return min;
+    if (val > max) return max;
+    return val;
+}
+
 void set_hepa_fan_pwm(uint32_t duty_cycle) {
     // update hepa fan speed
-    htim3.Instance->CCR1 = duty_cycle;
+    htim3.Instance->CCR1 = clamp(duty_cycle, 0, 100) * htim3.Init.Period / 100;
 }
 
 void initialize_hepauv_hardware() {

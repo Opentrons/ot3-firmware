@@ -6,7 +6,7 @@ extern "C" {
 #endif  // __cplusplus
 
 // the number of selectable points in the PWM
-#define LED_PWM_WIDTH (256UL)
+#define PWM_WIDTH (256UL)
 
 typedef enum LED_TYPE {
 	RED_LED,

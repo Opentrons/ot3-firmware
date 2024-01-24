@@ -4,11 +4,15 @@
 
 #include "hepa-uv/core/constants.h"
 
-// The frequency of one full PWM cycle
+// The frequency for the LED's pwm (2kHz)
 #define LED_PWM_FREQ_HZ (2000UL)
 // the frequency at which the timer should count so that it
 // does a full PWM cycle in the time specified by LED_PWM_FREQ_HZ
-#define LED_TIMER_FREQ (LED_PWM_FREQ_HZ * LED_PWM_WIDTH)
+#define LED_TIMER_FREQ (LED_PWM_FREQ_HZ * PWM_WIDTH)
+
+// The frequency for the HEPA pwm (25kHz)
+#define HEPA_PWM_FREQ_HZ (25000UL)
+#define HEPA_TIMER_FREQ (HEPA_PWM_FREQ_HZ * PWM_WIDTH)
 
 
 #ifdef __cplusplus
