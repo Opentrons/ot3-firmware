@@ -1,6 +1,6 @@
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 
-#include "hepa-uv/firmware/hepauv_hardware.h"
+#include "hepa-uv/firmware/hepa_hardware.h"
 
 using namespace hepa_control_hardware;
 

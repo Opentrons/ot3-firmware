@@ -1,6 +1,7 @@
-#include "hepa-uv/firmware/hepauv_hardware.h"
+#include "hepa-uv/core/constants.h"
 #include "hepa-uv/firmware/utility_gpio.h"
 #include "common/firmware/errors.h"
+#include "timer_hardware.h"
 
 #include "platform_specific_hal_conf.h"
 #include "system_stm32g4xx.h"
@@ -16,7 +17,6 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 TIM_OC_InitTypeDef htim8_sConfigOC = {0};
 TIM_OC_InitTypeDef htim16_sConfigOC = {0};
 TIM_OC_InitTypeDef htim20_sConfigOC = {0};
-
 
 uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
@@ -260,78 +260,13 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
     HAL_TIM_MspPostInit(htim);
 }
 
-void button_led_hw_update_pwm(uint32_t duty_cycle, LED_TYPE led, PUSH_BUTTON_TYPE button) {
-
-    // TODO: fix this
-    if (button == HEPA_BUTTON) {
-        switch(led) {
-            case RED_LED:
-                htim1.Instance->CCR2 = duty_cycle;
-                break;
-            case GREEN_LED:
-                htim8.Instance->CCR1 = duty_cycle;
-                break;
-            case BLUE_LED:
-                htim16.Instance->CCR1 = duty_cycle;
-                break;
-            case WHITE_LED:
-                htim1.Instance->CCR3 = duty_cycle;
-                break;
-            default:
-                break;
-        }
-    } else if (button == UV_BUTTON) {
-        switch(led) {
-            case RED_LED:
-                htim8.Instance->CCR3 = duty_cycle;
-                break;
-            case GREEN_LED:
-                htim8.Instance->CCR2 = duty_cycle;
-                break;
-            case BLUE_LED:
-                htim1.Instance->CCR4 = duty_cycle;
-                break;
-            case WHITE_LED:
-                htim20.Instance->CCR1=duty_cycle;
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-void set_button_led_pwm(PUSH_BUTTON_TYPE button, uint32_t red, uint32_t green, uint32_t blue, uint32_t white) {
-    button_led_hw_update_pwm(red, RED_LED, button);
-    button_led_hw_update_pwm(green, GREEN_LED, button);
-    button_led_hw_update_pwm(blue, BLUE_LED, button);
-    button_led_hw_update_pwm(white, WHITE_LED, button);
-}
-
-static uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
-    if (val < min) return min;
-    if (val > max) return max;
-    return val;
-}
-
-void set_hepa_fan_pwm(uint32_t duty_cycle) {
-    // update hepa fan speed
-    htim3.Instance->CCR1 = clamp(duty_cycle, 0, 100) * htim3.Init.Period / 100;
-}
-
-void initialize_hepauv_hardware() {
+void initialize_pwm_hardware() {
     // Initialize the timers and channels
     MX_TIM_Init(TIM1);
     MX_TIM_Init(TIM3);
     MX_TIM_Init(TIM8);
     MX_TIM_Init(TIM16);
     MX_TIM_Init(TIM20);
-
-    // Set the hepa fan speed to 0
-    set_hepa_fan_pwm(0);
-
-    // Set the the button LEDS to idle (white)
-    set_button_led_pwm(HEPA_BUTTON, 0, 0, 0, 50);
-    set_button_led_pwm(UV_BUTTON, 0, 0, 0, 50);
 
     // Activate the channels
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
