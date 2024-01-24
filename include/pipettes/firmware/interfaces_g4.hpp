@@ -30,7 +30,7 @@ namespace interfaces {
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware>;
+    motor_hardware::MotorHardware>;  // pass in sensor client here
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
