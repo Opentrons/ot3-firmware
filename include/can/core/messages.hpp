@@ -623,7 +623,8 @@ struct ReadMotorDriverErrorStatusRequest
     uint32_t message_index;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> ReadMotorDriverErrorStatusRequest {
+    static auto parse(Input body, Limit limit)
+        -> ReadMotorDriverErrorStatusRequest {
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);

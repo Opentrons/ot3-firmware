@@ -86,13 +86,15 @@ static auto eeprom_data_rev_update_builder =
 
 void call_run_diag0_z_interrupt() {
     if (head_tasks::get_left_tasks().motion_controller) {
-        return head_tasks::get_left_tasks().motion_controller->run_diag0_interrupt();
+        return head_tasks::get_left_tasks()
+            .motion_controller->run_diag0_interrupt();
     }
 }
 
 void call_run_diag0_a_interrupt() {
     if (head_tasks::get_right_tasks().motion_controller) {
-        return head_tasks::get_right_tasks().motion_controller->run_diag0_interrupt();
+        return head_tasks::get_right_tasks()
+            .motion_controller->run_diag0_interrupt();
     }
 }
 
@@ -113,7 +115,8 @@ auto head_tasks::start_tasks(
     motor_hardware_task::MotorHardwareTask& rmh_tsk,
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     i2c::hardware::I2CBase& i2c3,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) -> std::tuple<diag0_handler, diag0_handler> {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> std::tuple<diag0_handler, diag0_handler> {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -236,7 +239,8 @@ auto head_tasks::start_tasks(
     right_queues.usage_storage_queue = &right_usage_storage_task.get_queue();
 #endif
 
-    return std::make_tuple(call_run_diag0_z_interrupt, call_run_diag0_a_interrupt);
+    return std::make_tuple(call_run_diag0_z_interrupt,
+                           call_run_diag0_a_interrupt);
 }
 
 // Implementation of HeadQueueClient

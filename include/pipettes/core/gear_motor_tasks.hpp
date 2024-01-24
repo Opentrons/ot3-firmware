@@ -73,7 +73,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_motor_driver_queue(const tmc2160::tasks::gear::TaskMessage& m);
 
-    void send_motor_driver_queue_isr(const tmc2160::tasks::gear::TaskMessage& m);
+    void send_motor_driver_queue_isr(
+        const tmc2160::tasks::gear::TaskMessage& m);
 
     void send_move_group_queue(
         const pipettes::tasks::move_group_task::TaskMessage& m);

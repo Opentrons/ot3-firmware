@@ -440,7 +440,8 @@ auto main() -> int {
     app_update_clear_flags();
 
     initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
-                     right_enc_overflow_callback_glue, &call_diag0_z_handler, &call_diag0_a_handler);
+                     right_enc_overflow_callback_glue, &call_diag0_z_handler,
+                     &call_diag0_a_handler);
 
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
@@ -454,11 +455,12 @@ auto main() -> int {
 
     utility_gpio_init();
     can_bus_1.start(can_bit_timings);
-    std::tie(call_diag0_z_handler, call_diag0_a_handler) = head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
-                            motor_right.motion_controller, psd, spi_comms2,
-                            spi_comms3, motor_driver_configs_left,
-                            motor_driver_configs_right, rmh_tsk, lmh_tsk,
-                            i2c_comms3, eeprom_hw_iface);
+    std::tie(call_diag0_z_handler, call_diag0_a_handler) =
+        head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
+                                motor_right.motion_controller, psd, spi_comms2,
+                                spi_comms3, motor_driver_configs_left,
+                                motor_driver_configs_right, rmh_tsk, lmh_tsk,
+                                i2c_comms3, eeprom_hw_iface);
 
     timer_for_notifier.start();
 
