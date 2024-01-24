@@ -142,6 +142,11 @@ void gantry::queues::QueueClient::send_motor_driver_queue(
     motor_driver_queue->try_write(m);
 }
 
+void gantry::queues::QueueClient::send_motor_driver_queue_isr(
+    const tmc2130::tasks::TaskMessage& m) {
+    static_cast<void>(motor_driver_queue->try_write_isr(m));
+}
+
 void gantry::queues::QueueClient::send_move_group_queue(
     const move_group_task::TaskMessage& m) {
     move_group_queue->try_write(m);

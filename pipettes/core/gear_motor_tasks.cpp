@@ -133,6 +133,11 @@ void gear_motor_tasks::QueueClient::send_motor_driver_queue(
     driver_queue->try_write(m);
 }
 
+void gear_motor_tasks::QueueClient::send_motor_driver_queue_isr(
+    const tmc2160::tasks::gear::TaskMessage& m) {
+    static_cast<void>(driver_queue->try_write_isr(m));
+}
+
 void gear_motor_tasks::QueueClient::send_move_group_queue(
     const pipettes::tasks::move_group_task::TaskMessage& m) {
     move_group_queue->try_write(m);

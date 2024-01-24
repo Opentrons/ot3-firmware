@@ -176,6 +176,7 @@ class MotorDriverTask {
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_motor_driver_queue(m)};
+    {client.send_motor_driver_queue_isr(m)};
 };
 
 }  // namespace tasks

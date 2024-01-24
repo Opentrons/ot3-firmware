@@ -432,7 +432,7 @@ class MotorInterruptHandler {
                                         .severity = severity,
                                         .error_code = err_code});
         if (err_code == can::ids::ErrorCode::motor_driver_error_detected) {
-            driver_client.send_motor_driver_queue(
+            driver_client.send_motor_driver_queue_isr(
                 can::messages::ReadMotorDriverErrorStatusRequest{.message_index =
                                                               message_index});
         }

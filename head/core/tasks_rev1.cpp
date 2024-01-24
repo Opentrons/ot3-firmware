@@ -273,6 +273,11 @@ void head_tasks::MotorQueueClient::send_motor_driver_queue(
     motor_queue->try_write(m);
 }
 
+void head_tasks::MotorQueueClient::send_motor_driver_queue_isr(
+    const tmc::tasks::TaskMessage& m) {
+    static_cast<void>(motor_queue->try_write_isr(m));
+}
+
 void head_tasks::MotorQueueClient::send_move_group_queue(
     const move_group_task::TaskMessage& m) {
     move_group_queue->try_write(m);

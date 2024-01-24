@@ -134,6 +134,10 @@ struct QueueClient : can::message_writer::MessageWriter {
         driver_queue->try_write(m);
     }
 
+    void send_motor_driver_queue_isr(const tmc2130::tasks::TaskMessage& m) const {
+        static_cast<void>(driver_queue->try_write_isr(m));
+    }
+
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
         driver_queue{nullptr};
 };
@@ -171,6 +175,10 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);
+    }
+
+    void send_motor_driver_queue_isr(const tmc2160::tasks::TaskMessage& m) const {
+        static_cast<void>(driver_queue->try_write_isr(m));
     }
 
     freertos_message_queue::FreeRTOSMessageQueue<tmc2160::tasks::TaskMessage>*
