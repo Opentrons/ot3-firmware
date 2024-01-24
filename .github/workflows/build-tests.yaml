@@ -1,0 +1,45 @@
+name: "build-and-test"
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ot3-firmware
+
+jobs:
+  build-and-test:
+    name: Run all tests
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    steps:
+      - name: Checkout ot3-firmware repo
+        uses: actions/checkout@v4
+        with:
+          path: ot3-firmware
+
+      - name: Checkout github actions directory
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+          sparse-checkout-cone-mode: false
+          path: actions
+
+      - name: Setup main
+        uses: ./actions/.github/actions/main-setup
+        with:
+          cache-version: ${{ secrets.CACHE_VERSION }}
+
+      - name: Configure
+        run: cmake --preset=host-gcc10 .
+
+      - name: Test
+        run: cmake --build ./build-host --target build-and-test

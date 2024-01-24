@@ -156,6 +156,25 @@ foreach_revision(
     NO_CREATE_INSTALL_RULES
     )
 
+set(hepauv_sources ${_g4_sources})
+
+macro(hepauv_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
+
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_hepa_uv)
+endmacro()
+
+foreach_revision(
+    PROJECT_NAME bootloader-hepa-uv
+    CALL_FOREACH_REV hepauv_bootloader_loop
+    REVISIONS b1
+    SOURCES hepauv_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)

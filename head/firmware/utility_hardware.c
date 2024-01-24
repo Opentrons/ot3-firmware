@@ -62,29 +62,14 @@ void estop_input_gpio_init() {
     /*Configure GPIO pin EStopin : PB4 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(EXTI4_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
-void ebrake_gpio_init() {
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    // left brake PB0
-    // right brake PB5
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-
-
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
-}
 
 void carrier_detect_gpio_init() {
     // Z/left: PC5
@@ -109,7 +94,6 @@ void carrier_detect_gpio_init() {
 }
 
 void utility_gpio_init() {
-    ebrake_gpio_init();
     carrier_detect_gpio_init();
     limit_switch_gpio_init();
     estop_input_gpio_init();

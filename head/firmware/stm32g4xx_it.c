@@ -145,6 +145,15 @@ void FDCAN1_IT0_IRQHandler(void) {
 }
 
 /**
+  * @brief This function handles EXTI line4 interrupt.
+  */
+void EXTI4_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_4)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+    }
+}
+
+/**
  * @brief This function handles TIM7 global interrupt.
  */
 #ifdef ENABLE_CCMRAM

@@ -198,8 +198,19 @@ void TIM7_IRQHandler(void) {
     call_motor_handler();
 }
 
+__attribute__((section(".ccmram")))
 void EXTI2_IRQHandler(void) {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+__attribute__((section(".ccmram")))
+void EXTI15_10_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_10)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+    }
 }
 
 extern void xPortSysTickHandler(void);

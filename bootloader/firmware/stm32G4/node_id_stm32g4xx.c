@@ -73,9 +73,11 @@ CANNodeId get_node_id(void) {
 #elif defined(node_id_pipette_left)
     return can_nodeid_pipette_left_bootloader;
 #elif defined(node_id_pipette_right)
-    return can_nodeid_pipette_right_bootloader
+    return can_nodeid_pipette_right_bootloader;
 #elif defined(node_id_pipette_dynamic)
     return get_dynamic_nodeid();
+#elif defined(node_id_hepa_uv)
+    return can_nodeid_hepa_uv_bootloader;
 #else
 #error "No node id"
 #endif

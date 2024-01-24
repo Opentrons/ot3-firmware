@@ -356,7 +356,17 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == GPIO_PIN_13) {
+    // disengage motor whenever estop is engaged
+    if (GPIO_Pin == GPIO_PIN_4) {
+        #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
+            // right & left brake
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_5, GPIO_PIN_RESET);
+        #endif
+
+        // disable both left and right enable pins
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+    } else if (GPIO_Pin == GPIO_PIN_13) {
         if (diag0_z_callback != NULL) {
             if (*diag0_z_callback != NULL) {
                 (*diag0_z_callback)();

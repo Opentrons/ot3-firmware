@@ -1,7 +1,6 @@
 #include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
-
 static motor_interrupt_callback timer_callback = NULL;
 static z_encoder_overflow_callback z_enc_overflow_callback = NULL;
 static diag0_interrupt_callback* diag0_callback = NULL;
@@ -232,3 +231,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == ESTOP_IN_PIN) {
+        #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
+            HAL_GPIO_WritePin(EBRAKE_PORT, EBRAKE_PIN, GPIO_PIN_RESET);
+        #endif
+        // this keeps the motor disengaged when estop is released
+        HAL_GPIO_WritePin(Z_MOT_ENABLE_PORT, Z_MOT_ENABLE_PIN, GPIO_PIN_RESET);
+    }
+}

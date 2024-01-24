@@ -1272,6 +1272,7 @@ struct BindSensorOutputResponse
 
 using TipStatusQueryRequest = Empty<MessageId::get_tip_status_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
     uint32_t message_index;
@@ -1511,6 +1512,7 @@ struct SetGripperErrorToleranceRequest
 
 using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GetMotorUsageResponse
     : BaseMessage<MessageId::get_motor_usage_response> {
     uint32_t message_index;
