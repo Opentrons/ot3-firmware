@@ -14,7 +14,7 @@ class MoveGroupHandler {
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest,
                      ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
-                     GetMoveGroupRequest, HomeRequest, StopRequest>;
+                     GetMoveGroupRequest, HomeRequest, StopRequest, AddSensorMoveRequest>;
     MoveGroupHandler(Client &task_client) : task_client{task_client} {}
     MoveGroupHandler(const MoveGroupHandler &) = delete;
     MoveGroupHandler(const MoveGroupHandler &&) = delete;

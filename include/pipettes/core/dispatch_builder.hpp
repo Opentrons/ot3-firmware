@@ -45,7 +45,7 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::HomeRequest, can::messages::StopRequest>;
+    can::messages::HomeRequest, can::messages::StopRequest, can::messages::AddSensorMoveRequest>;
 
 using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_move_group_handler::GearMoveGroupHandler<

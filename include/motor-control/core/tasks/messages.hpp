@@ -26,7 +26,7 @@ using MoveGroupTaskMessage =
                  can::messages::ClearAllMoveGroupsRequest,
                  can::messages::ExecuteMoveGroupRequest,
                  can::messages::GetMoveGroupRequest, can::messages::HomeRequest,
-                 can::messages::StopRequest>;
+                 can::messages::StopRequest, can::messages::AddSensorMoveRequest>;
 
 using MoveStatusReporterTaskMessage = std::variant<
     std::monostate, motor_messages::Ack, motor_messages::UpdatePositionResponse,
