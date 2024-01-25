@@ -228,11 +228,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 (*diag0_callback)();
             }
         }
-    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == ESTOP_IN_PIN) {
+    } else if (GPIO_Pin == ESTOP_IN_PIN) {
         #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
             HAL_GPIO_WritePin(EBRAKE_PORT, EBRAKE_PIN, GPIO_PIN_RESET);
         #endif

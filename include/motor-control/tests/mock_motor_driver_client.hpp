@@ -11,6 +11,10 @@ struct MockMotorDriverClient {
         messages.push_back(m);
     }
 
+    void send_motor_driver_queue_isr(const tmc::tasks::TaskMessage& m) {
+        messages.push_back(m);
+    }
+
     std::vector<tmc::tasks::TaskMessage> messages{};
 };
 
