@@ -18,7 +18,8 @@ constexpr std::size_t max_moves_per_group = 12;
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
                                  can::messages::AddLinearMoveRequest,
-                                 can::messages::HomeRequest>;
+                                 can::messages::HomeRequest,
+                                 can::messages::AddSensorMoveRequest>;
 
 using TaskMessage = motor_control_task_messages::MoveGroupTaskMessage;
 
@@ -105,6 +106,12 @@ class MoveGroupMessageHandler {
         mc_client.send_motion_controller_queue(m);
     }
 
+    void handle(const can::messages::AddSensorMoveRequest& m) {
+        LOG("Received add sensor move request: groupid=%d, seqid=%d",
+            m.group_id, m.seq_id);
+        static_cast<void>(move_groups[m.group_id].set_move(m));
+    }
+
     void visit_move(const std::monostate&) {}
 
     void visit_move(const can::messages::AddLinearMoveRequest& m) {
@@ -114,6 +121,8 @@ class MoveGroupMessageHandler {
     void visit_move(const can::messages::HomeRequest& m) {
         mc_client.send_motion_controller_queue(m);
     }
+
+    void visit_move(const can::messages::AddSensorMoveRequest&) {}
 
     MoveGroupType& move_groups;
     MotionControllerClient& mc_client;

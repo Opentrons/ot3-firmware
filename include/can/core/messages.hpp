@@ -1561,6 +1561,51 @@ struct GripperJawHoldoffResponse
         -> bool = default;
 };
 
+struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
+    uint32_t message_index;
+    uint8_t group_id;
+    uint8_t seq_id;
+    stepper_timer_ticks duration;
+    um_per_tick_sq acceleration;
+    mm_per_tick velocity;
+    uint8_t request_stop_condition;
+    can::ids::SensorId sensor_id{};
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> AddSensorMoveRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        stepper_timer_ticks duration = 0;
+        um_per_tick_sq acceleration = 0;
+        mm_per_tick velocity = 0;
+        uint8_t request_stop_condition = 0;
+        uint32_t msg_ind = 0;
+        uint8_t sensor_id = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
+        return AddSensorMoveRequest{
+                .message_index = msg_ind,
+                .group_id = group_id,
+                .seq_id = seq_id,
+                .duration = duration,
+                .acceleration = acceleration,
+                .velocity = velocity,
+                .request_stop_condition = request_stop_condition,
+                .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
+        };
+    }
+
+    auto operator==(const AddSensorMoveRequest& other) const -> bool = default;
+};
+
+
 /**
  * A variant of all message types we might send..
  */
