@@ -15,7 +15,7 @@ class HepaControlHardware : public HepaControlInterface {
     auto operator=(const HepaControlHardware&) -> HepaControlHardware& = delete;
     ~HepaControlHardware() final = default;
 
-    void set_hepa_fan_speed(uint32_t duty_cycle);
+    void set_hepa_fan_speed(uint32_t duty_cycle) final;
 };
 
 }  // namespace hepa_control_hardware
