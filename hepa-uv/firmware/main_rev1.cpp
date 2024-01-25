@@ -22,9 +22,10 @@
 #include "common/firmware/utility_gpio.h"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
+#include "hepa-uv/firmware/hepa_control_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
-#include "hepa-uv/firmware/led_hardware.h"
 #include "hepa-uv/firmware/utility_gpio.h"
+#include "timer_hardware.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -118,18 +119,23 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 static auto led_hardware = led_control_hardware::LEDControlHardware();
+static auto hepa_hardware = hepa_control_hardware::HepaControlHardware();
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
-    button_led_hw_initialize_leds();
+    initialize_pwm_hardware();
+    // set push button leds white
+    led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
+    led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 0, 50);
 
     app_update_clear_flags();
 
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, led_hardware);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware,
+                              led_hardware);
 
     iWatchdog.start(6);
 
