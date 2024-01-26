@@ -23,9 +23,9 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
+#include "hepa-uv/firmware/hepa_hardware.h"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
-#include "hepa-uv/firmware/hepa_hardware.h"
 #include "timer_hardware.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
