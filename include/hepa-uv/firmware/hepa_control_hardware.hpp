@@ -14,6 +14,7 @@ class HepaControlHardware : public hepa_control::HepaControlInterface {
     ~HepaControlHardware() final = default;
 
     void set_hepa_fan_speed(uint32_t duty_cycle) final;
+    uint32_t get_hepa_fan_rpm() final;
 };
 
 }  // namespace hepa_control_hardware

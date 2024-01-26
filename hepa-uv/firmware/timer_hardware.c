@@ -31,6 +31,8 @@ uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
     if(htim->Instance == TIM1) {
         __HAL_RCC_TIM1_CLK_ENABLE();
+    } else if(htim->Instance == TIM2) {
+        __HAL_RCC_TIM2_CLK_ENABLE();
     } else if(htim->Instance == TIM3) {
         __HAL_RCC_TIM3_CLK_ENABLE();
     } else if(htim->Instance == TIM8) {
