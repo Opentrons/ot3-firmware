@@ -2,7 +2,8 @@
 
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
-#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"  // can maybe get rid of this ?
+#include "pipettes/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
@@ -35,6 +36,10 @@ template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
+template <typename Client>
+using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
+        freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
+        motor_hardware::MotorHardware, sensor_tasks::QueueClient>;
 
 template <PipetteType P>
 auto get_interrupt_queues()
@@ -75,12 +80,14 @@ namespace linear_motor {
 
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+                   stall_check::StallCheck& stall,
+                   sensor_tasks::QueueClient& sensor_client)
+    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+                   stall_check::StallCheck& stall,
+                   sensor_tasks::QueueClient& sensor_client)
+    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware;
 auto get_motion_control(motor_hardware::MotorHardware& hw,
