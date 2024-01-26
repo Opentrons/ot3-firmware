@@ -50,7 +50,7 @@ class HepaMessageHandler {
             hepa_push_button = !hepa_push_button;
             // handle state changes here
             if (hepa_push_button) {
-                hepa_hardware.set_hepa_fan_speed(50);
+                hepa_hardware.set_hepa_fan_speed(10);
                 gpio::set(drive_pins.hepa_on_off);
                 led_control_client.send_led_control_message(
                     led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50,

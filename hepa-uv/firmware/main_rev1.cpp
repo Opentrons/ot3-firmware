@@ -25,6 +25,7 @@
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
+#include "hepa-uv/firmware/hepa_hardware.h"
 #include "timer_hardware.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -126,6 +127,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
     initialize_pwm_hardware();
+    initialize_tachometer();
     // set push button leds white
     led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
     led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 0, 50);

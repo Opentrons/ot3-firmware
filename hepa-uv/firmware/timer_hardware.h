@@ -22,11 +22,13 @@ extern "C" {
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim20;
 
 extern TIM_OC_InitTypeDef htim1_sConfigOC;
+extern TIM_OC_InitTypeDef htim2_sConfigOC;
 extern TIM_OC_InitTypeDef htim3_sConfigOC;
 extern TIM_OC_InitTypeDef htim8_sConfigOC;
 extern TIM_OC_InitTypeDef htim16_sConfigOC;
