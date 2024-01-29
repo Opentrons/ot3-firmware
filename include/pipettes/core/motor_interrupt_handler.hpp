@@ -5,19 +5,20 @@
 
 namespace pipettes {
 using namespace motor_messages;
+//using InterruptHandler = motor_handler::MotorInterruptHandler<
+//    freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
+//    MotorMoveMessage, MotorHardware>;
+// might need to change MotorMoveMessage to include sensormove
 template <template <class> class QueueImpl, class StatusClient,
           typename MotorMoveMessage, typename MotorHardware, class SensorClient>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class PipetteMotorInterruptHandler
-    : public motor_handler::MotorInterruptHandler<
-          freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-          MotorMoveMessage, MotorHardware> {
+: public motor_handler::MotorInterruptHandler<
+    freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
+    MotorMoveMessage, MotorHardware> {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
-    using InterruptHandler = motor_handler::MotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-        MotorMoveMessage, MotorHardware>;
     using UpdatePositionQueue =
         QueueImpl<can::messages::UpdateMotorPositionEstimationRequest>;
     PipetteMotorInterruptHandler() = delete;
@@ -26,7 +27,9 @@ class PipetteMotorInterruptHandler
         MotorHardware& hardware_iface, stall_check::StallCheck& stall,
         UpdatePositionQueue& incoming_update_position_queue,
         SensorClient& sensor_queue_client) :
-          InterruptHandler(incoming_move_queue, outgoing_queue, hardware_iface,
+            motor_handler::MotorInterruptHandler<
+    freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
+    MotorMoveMessage, MotorHardware>(incoming_move_queue, outgoing_queue, hardware_iface,
                            stall, incoming_update_position_queue),
           sensor_client(sensor_queue_client) {
 //        sensor_client = sensor_tasks::QueueClient{};
@@ -49,44 +52,95 @@ class PipetteMotorInterruptHandler
 
     // need to write a new kind of move that contains the stuff thats gonna be sent in the new can message
 
+    void run_interrupt() {
+        // handle various error states
+        if (this->clear_queue_until_empty) {
+            // If we were executing a move when estop asserted, and
+            // what's in the queue is the remaining enqueued moves from
+            // that group, then we will have called
+            // cancel_and_clear_moves and clear_queue_until_empty will
+            // be true. That means we should pop out the queue.
+            // clear_queue_until_empty will also be true if we were in
+            // the steady-state estop asserted; got new messages; and
+            // the other branch of this if asserted. In either case, an
+            // error message has been sent, so we need to just keep
+            // clearing the queue.
+            this->clear_queue_until_empty = this->pop_and_discard_move();
+        } else if (this->in_estop) {
+            this->handle_update_position_queue();
+            this->in_estop = this->estop_update();
+        } else if (this->estop_triggered()) {
+            this->cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+            this->in_estop = true;
+        } else if (this->hardware.has_cancel_request()) {
+            this->cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
+                                   can::ids::ErrorSeverity::warning);
+        } else {
+            // Normal Move logic
+            this->run_normal_interrupt();
+        }
+    }
+
+    void handle_move_type(motor_messages::Move m) {
+    }
+
+    void handle_move_type(motor_messages::SensorSyncMove m) {
+        auto msg = can::messages::BindSensorOutputRequest{
+            .message_index = m.message_index,
+            .sensor = can::ids::SensorType::pressure,
+            .sensor_id = m.sensor_id,
+            .binding = can::ids::SensorOutputBinding::report
+        };
+    }
+
     void update_move() {
         // do stuff in here
-        _has_active_move = move_queue.try_read_isr(&buffered_move);
-        if (_has_active_move) {
-            hardware.enable_encoder();
-            buffered_move.start_encoder_position =
-                    hardware.get_encoder_pulses();
+        this->_has_active_move = this->move_queue.try_read_isr(&this->buffered_move);
+        if (this->_has_active_move) {
+            handle_move_type(this->buffered_move);
+            this->hardware.enable_encoder();
+            this->buffered_move.start_encoder_position =
+                    this->hardware.get_encoder_pulses();
         }
-        if (set_direction_pin()) {
-            hardware.positive_direction();
+        if (this->set_direction_pin()) {
+            this->hardware.positive_direction();
         } else {
-            hardware.negative_direction();
+            this->hardware.negative_direction();
         }
-        if (_has_active_move && buffered_move.check_stop_condition(
+        if (this->_has_active_move && this->buffered_move.check_stop_condition(
                 MoveStopCondition::limit_switch)) {
-            position_tracker = 0x7FFFFFFFFFFFFFFF;
-            update_hardware_step_tracker();
-            hardware.position_flags.clear_flag(
+            this->position_tracker = 0x7FFFFFFFFFFFFFFF;
+            this->update_hardware_step_tracker();
+            this->hardware.position_flags.clear_flag(
                     can::ids::MotorPositionFlags::stepper_position_ok);
-            hardware.position_flags.clear_flag(
+            this->hardware.position_flags.clear_flag(
                     can::ids::MotorPositionFlags::encoder_position_ok);
         }
     }
 
     void finish_current_move(
             AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
-        _has_active_move = false;
-        tick_count = 0x0;
-        stall_handled = false;
-        build_and_send_ack(ack_msg_id);
-        set_buffered_move(MotorMoveMessage{});
+        this->_has_active_move = false;
+        this->tick_count = 0x0;
+        this->stall_handled = false;
+        this->build_and_send_ack(ack_msg_id);  // might want to overwrite this func
+        (MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
         // last known location
 
         // check if queue is empty in here and send bindsensoroutputrequest
 
-        if (!has_move_messages()) {
-            stall_checker.reset_itr_counts(hardware.get_step_tracker());
+        if (!this->has_move_messages()) {
+            this->stall_checker.reset_itr_counts(this->hardware.get_step_tracker());
+        }
+    }
+
+    void send_to_pressure_sensor_queue(can::messages::SensorOutputBinding& m) {
+        if(this->buffered_move.sensor_id == can::ids::SensorId::S1) {
+            sensor_client.send_pressure_sensor_queue_front(m);
+        }
+        else {
+            sensor_client.send_pressure_sensor_queue_rear(m);
         }
     }
 

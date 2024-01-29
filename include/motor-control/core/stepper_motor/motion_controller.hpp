@@ -59,6 +59,26 @@ class MotionController {
         return linear_motion_sys_config;
     }
 
+    void move(const can::messages::AddSensorMoveRequest& can_msg) {
+        steps_per_tick velocity_steps =
+                fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        steps_per_tick_sq acceleration_steps =
+                fixed_point_multiply(steps_per_um, can_msg.acceleration);
+        SensorSyncMove msg{
+                .message_index = can_msg.message_index,
+                .duration = can_msg.duration,
+                .velocity = velocity_steps,
+                .acceleration = acceleration_steps,
+                .group_id = can_msg.group_id,
+                .seq_id = can_msg.seq_id,
+                .stop_condition = can_msg.request_stop_condition,
+                .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+        if (!enabled) {
+            enable_motor();
+        }
+        queue.try_write(msg);
+    }
+
     void move(const can::messages::AddLinearMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
