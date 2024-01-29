@@ -150,7 +150,6 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
-
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;

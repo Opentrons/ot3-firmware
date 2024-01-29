@@ -15,12 +15,13 @@ class MoveGroupHandler {
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest,
                      ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
-                     GetMoveGroupRequest, HomeRequest, StopRequest, AddSensorMoveRequest>;
+                     GetMoveGroupRequest, HomeRequest, StopRequest,
+                     AddSensorMoveRequest>;
 #else
     using MessageType =
-            std::variant<std::monostate, AddLinearMoveRequest,
-                    ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
-                    GetMoveGroupRequest, HomeRequest, StopRequest>;
+        std::variant<std::monostate, AddLinearMoveRequest,
+                     ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
+                     GetMoveGroupRequest, HomeRequest, StopRequest>;
 #endif
 
     MoveGroupHandler(Client &task_client) : task_client{task_client} {}

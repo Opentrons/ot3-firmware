@@ -595,26 +595,26 @@ class MotorInterruptHandler {
         return has_active_move() && buffered_move.velocity != 0;
     }
 
-protected:
-void update_hardware_step_tracker() {
-    hardware.set_step_tracker(
-        static_cast<uint32_t>(position_tracker >> 31));
-}
+  protected:
+    void update_hardware_step_tracker() {
+        hardware.set_step_tracker(
+            static_cast<uint32_t>(position_tracker >> 31));
+    }
 
-uint64_t tick_count = 0x0;
-static constexpr const q31_31 tick_flag = 0x80000000;
-static constexpr const uint64_t overflow_flag = 0x8000000000000000;
-// Tracks position with sub-microstep accuracy
-q31_31 position_tracker{0};
-MoveQueue& move_queue;
-StatusClient& status_queue_client;
-MotorHardware& hardware;
-stall_check::StallCheck& stall_checker;
-UpdatePositionQueue& update_position_queue;
-MotorMoveMessage buffered_move = MotorMoveMessage{};
-bool clear_queue_until_empty = false;
-bool stall_handled = false;
-bool in_estop = false;
-std::atomic_bool _has_active_move = false;
+    uint64_t tick_count = 0x0;
+    static constexpr const q31_31 tick_flag = 0x80000000;
+    static constexpr const uint64_t overflow_flag = 0x8000000000000000;
+    // Tracks position with sub-microstep accuracy
+    q31_31 position_tracker{0};
+    MoveQueue& move_queue;
+    StatusClient& status_queue_client;
+    MotorHardware& hardware;
+    stall_check::StallCheck& stall_checker;
+    UpdatePositionQueue& update_position_queue;
+    MotorMoveMessage buffered_move = MotorMoveMessage{};
+    bool clear_queue_until_empty = false;
+    bool stall_handled = false;
+    bool in_estop = false;
+    std::atomic_bool _has_active_move = false;
 };
 }  // namespace motor_handler

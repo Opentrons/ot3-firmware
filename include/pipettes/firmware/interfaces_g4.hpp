@@ -3,12 +3,12 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "pipettes/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
+#include "pipettes/core/motor_interrupt_handler.hpp"
 #include "pipettes/core/pipette_type.h"
 
 #pragma GCC diagnostic push
@@ -38,8 +38,8 @@ using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
 template <typename Client>
 using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-        motor_hardware::MotorHardware, sensor_tasks::QueueClient>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
+    motor_hardware::MotorHardware, sensor_tasks::QueueClient>;
 
 template <PipetteType P>
 auto get_interrupt_queues()

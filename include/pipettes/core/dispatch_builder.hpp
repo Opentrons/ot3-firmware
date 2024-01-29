@@ -46,11 +46,12 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::HomeRequest, can::messages::StopRequest, can::messages::AddSensorMoveRequest>;
+    can::messages::HomeRequest, can::messages::StopRequest,
+    can::messages::AddSensorMoveRequest>;
 #else
-    using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
-            linear_motor_tasks::QueueClient>,
+        linear_motor_tasks::QueueClient>,
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,

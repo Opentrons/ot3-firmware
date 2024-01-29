@@ -80,20 +80,20 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 struct SensorSyncMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
-        : public Move {
+    : public Move {
     can::ids::SensorId sensor_id;
 
     auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
         return Ack{
-                .message_index = message_index,
-                .group_id = group_id,
-                .seq_id = seq_id,
-                .current_position_steps = 0,
-                .encoder_position = pulses,
-                .position_flags = flags,
-                .ack_id = _id,
-                .start_encoder_position = start_encoder_position,
-                .usage_key = usage_key,
+            .message_index = message_index,
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .current_position_steps = 0,
+            .encoder_position = pulses,
+            .position_flags = flags,
+            .ack_id = _id,
+            .start_encoder_position = start_encoder_position,
+            .usage_key = usage_key,
         };
     }
 };

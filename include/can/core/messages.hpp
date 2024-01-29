@@ -1702,20 +1702,19 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
         body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
         return AddSensorMoveRequest{
-                .message_index = msg_ind,
-                .group_id = group_id,
-                .seq_id = seq_id,
-                .duration = duration,
-                .acceleration = acceleration,
-                .velocity = velocity,
-                .request_stop_condition = request_stop_condition,
-                .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
+            .message_index = msg_ind,
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .duration = duration,
+            .acceleration = acceleration,
+            .velocity = velocity,
+            .request_stop_condition = request_stop_condition,
+            .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
         };
     }
 
     auto operator==(const AddSensorMoveRequest& other) const -> bool = default;
 };
-
 
 /**
  * A variant of all message types we might send..
