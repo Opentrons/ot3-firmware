@@ -101,7 +101,6 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware(
         motor_config.hardware_pins.linear_motor);
-// try to pass sensor client in here
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
     linear_motor_hardware, interrupt_queues, linear_stall_check, sensor_queue_client);
 static auto linear_motion_control =
@@ -135,8 +134,6 @@ static auto sensor_hardware_container =
     utility_configs::get_sensor_hardware_container(pins_for_sensor);
 
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
-
-//static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};

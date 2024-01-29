@@ -2,7 +2,7 @@
 
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
-#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"  // can maybe get rid of this ?
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "pipettes/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
@@ -31,7 +31,7 @@ namespace interfaces {
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware>;  // pass in sensor client here
+    motor_hardware::MotorHardware>;
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,

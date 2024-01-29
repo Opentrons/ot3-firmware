@@ -595,7 +595,6 @@ class MotorInterruptHandler {
         return has_active_move() && buffered_move.velocity != 0;
     }
 
-//  private:
 protected:
 void update_hardware_step_tracker() {
     hardware.set_step_tracker(

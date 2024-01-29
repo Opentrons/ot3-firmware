@@ -65,14 +65,16 @@ class MotionController {
         steps_per_tick_sq acceleration_steps =
                 fixed_point_multiply(steps_per_um, can_msg.acceleration);
         SensorSyncMove msg{
-                .message_index = can_msg.message_index,
-                .duration = can_msg.duration,
-                .velocity = velocity_steps,
-                .acceleration = acceleration_steps,
-                .group_id = can_msg.group_id,
-                .seq_id = can_msg.seq_id,
-                .stop_condition = can_msg.request_stop_condition,
-                .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+                can_msg.message_index,
+                can_msg.duration,
+                velocity_steps,
+                acceleration_steps,
+                can_msg.group_id,
+                can_msg.seq_id,
+                can_msg.request_stop_condition,
+                0,
+                hardware.get_usage_eeprom_config().get_distance_key(),
+                can_msg.sensor_id};
         if (!enabled) {
             enable_motor();
         }

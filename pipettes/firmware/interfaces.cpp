@@ -55,7 +55,6 @@ void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
     hw.encoder_overflow(direction);
 }
 
-// change these two
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall,

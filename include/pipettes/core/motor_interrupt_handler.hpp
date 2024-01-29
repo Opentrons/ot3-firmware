@@ -5,10 +5,6 @@
 
 namespace pipettes {
 using namespace motor_messages;
-//using InterruptHandler = motor_handler::MotorInterruptHandler<
-//    freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-//    MotorMoveMessage, MotorHardware>;
-// might need to change MotorMoveMessage to include sensormove
 template <template <class> class QueueImpl, class StatusClient,
           typename MotorMoveMessage, typename MotorHardware, class SensorClient>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
@@ -32,7 +28,6 @@ class PipetteMotorInterruptHandler
     MotorMoveMessage, MotorHardware>(incoming_move_queue, outgoing_queue, hardware_iface,
                            stall, incoming_update_position_queue),
           sensor_client(sensor_queue_client) {
-//        sensor_client = sensor_tasks::QueueClient{};
         }
 
     ~PipetteMotorInterruptHandler() = default;
@@ -46,11 +41,6 @@ class PipetteMotorInterruptHandler
     PipetteMotorInterruptHandler(PipetteMotorInterruptHandler&) = delete;
 
     PipetteMotorInterruptHandler(PipetteMotorInterruptHandler&&) = delete;
-
-    // can determine which queue write function to use with the sensor id that gets passed in
-    // send a message to sensor queue inside update_move, if _has_active_move
-
-    // need to write a new kind of move that contains the stuff thats gonna be sent in the new can message
 
     void run_interrupt() {
         // handle various error states
@@ -91,10 +81,10 @@ class PipetteMotorInterruptHandler
             .sensor_id = m.sensor_id,
             .binding = can::ids::SensorOutputBinding::report
         };
+        send_to_pressure_sensor_queue(&msg);
     }
 
     void update_move() {
-        // do stuff in here
         this->_has_active_move = this->move_queue.try_read_isr(&this->buffered_move);
         if (this->_has_active_move) {
             handle_move_type(this->buffered_move);
@@ -128,10 +118,15 @@ class PipetteMotorInterruptHandler
         // update the stall check ideal encoder counts based on
         // last known location
 
-        // check if queue is empty in here and send bindsensoroutputrequest
-
         if (!this->has_move_messages()) {
             this->stall_checker.reset_itr_counts(this->hardware.get_step_tracker());
+            auto& stop_msg = can::messages::BindSensorOutputRequest{
+                    .message_index = this->buffered_move.message_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = this->buffered_move.sensor_id,
+                    .binding = can::ids::SensorOutputBinding::none
+            };
+            send_to_pressure_sensor_queue(&stop_msg);
         }
     }
 

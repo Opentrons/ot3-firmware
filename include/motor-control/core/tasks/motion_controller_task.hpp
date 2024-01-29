@@ -95,6 +95,16 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
+#ifdef PIPETTE_TYPE_DEFINE
+    void handle(const can::messages::AddSensorMoveRequest& m) {
+        LOG("Received add linear move request: velocity=%d, acceleration=%d, "
+            "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
+            m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
+            m.request_stop_condition);
+        controller.move(m);
+    }
+#endif
+
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
@@ -139,6 +149,7 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::GetMotorUsageRequest& m) {
         controller.send_usage_data(m.message_index, usage_client);
     }
+
 
     MotorControllerType& controller;
     CanClient& can_client;

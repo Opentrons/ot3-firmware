@@ -84,7 +84,6 @@ struct SensorSyncMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
     can::ids::SensorId sensor_id;
 
     auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
-        // not sure if we need to include sensor id in the ack
         return Ack{
                 .message_index = message_index,
                 .group_id = group_id,

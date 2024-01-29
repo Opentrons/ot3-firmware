@@ -14,12 +14,18 @@ namespace move_group_task {
 
 constexpr std::size_t max_groups = 3;
 constexpr std::size_t max_moves_per_group = 12;
-
+#ifdef PIPETTE_TYPE_DEFINE
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
                                  can::messages::AddLinearMoveRequest,
                                  can::messages::HomeRequest,
                                  can::messages::AddSensorMoveRequest>;
+#else
+using MoveGroupType =
+        move_group::MoveGroupManager<max_groups, max_moves_per_group,
+                can::messages::AddLinearMoveRequest,
+                can::messages::HomeRequest>;
+#endif
 
 using TaskMessage = motor_control_task_messages::MoveGroupTaskMessage;
 
@@ -122,7 +128,11 @@ class MoveGroupMessageHandler {
         mc_client.send_motion_controller_queue(m);
     }
 
-    void visit_move(const can::messages::AddSensorMoveRequest&) {}
+#ifdef PIPETTE_TYPE_DEFINE
+    void visit_move(const can::messages::AddSensorMoveRequest& m) {
+        mc_client.send_motion_controller_queue(m);
+    }
+#endif
 
     MoveGroupType& move_groups;
     MotionControllerClient& mc_client;
