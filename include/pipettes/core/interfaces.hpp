@@ -32,6 +32,12 @@ struct HighThroughputInterruptQueues {
     UpdatePositionQueue left_update_queue;
 };
 
+namespace linear_motor {
+
+extern "C" using diag0_handler = void(*)();
+
+}
+
 namespace gear_motor {
 
 struct UnavailableGearHardware {};

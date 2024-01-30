@@ -12,8 +12,8 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
-#include "pipettes/firmware/interfaces_g4.hpp"
 #include "spi/core/writer.hpp"
 
 /**
@@ -34,22 +34,26 @@ using SPIWriterClient =
 // single channel/8 channel linear motor tasks
 auto start_tasks(
     CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
+    motion_controller::MotionController<lms::LeadScrewConfig>&
+        motion_controller,
     SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
-    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>& tail_accessor) -> interfaces::linear_motor::diag0_handler;
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) -> interfaces::linear_motor::diag0_handler;
 
 // 96/384 linear motor tasks
 auto start_tasks(
     CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
+    motion_controller::MotionController<lms::LeadScrewConfig>&
+        motion_controller,
     SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
-    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>& tail_accessor) -> interfaces::linear_motor::diag0_handler;
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) -> interfaces::linear_motor::diag0_handler;
 
-void call_run_diag0_interrupt()
+void call_run_diag0_interrupt();
 
 /**
  * Access to all the linear motion task queues on the pipette.
