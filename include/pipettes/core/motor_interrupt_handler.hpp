@@ -74,11 +74,13 @@ class PipetteMotorInterruptHandler
     void handle_move_type(motor_messages::Move m) {}
 
     void handle_move_type(motor_messages::SensorSyncMove m) {
+        auto binding = static_cast<can::ids::SensorOutputBinding>(0x3);
         auto msg = can::messages::BindSensorOutputRequest{
-            .message_index = m.message_index,
-            .sensor = can::ids::SensorType::pressure,
-            .sensor_id = m.sensor_id,
-            .binding = can::ids::SensorOutputBinding::sync};
+                .message_index = m.message_index,
+                .sensor = can::ids::SensorType::pressure,
+                .sensor_id = m.sensor_id,
+                .binding = binding
+        };
         send_to_pressure_sensor_queue(&msg);
     }
 
@@ -113,7 +115,7 @@ class PipetteMotorInterruptHandler
         this->tick_count = 0x0;
         this->stall_handled = false;
         this->build_and_send_ack(
-            ack_msg_id);  // might want to overwrite this func
+            ack_msg_id);
         (MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
         // last known location
