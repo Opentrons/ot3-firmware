@@ -78,7 +78,7 @@ class PipetteMotorInterruptHandler
             .message_index = m.message_index,
             .sensor = can::ids::SensorType::pressure,
             .sensor_id = m.sensor_id,
-            .binding = can::ids::SensorOutputBinding::report};
+            .binding = can::ids::SensorOutputBinding::sync};
         send_to_pressure_sensor_queue(&msg);
     }
 
