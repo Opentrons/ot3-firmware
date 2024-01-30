@@ -74,12 +74,11 @@ class PipetteMotorInterruptHandler
     void handle_move_type(motor_messages::Move m) {}
 
     void handle_move_type(motor_messages::SensorSyncMove m) {
-        auto binding = static_cast<can::ids::SensorOutputBinding>(0x3);
         auto msg = can::messages::BindSensorOutputRequest{
                 .message_index = m.message_index,
                 .sensor = can::ids::SensorType::pressure,
                 .sensor_id = m.sensor_id,
-                .binding = binding
+                .binding = static_cast<uint8_t>(0x3) // sync and report
         };
         send_to_pressure_sensor_queue(&msg);
     }
