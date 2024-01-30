@@ -83,7 +83,7 @@ void motor_driver_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     PipetteType pipette_type = get_pipette_type();
 
-    GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOC);
+    GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOC, false);
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -92,16 +92,23 @@ void motor_driver_gpio_init() {
     if (pipette_type != NINETY_SIX_CHANNEL) {
         // Driver Clock Pin.
         // Enable Dir/Step pin
-        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA, false);
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        // Diag0 pin
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOC, true);
+        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     } else {
         // Enable Dir/Step pin
-        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA, false);
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
         // Enable/Dir/Step pin
-        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOB);
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOB, false);
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
+        // Diag0 pin
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOB, true);
+        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 
 }

@@ -179,11 +179,9 @@ void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
 void EXTI15_10_IRQHandler(void) {
     // make this get/deduce pin! Needs to work for C13/z and C15/a!
-    EXTI_HandleTypeDef hexti_13 = {.Line = EXTI_LINE_13};
-    EXTI_HandleTypeDef hexti_15 = {.Line = EXTI_LINE_15};
-    if (HAL_EXTI_GetPending(&hexti_13, 0)) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    } else if (HAL_EXTI_GetPending(&hexti_15, 0)) {
+    } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
     }
 }

@@ -42,6 +42,9 @@ IRQn_Type get_interrupt_line(GPIOInterruptBlock gpio_pin_type) {
 
             // Tip sense line for the 96 channel (rear)
             // PC7 -> GPIO_EXTI6 (EXTI9_5_IRQn)
+
+            // Diag0 line for the 96 channel
+            // PB6 -> GPIO_EXTI6 (EXTI9_5_IRQn)
             return EXTI9_5_IRQn;
         case gpio_block_15_10:
             // Data ready line for 96 channel (front)
@@ -49,6 +52,9 @@ IRQn_Type get_interrupt_line(GPIOInterruptBlock gpio_pin_type) {
 
             // Tip sense line for the 96 channel (front)
             // PC12 -> GPIO_EXTI11 (EXTI15_10_IRQn)
+
+            // Diag0 line for single and eight channel
+            // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
             return EXTI15_10_IRQn;
         case gpio_block_3:
             // Single channel data ready line
@@ -140,7 +146,7 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
     }
 }
 
-static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
+static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle, bool for_diag0) {
     /*
      * Dir Pins
      * plunger -> PA6
@@ -156,29 +162,41 @@ static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
      * Motor Enable
      * pickup enable -> PA10
      * plunger enable -> PB4
+     * 
+     * Diag0 Pin
+     * PB6
      */
-    switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOA: return GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_10;
-        case (uint32_t)GPIOB: return GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_4;
-        case (uint32_t)GPIOC: return GPIO_PIN_2;
-        default: return 0;
+    if (!for_diag0) {
+        switch((uint32_t)for_handle) {
+            case (uint32_t)GPIOA: return GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_10;
+            case (uint32_t)GPIOB: return GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_4;
+            case (uint32_t)GPIOC: return GPIO_PIN_2;
+            default: return 0;
+        }
+    } else {
+        return GPIO_PIN_6;
     }
 }
 
-static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle) {
+static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle, bool for_diag0) {
     /*
      * Dir Pin -> PC6
      *
      * Step Pin -> PC7
      * Enable Pin -> PA10
      *
-     * VREF (TMC2130)
-     * PA5
+     * VREF (TMC2130) -> PA5
+     * 
+     * DIAG0 Pin -> PC11
      */
-    switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOA: return GPIO_PIN_10;
-        case (uint32_t)GPIOC: return GPIO_PIN_6 | GPIO_PIN_7;
-        default: return 0;
+    if (!for_diag0) {
+        switch((uint32_t)for_handle) {
+            case (uint32_t)GPIOA: return GPIO_PIN_10;
+            case (uint32_t)GPIOC: return GPIO_PIN_6 | GPIO_PIN_7;
+            default: return 0;
+        }
+    } else {
+        return GPIO_PIN_11;
     }
 }
 
@@ -208,14 +226,14 @@ uint16_t pipette_hardware_spi_pins(const PipetteType pipette_type, GPIO_TypeDef*
     }
 }
 
-uint16_t pipette_hardware_motor_driver_pins(const PipetteType pipette_type, GPIO_TypeDef* for_handle) {
+uint16_t pipette_hardware_motor_driver_pins(const PipetteType pipette_type, GPIO_TypeDef* for_handle, bool for_diag0) {
     switch (pipette_type) {
         case NINETY_SIX_CHANNEL:
         case THREE_EIGHTY_FOUR_CHANNEL:
-            return get_motor_driver_pins_ht(for_handle);
+            return get_motor_driver_pins_ht(for_handle, for_diag0);
         case SINGLE_CHANNEL:
         case EIGHT_CHANNEL:
         default:
-            return get_motor_driver_pins_lt(for_handle);
+            return get_motor_driver_pins_lt(for_handle, for_diag0);
     }
 }

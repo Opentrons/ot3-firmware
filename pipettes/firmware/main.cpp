@@ -45,6 +45,8 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
+static interfaces::linear_motor::diag0_handler call_diag0_handler = nullptr;
+
 static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(), utility_configs::led_gpio(PIPETTE_TYPE));
 
@@ -144,6 +146,12 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 sensor_queue_client.tip_notification_queue_rear->try_write_isr(
                     sensors::tip_presence::TipStatusChangeDetected{}));
         }
+    } else if (GPIO_Pin == linear_motor_hardware.diag0.pin) {
+        if (call_diag0_handler != NULL) {
+            if (*call_diag0_handler != NULL) {
+                (*call_diag0_handler)();
+            }
+        }
     }
 }
 
@@ -188,7 +196,7 @@ auto initialize_motor_tasks(
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
     initialize_enc_timer(encoder_callback);
-    linear_motor_tasks::start_tasks(
+    call_diag0_handler = linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
         tail_accessor);
@@ -223,7 +231,7 @@ auto initialize_motor_tasks(
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);
-    linear_motor_tasks::start_tasks(
+    call_diag0_handler = linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
         tail_accessor);

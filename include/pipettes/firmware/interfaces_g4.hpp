@@ -73,18 +73,14 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 
 namespace linear_motor {
 
+extern "C" using diag0_handler = void(*)();
+
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient>;
+                   stall_check::StallCheck& stall) -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient>;
+                   stall_check::StallCheck& stall) -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient>;
 auto get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware;
 auto get_motion_control(motor_hardware::MotorHardware& hw,
