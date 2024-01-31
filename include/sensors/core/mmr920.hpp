@@ -45,6 +45,7 @@ enum class SensorVersion : int {
     } else {
         max_pressure = 8226.4F;
     }
+    return max_pressure;
 }
 
 enum class SensorStatus : uint8_t {
