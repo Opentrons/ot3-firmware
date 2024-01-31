@@ -31,11 +31,21 @@ constexpr uint16_t ADDRESS = 0x67 << 1;
 
 // Pressure cannot be measured beyond +/-8226.4F on the old sensors
 // New sensors have double the threshold but half the fidelity
-#if PCBA_PRIMARY_REVISION == 'e'
-constexpr float MAX_PRESSURE_READING = 16452.8F;
-#else
-constexpr float MAX_PRESSURE_READING = 8226.4F;
-#endif
+
+enum class SensorVersion : int {
+    mmr920c04 = 0,
+    mmr920c10 = 1,
+};
+
+[[nodiscard]] inline static auto get_max_pressure_reading(SensorVersion version)
+-> float {
+    if (version == SensorVersion::mmr920c10) {
+        return 16452.8F;
+    } else {
+        return 8226.4F;
+    }
+}
+
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
     IDLE = 0xE5,
@@ -267,16 +277,17 @@ struct __attribute__((packed, __may_alias__)) StatusCommand {
 struct PressureResult {
     // Pascals per 1 cmH20
     static constexpr float CMH20_TO_PASCALS = 98.0665;
-    // conversion factor of a given 3 byte measurement to Pascals
-    static constexpr float PA_PER_COUNT =
-#if PCBA_PRIMARY_REVISION == 'e'
-        2 * 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
-#else
-        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
-#endif
     uint32_t reading : 32 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
+    [[nodiscard]] static auto get_pa_per_count(SensorVersion version) -> float {
+        // conversion factor of a given 3 byte measurement to Pascals
+        if (version == SensorVersion::mmr920c10) {
+            return 2 * 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+        }
+        return 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+    }
+
+    [[nodiscard]] static auto to_pressure(uint32_t reg, SensorVersion version) -> float {
         // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
@@ -284,8 +295,9 @@ struct PressureResult {
         } else {
             reg &= 0x007FFFFF;
         }
+
         float pressure =
-            static_cast<float>(static_cast<int32_t>(reg)) * PA_PER_COUNT;
+            static_cast<float>(static_cast<int32_t>(reg)) * get_pa_per_count(version);
         return pressure;
     }
 };

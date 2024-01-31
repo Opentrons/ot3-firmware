@@ -35,13 +35,15 @@ class MMR920 {
     MMR920(I2CQueueWriter &writer, I2CQueuePoller &poller,
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
-           const can::ids::SensorId &id)
+           const can::ids::SensorId &id,
+           const sensors::mmr920::SensorVersion version)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
-          sensor_id(id) {}
+          sensor_id(id),
+          sensor_version(version){}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -287,12 +289,12 @@ class MMR920 {
 
         save_pressure(shifted_data_store);
         auto pressure = mmr920::PressureResult::to_pressure(
-            _registers.pressure_result.reading);
+            _registers.pressure_result.reading, sensor_version);
 
         if (max_pressure_sync) {
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
-                mmr920::MAX_PRESSURE_READING;
+                mmr920::get_max_pressure_reading(sensor_version);
             bool over_threshold = false;
             if (this_tick_over_threshold) {
                 max_pressure_consecutive_readings =
@@ -374,7 +376,7 @@ class MMR920 {
 
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
-        auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store);
+        auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store, sensor_version);
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
@@ -451,6 +453,7 @@ class MMR920 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
+    const sensors::mmr920::SensorVersion sensor_version;
 
     mmr920::MMR920RegisterMap _registers{};
     mmr920::FilterSetting filter_setting =

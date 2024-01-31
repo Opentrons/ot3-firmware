@@ -9,6 +9,7 @@
 #include "i2c/tests/mock_response_queue.hpp"
 #include "motor-control/core/utils.hpp"
 #include "sensors/core/tasks/pressure_driver.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 #include "sensors/tests/mock_hardware.hpp"
@@ -58,7 +59,7 @@ SCENARIO("Testing the pressure sensor driver") {
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
     sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
-                                  hardware, sensor_id);
+                                  hardware, sensor_id, sensors::mmr920::SensorVersion::mmr920c04);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 

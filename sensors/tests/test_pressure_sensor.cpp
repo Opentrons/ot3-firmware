@@ -56,7 +56,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     poller.set_queue(&i2c_poll_queue);
 
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer, poller, queue_client, response_queue, mock_hw, sensor_id};
+        writer, poller, queue_client, response_queue, mock_hw, sensor_id,
+        sensors::mmr920::SensorVersion::mmr920c04};
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();

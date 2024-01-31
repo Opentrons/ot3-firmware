@@ -7,6 +7,7 @@
 #include "i2c/core/messages.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
 
@@ -21,8 +22,9 @@ class PressureMessageHandler {
         I2CQueueWriter &i2c_writer, I2CQueuePoller &i2c_poller,
         CanClient &can_client, OwnQueue &own_queue,
         sensors::hardware::SensorHardwareBase &hardware,
-        const can::ids::SensorId &id)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware, id} {}
+        const can::ids::SensorId &id,
+        const sensors::mmr920::SensorVersion& version)
+        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware, id, version} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -192,9 +194,10 @@ class PressureSensorTask {
     [[noreturn]] void operator()(
         i2c::writer::Writer<QueueImpl> *writer,
         i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,
-        sensors::hardware::SensorHardwareBase *hardware) {
+        sensors::hardware::SensorHardwareBase *hardware,
+        sensors::mmr920::SensorVersion *sensor_version) {
         auto handler = PressureMessageHandler{
-            *writer, *poller, *can_client, get_queue(), *hardware, sensor_id};
+            *writer, *poller, *can_client, get_queue(), *hardware, sensor_id, *sensor_version};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
