@@ -146,13 +146,12 @@ class EEPromMessageHandler {
             std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
             iter);
         // A write transaction.
-        auto transaction = i2c::messages::Transaction{
-            .message_index = m.message_index,
-            .address = hardware_iface::get_i2c_device_address(
-                hw_iface.get_eeprom_chip_type()),
-            .bytes_to_read = 0,
-            .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
-            .write_buffer = buffer};
+        auto transaction =
+            i2c::messages::Transaction{.message_index = m.message_index,
+                                       .address = hw_iface.get_eeprom_address(),
+                                       .bytes_to_read = 0,
+                                       .bytes_to_write = 8,
+                                       .write_buffer = buffer};
         // Use the WRITE_TOKEN to disambiguate from the reads.
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
@@ -209,8 +208,7 @@ class EEPromMessageHandler {
 
         auto transaction = i2c::messages::Transaction{
             .message_index = m.message_index,
-            .address = hardware_iface::get_i2c_device_address(
-                hw_iface.get_eeprom_chip_type()),
+            .address = hw_iface.get_eeprom_address(),
             .bytes_to_read = m.length,
             .bytes_to_write =
                 static_cast<std::size_t>(iter - write_buffer.begin()),

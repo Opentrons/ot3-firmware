@@ -1,6 +1,8 @@
 #include <span>
 
+#include "eeprom/core/message_handler.hpp"
 #include "hepa-uv/core/can_task.hpp"
+#include "hepa-uv/core/hepauv_info.hpp"
 
 using namespace can::dispatch;
 
@@ -8,6 +10,10 @@ static auto& main_queues = hepauv_tasks::get_main_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     can::message_writer_task::TaskMessage>{};
+
+/** The parsed message handler */
+static auto hepauv_info_handler =
+    hepauv_info::HepaUVInfoMessageHandler{main_queues, main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -19,8 +25,21 @@ static auto system_message_handler =
                   std::cend(version_get()->sha)),
         revision_get()->primary,
         revision_get()->secondary};
+
+/** Handler for eeprom messages.*/
+static auto eeprom_message_handler =
+    eeprom::message_handler::EEPromHandler{main_queues, main_queues};
+static auto eeprom_dispatch_target =
+    can::dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
+                                       can::messages::WriteToEEPromRequest,
+                                       can::messages::ReadFromEEPromRequest>{
+        eeprom_message_handler};
+
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
+
+static auto hepauv_info_dispatch_target =
+    can_task::HepaUVInfoDispatchTarget{hepauv_info_handler};
 
 struct CheckForNodeId {
     can::ids::NodeId node_id;
@@ -41,7 +60,8 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
         return ((node_id == can::ids::NodeId::broadcast) ||
                 (node_id == can::ids::NodeId::hepa_uv));
     },
-    system_dispatch_target);
+    system_dispatch_target, hepauv_info_dispatch_target,
+    eeprom_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
@@ -62,8 +82,6 @@ void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
 
 /**
  * Entry point for the reader task.
- * TODO (2021-12-15, AL): Most of what happens in this task should be moved out
- *  when we move to separate motor tasks.
  */
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can::bus::CanBus* can_bus) {
@@ -76,7 +94,7 @@ void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
-    // TODO: add HEPA/UV filter
+    // Accept Hepa/UV
     filter.node_id(can::ids::NodeId::hepa_uv);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
