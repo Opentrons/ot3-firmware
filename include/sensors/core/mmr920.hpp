@@ -38,7 +38,7 @@ enum class SensorVersion : int {
 };
 
 [[nodiscard]] inline static auto get_max_pressure_reading(SensorVersion version)
--> float {
+    -> float {
     if (version == SensorVersion::mmr920c10) {
         return 16452.8F;
     } else {
@@ -282,12 +282,14 @@ struct PressureResult {
     [[nodiscard]] static auto get_pa_per_count(SensorVersion version) -> float {
         // conversion factor of a given 3 byte measurement to Pascals
         if (version == SensorVersion::mmr920c10) {
-            return 2 * 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+            return 2 * 1e-5 *
+                   CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
         }
         return 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
     }
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg, SensorVersion version) -> float {
+    [[nodiscard]] static auto to_pressure(uint32_t reg, SensorVersion version)
+        -> float {
         // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
@@ -296,8 +298,8 @@ struct PressureResult {
             reg &= 0x007FFFFF;
         }
 
-        float pressure =
-            static_cast<float>(static_cast<int32_t>(reg)) * get_pa_per_count(version);
+        float pressure = static_cast<float>(static_cast<int32_t>(reg)) *
+                         get_pa_per_count(version);
         return pressure;
     }
 };

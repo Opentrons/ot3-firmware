@@ -25,6 +25,7 @@
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/simulator/interfaces.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hdc3020.hpp"
 #include "sensors/simulation/mmr920.hpp"
@@ -131,7 +132,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               fake_sensor_hw_primary, fake_sensor_hw_secondary,
-                              id, sim_eeprom);
+                              id, sim_eeprom,
+                              sensors::mmr920::SensorVersion::mmr920c10);
 
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
@@ -160,7 +162,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   fake_sensor_hw_primary,
-                                  fake_sensor_hw_secondary, id, sim_eeprom);
+                                  fake_sensor_hw_secondary, id, sim_eeprom,
+                                  sensors::mmr920::SensorVersion::mmr920c10);
 
     } else /* single channel */ {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
@@ -168,7 +171,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c3_poller_client(),
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  fake_sensor_hw_primary, id, sim_eeprom);
+                                  fake_sensor_hw_primary, id, sim_eeprom,
+                                  sensors::mmr920::SensorVersion::mmr920c10);
     }
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,

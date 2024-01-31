@@ -43,7 +43,7 @@ class MMR920 {
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_version(version){}
+          sensor_version(version) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -376,7 +376,8 @@ class MMR920 {
 
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
-        auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store, sensor_version);
+        auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store,
+                                                            sensor_version);
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
