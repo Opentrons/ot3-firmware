@@ -39,10 +39,11 @@ enum class SensorVersion : int {
 
 [[nodiscard]] inline static auto get_max_pressure_reading(SensorVersion version)
     -> float {
+    float max_pressure;
     if (version == SensorVersion::mmr920c10) {
-        return 16452.8F;
+        max_pressure = 16452.8F;
     } else {
-        return 8226.4F;
+        max_pressure = 8226.4F;
     }
 }
 
