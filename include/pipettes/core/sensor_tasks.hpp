@@ -8,6 +8,7 @@
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -39,7 +40,8 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CPollerClient& i2c1_poller_client,
                  sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
                  can::ids::NodeId id,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+                 sensors::mmr920::SensorVersion sensor_version);
 
 void start_tasks(
     CanWriterTask& can_writer, I2CClient& i2c3_task_client,
@@ -48,7 +50,8 @@ void start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
     sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    sensors::mmr920::SensorVersion sensor_version);
 
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.

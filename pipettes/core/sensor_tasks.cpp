@@ -46,7 +46,8 @@ void sensor_tasks::start_tasks(
     sensor_tasks::I2CPollerClient& i2c2_poller_client,
     sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    sensors::mmr920::SensorVersion sensor_version) {
     // Low throughput sensor task (single channel)
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -69,7 +70,7 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller,
-        queues, sensor_hardware_primary);
+        queues, sensor_hardware_primary, sensor_version);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -102,7 +103,8 @@ void sensor_tasks::start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
     sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    sensors::mmr920::SensorVersion sensor_version) {
     // High throughput sensor task (eight and ninety six channel)
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -133,10 +135,12 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", primary_pressure_i2c_client,
-        primary_pressure_i2c_poller, queues, sensor_hardware_primary);
+        primary_pressure_i2c_poller, queues, sensor_hardware_primary,
+        sensor_version);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
-        secondary_pressure_i2c_poller, queues, sensor_hardware_secondary);
+        secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
+        sensor_version);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,

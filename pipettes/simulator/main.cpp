@@ -25,9 +25,10 @@
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/simulator/interfaces.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hdc3020.hpp"
-#include "sensors/simulation/mmr920C04.hpp"
+#include "sensors/simulation/mmr920.hpp"
 #include "sensors/simulation/mock_hardware.hpp"
 #include "spi/simulation/spi.hpp"
 #include "task.h"
@@ -131,7 +132,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               fake_sensor_hw_primary, fake_sensor_hw_secondary,
-                              id, sim_eeprom);
+                              id, sim_eeprom,
+                              sensors::mmr920::SensorVersion::mmr920c10);
 
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
@@ -160,7 +162,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   fake_sensor_hw_primary,
-                                  fake_sensor_hw_secondary, id, sim_eeprom);
+                                  fake_sensor_hw_secondary, id, sim_eeprom,
+                                  sensors::mmr920::SensorVersion::mmr920c10);
 
     } else /* single channel */ {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
@@ -168,7 +171,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c3_poller_client(),
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  fake_sensor_hw_primary, id, sim_eeprom);
+                                  fake_sensor_hw_primary, id, sim_eeprom,
+                                  sensors::mmr920::SensorVersion::mmr920c10);
     }
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
@@ -307,10 +311,8 @@ int main(int argc, char** argv) {
     auto fake_sensor_hw_secondary =
         std::make_shared<sim_mocks::MockSensorHardware>();
     fake_sensor_hw_secondary->provide_state_manager(state_manager_connection);
-    auto pressuresensor_i2c1 =
-        std::make_shared<mmr920C04_simulator::MMR920C04>();
-    auto pressuresensor_i2c3 =
-        std::make_shared<mmr920C04_simulator::MMR920C04>();
+    auto pressuresensor_i2c1 = std::make_shared<mmr920_simulator::MMR920>();
+    auto pressuresensor_i2c3 = std::make_shared<mmr920_simulator::MMR920>();
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
         {hdcsensor->get_address(), *hdcsensor},
         {pressuresensor_i2c1->get_address(), *pressuresensor_i2c1}};
