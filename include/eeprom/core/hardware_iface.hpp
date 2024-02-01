@@ -24,7 +24,7 @@ enum class EEpromMemorySize { MICROCHIP_256_BYTE = 256, ST_16_KBYTE = 16384 };
 inline auto get_i2c_device_address(
     EEPromChipType chip = EEPromChipType::ST_M24128_BF,
     uint16_t eeprom_addr = 0) -> uint16_t {
-    if (eeprom_addr > 0) return eeprom_addr << 1;
+    if (eeprom_addr > 0) { return eeprom_addr << 1; }
     if (chip == EEPromChipType::ST_M24128_DF ||
         chip == EEPromChipType::ST_M24128_DR) {
         return 0x51 << 1;

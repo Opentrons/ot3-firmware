@@ -102,7 +102,7 @@ foreach_revision(
 macro(pipettes_single_bootloader_loop)
 
   target_compile_definitions(${REVISION_TARGET} PUBLIC PIPETTE_TYPE_DEFINE=SINGLE_CHANNEL node_id_pipette_dynamic)
-  
+
   target_link_libraries(${REVISION_TARGET}
     PUBLIC STM32G491RETx_bootloader
     STM32G4xx_Drivers_Bootloader
