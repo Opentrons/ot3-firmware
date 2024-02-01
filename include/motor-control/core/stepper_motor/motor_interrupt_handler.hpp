@@ -184,6 +184,7 @@ class MotorInterruptHandler {
 
     void run_interrupt() {
         // handle various error states
+        std::ignore = hardware.get_encoder_pulses();
         if (clear_queue_until_empty) {
             // If we were executing a move when estop asserted, and
             // what's in the queue is the remaining enqueued moves from
