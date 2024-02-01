@@ -472,7 +472,7 @@ class MotorInterruptHandler {
                 .message_index = buffered_move.message_index,
                 .sensor = can::ids::SensorType::pressure,
                 .sensor_id = buffered_move.sensor_id,
-                .binding = static_cast<uint8_t>(can::ids::SensorOutputBinding::none)};
+                .binding = static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
             send_to_pressure_sensor_queue(stop_msg);
         }
         set_buffered_move(MotorMoveMessage{});
