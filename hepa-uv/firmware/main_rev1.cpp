@@ -76,7 +76,8 @@ class EEPromHardwareInterface
   public:
     EEPromHardwareInterface()
         : eeprom::hardware_iface::EEPromHardwareIface(
-              eeprom::hardware_iface::EEPromChipType::ST_M24128_BF, eeprom_i2c_addr) {}
+              eeprom::hardware_iface::EEPromChipType::ST_M24128_BF,
+              eeprom_i2c_addr) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();
