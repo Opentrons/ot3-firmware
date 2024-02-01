@@ -71,8 +71,7 @@ class HepaUVInfoMessageHandler : eeprom::accessor::ReadListener {
                     eeprom::addresses::serial_number_length, serial.begin());
         writer.send_can_message(
             can::ids::NodeId::host,
-            // TODO: This should be HepaUVInfoResponse
-            GripperInfoResponse{
+            HepaUVInfoResponse{
                 .message_index = message_index,
                 .model = get_hepauv_model(sn_accessor_backing),
                 .serial = get_hepauv_data_code(sn_accessor_backing)});

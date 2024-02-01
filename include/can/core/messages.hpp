@@ -1562,7 +1562,6 @@ struct GripperJawHoldoffResponse
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-// TODO: actually add this can message
 struct HepaUVInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint32_t message_index;
     uint16_t model;
@@ -1598,6 +1597,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse>;
+    GripperJawHoldoffResponse, HepaUVInfoResponse>;
 
 }  // namespace can::messages
