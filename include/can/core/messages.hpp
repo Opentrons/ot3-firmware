@@ -1562,7 +1562,7 @@ struct GripperJawHoldoffResponse
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-struct HepaUVInfoResponse : BaseMessage<MessageId::gripper_info_response> {
+struct HepaUVInfoResponse : BaseMessage<MessageId::hepauv_info_response> {
     uint32_t message_index;
     uint16_t model;
     eeprom::serial_number::SerialDataCodeType serial{};
