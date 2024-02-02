@@ -12,6 +12,9 @@ class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
     using hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
 
   public:
+    MockHardwareIface()
+        : EEPromHardwareIface(
+              hardware_iface::EEPromChipType::MICROCHIP_24AA02T) {}
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };

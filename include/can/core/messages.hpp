@@ -1561,6 +1561,26 @@ struct GripperJawHoldoffResponse
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct HepaUVInfoResponse : BaseMessage<MessageId::hepauv_info_response> {
+    uint32_t message_index;
+    uint16_t model;
+    eeprom::serial_number::SerialDataCodeType serial{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(model, iter, limit);
+        iter = std::copy_n(serial.cbegin(),
+                           std::min(static_cast<size_t>(serial.size()),
+                                    static_cast<size_t>(limit - iter)),
+                           iter);
+        return iter - body;
+    }
+
+    auto operator==(const HepaUVInfoResponse& other) const -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -1577,6 +1597,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse>;
+    GripperJawHoldoffResponse, HepaUVInfoResponse>;
 
 }  // namespace can::messages

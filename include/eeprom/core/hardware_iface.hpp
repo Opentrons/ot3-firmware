@@ -22,7 +22,11 @@ constexpr uint8_t ADDR_BITS_DIFFERENCE =
 enum class EEpromMemorySize { MICROCHIP_256_BYTE = 256, ST_16_KBYTE = 16384 };
 
 inline auto get_i2c_device_address(
-    EEPromChipType chip = EEPromChipType::ST_M24128_BF) -> uint16_t {
+    EEPromChipType chip = EEPromChipType::ST_M24128_BF,
+    uint16_t eeprom_addr = 0) -> uint16_t {
+    if (eeprom_addr > 0) {
+        return eeprom_addr << 1;
+    }
     if (chip == EEPromChipType::ST_M24128_DF ||
         chip == EEPromChipType::ST_M24128_DR) {
         return 0x51 << 1;
@@ -39,7 +43,7 @@ inline auto get_i2c_device_address(
 class EEPromHardwareIface {
   public:
     EEPromHardwareIface() = default;
-    EEPromHardwareIface(EEPromChipType chip) {
+    EEPromHardwareIface(EEPromChipType chip, uint16_t eeprom_addr = 0) {
         switch (chip) {
             case EEPromChipType::MICROCHIP_24AA02T:
                 eeprom_addr_bytes =
@@ -61,6 +65,7 @@ class EEPromHardwareIface {
                 break;
         }
         eeprom_chip_type = chip;
+        eeprom_address = get_i2c_device_address(chip, eeprom_addr);
     }
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
@@ -102,6 +107,9 @@ class EEPromHardwareIface {
     [[nodiscard]] auto get_eeprom_chip_type() const -> EEPromChipType {
         return eeprom_chip_type;
     }
+    [[nodiscard]] auto get_eeprom_address() const -> uint16_t {
+        return eeprom_address;
+    }
     [[nodiscard]] auto get_eeprom_mem_size() const -> types::data_length {
         return eeprom_mem_size;
     }
@@ -122,6 +130,9 @@ class EEPromHardwareIface {
     size_t eeprom_mem_size =
         static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
     EEPromChipType eeprom_chip_type = EEPromChipType::MICROCHIP_24AA02T;
+    // The i2c address for the eeprom
+    uint16_t eeprom_address{0};
+
     uint8_t default_byte_value = 0x00;
     types::address page_boundary = 8;
 };

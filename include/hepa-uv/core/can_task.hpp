@@ -3,6 +3,7 @@
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "hepa-uv/core/hepauv_info.hpp"
 #include "hepa-uv/core/tasks.hpp"
 
 namespace can_task {
@@ -14,6 +15,10 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
         hepauv_tasks::QueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
+using HepaUVInfoDispatchTarget = can::dispatch::DispatchParseTarget<
+    hepauv_info::HepaUVInfoMessageHandler<hepauv_tasks::QueueClient,
+                                          hepauv_tasks::QueueClient>,
+    can::messages::InstrumentInfoRequest, can::messages::SetSerialNumber>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

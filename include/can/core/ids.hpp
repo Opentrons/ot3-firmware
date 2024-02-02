@@ -28,6 +28,7 @@ enum class MessageId {
     instrument_info_request = 0x306,
     pipette_info_response = 0x307,
     gripper_info_response = 0x308,
+    hepauv_info_response = 0x309,
     set_serial_number = 0x30a,
     get_motor_usage_request = 0x30b,
     get_motor_usage_response = 0x30c,
