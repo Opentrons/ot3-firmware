@@ -377,14 +377,14 @@ class MotorInterruptHandler {
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            auto msg = can::messages::BindSensorOutputRequest{
+                auto msg = can::messages::BindSensorOutputRequest{
                     .message_index = buffered_move.message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = buffered_move.sensor_id,
-                    .binding = static_cast<uint8_t>(0x3) // sync and report
-            };
-            send_to_pressure_sensor_queue(msg);
-        }
+                    .binding = static_cast<uint8_t>(0x3)  // sync and report
+                };
+                send_to_pressure_sensor_queue(msg);
+            }
         }
         if (set_direction_pin()) {
             hardware.positive_direction();
@@ -472,7 +472,8 @@ class MotorInterruptHandler {
                 .message_index = buffered_move.message_index,
                 .sensor = can::ids::SensorType::pressure,
                 .sensor_id = buffered_move.sensor_id,
-                .binding = static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
+                .binding =
+                    static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
             send_to_pressure_sensor_queue(stop_msg);
         }
         set_buffered_move(MotorMoveMessage{});
@@ -617,9 +618,11 @@ class MotorInterruptHandler {
         hardware.set_step_tracker(
             static_cast<uint32_t>(position_tracker >> 31));
     }
-    void send_to_pressure_sensor_queue(can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_tasks::get_queues().pressure_sensor_queue_rear->try_write_isr(m);
-        //if (!success) {this->cancel_and_clear_moves();}
+    void send_to_pressure_sensor_queue(
+        can::messages::BindSensorOutputRequest& m) {
+        std::ignore = sensor_tasks::get_queues()
+                          .pressure_sensor_queue_rear->try_write_isr(m);
+        // if (!success) {this->cancel_and_clear_moves();}
     }
 
     uint64_t tick_count = 0x0;

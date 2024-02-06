@@ -721,6 +721,27 @@ struct FirmwareUpdateStatusResponse
         -> bool = default;
 };
 
+struct SendAccumulatedPressureDataRequest
+    : BaseMessage<MessageId::send_accumulated_pressure_data> {
+    uint32_t message_index = 0;
+    uint8_t sensor_id = 0;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> SendAccumulatedPressureDataRequest {
+        uint32_t msg_ind = 0;
+        uint8_t sensor_id = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
+        return SendAccumulatedPressureDataRequest{.message_index = msg_ind,
+                                                  .sensor_id = sensor_id};
+    }
+
+    auto operator==(const SendAccumulatedPressureDataRequest& other) const
+        -> bool = default;
+};
+
 struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
     uint32_t message_index = 0;
     uint8_t sensor = 0;

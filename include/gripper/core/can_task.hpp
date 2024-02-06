@@ -65,6 +65,7 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
     can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
+    can::messages::SendAccumulatedPressureDataRequest,
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,

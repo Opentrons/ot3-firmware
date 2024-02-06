@@ -24,7 +24,8 @@ using namespace motor_hardware;
 template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
-    using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
+    using GenericQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,

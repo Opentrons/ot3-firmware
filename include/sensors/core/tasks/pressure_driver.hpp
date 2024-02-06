@@ -272,6 +272,22 @@ class MMR920 {
             mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
+    void send_accumulated_pressure_data(uint32_t message_index) {
+        for (int i = 0; i < pressure_buffer_index; i++) {
+            // send over buffer adn then clear buffer values
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = message_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = sensor_id,
+                    .sensor_data =
+                        mmr920C04::reading_to_fixed_point(p_buff[i])});
+
+            p_buff[i] = 0;
+        }
+    }
+
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
         if (!bind_sync && !echoing && !max_pressure_sync) {
@@ -323,19 +339,36 @@ class MMR920 {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
+                pressure_buffer_index = 0;  // reset buffer index
             } else {
                 hardware.reset_sync();
             }
         }
 
         if (echo_this_time) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(pressure)});
+            p_buff[pressure_buffer_index] = pressure;
+            pressure_buffer_index++;
+
+            // send a response with 9999 to make an overload of the buffer
+            // visible
+            if (pressure_buffer_index > 3000) {
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ReadFromSensorResponse{
+                        .message_index = m.message_index,
+                        .sensor = can::ids::SensorType::pressure,
+                        .sensor_id = sensor_id,
+                        .sensor_data = 9999});
+            }
+
+            //            can_client.send_can_message(
+            //                can::ids::NodeId::host,
+            //                can::messages::ReadFromSensorResponse{
+            //                    .message_index = m.message_index,
+            //                    .sensor = can::ids::SensorType::pressure,
+            //                    .sensor_id = sensor_id,
+            //                    .sensor_data =
+            //                        mmr920C04::reading_to_fixed_point(pressure)});
         }
     }
 
@@ -516,6 +549,7 @@ class MMR920 {
         return write(Reg::address, value);
     }
     std::array<float, 3000> p_buff;
+    uint16_t pressure_buffer_index = 0;
 };
 
 }  // namespace tasks

@@ -42,8 +42,6 @@ class PipetteMotorInterruptHandler
 
     PipetteMotorInterruptHandler(PipetteMotorInterruptHandler&&) = delete;
 
-
-
   private:
     SensorClient& sensor_client;
 };

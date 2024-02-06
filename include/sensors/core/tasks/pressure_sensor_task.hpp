@@ -25,8 +25,7 @@ class PressureMessageHandler {
         const can::ids::SensorId &id,
         const sensors::mmr920::SensorVersion &version)
         : driver{i2c_writer, i2c_poller, can_client, own_queue,
-                 hardware,   id,         version,
-                 std::array<float, 3000> p_buff)} {}
+                 hardware,   id,         version, p_buff)} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -77,6 +76,12 @@ class PressureMessageHandler {
 
             LOG("limited transaction response");
         }
+    }
+
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
+        LOG("Received request to dump pressure data buffer");
+
+        driver.send_accumulated_pressure_data(m.message_index);
     }
 
     void visit(const can::messages::ReadFromSensorRequest &m) {

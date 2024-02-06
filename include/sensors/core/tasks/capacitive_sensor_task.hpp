@@ -65,6 +65,15 @@ class CapacitiveMessageHandler {
         }
     }
 
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
+        LOG("Received request to dump pressure data buffer %d", m.sensor_id);
+
+        if (m.message_index == 0)
+            return;
+        else
+            return;
+    }
+
     void visit(can::messages::ReadFromSensorRequest &m) {
         /**
          * The FDC1004 sensor has an offset register and

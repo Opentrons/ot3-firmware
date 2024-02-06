@@ -7,8 +7,8 @@
 
 namespace interfaces {
 
-using MoveQueue =
-    freertos_message_queue::FreeRTOSMessageQueue<motor_messages::SensorSyncMove>;
+using MoveQueue = freertos_message_queue::FreeRTOSMessageQueue<
+    motor_messages::SensorSyncMove>;
 using GearMoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::GearMotorMove>;
 using MotionControlType =
