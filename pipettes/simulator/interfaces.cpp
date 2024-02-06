@@ -57,7 +57,7 @@ auto linear_motor::get_interrupt_driver(
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler,
     UpdatePositionQueue& update_queue)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
     return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw,
                                                         update_queue);

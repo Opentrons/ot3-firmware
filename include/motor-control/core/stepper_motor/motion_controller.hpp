@@ -24,7 +24,7 @@ using namespace motor_hardware;
 template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
-    using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
+    using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
@@ -86,7 +86,7 @@ class MotionController {
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
             fixed_point_multiply(steps_per_um, can_msg.acceleration);
-        Move msg{
+        SensorSyncMove msg{
             .message_index = can_msg.message_index,
             .duration = can_msg.duration,
             .velocity = velocity_steps,
@@ -94,7 +94,8 @@ class MotionController {
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
             .stop_condition = can_msg.request_stop_condition,
-            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
+            .sensor_id = can::ids::SensorId::UNUSED};
         if (!enabled) {
             enable_motor();
         }
@@ -104,7 +105,7 @@ class MotionController {
     void move(const can::messages::HomeRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
-        Move msg{
+        SensorSyncMove msg{
             .message_index = can_msg.message_index,
             .duration = can_msg.duration,
             .velocity = velocity_steps,
@@ -113,7 +114,8 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition =
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
-            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
+            .sensor_id = can::ids::SensorId::UNUSED};
         if (!enabled) {
             enable_motor();
         }
@@ -266,7 +268,8 @@ class PipetteMotionController {
             hardware.get_usage_eeprom_config().get_gear_distance_key(),
             hardware.get_step_tracker(),
             can_msg.action,
-            gear_motor_id};
+            gear_motor_id,
+            can::ids::SensorId::UNUSED};
 
         if (!enabled) {
             enable_motor();

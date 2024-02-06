@@ -199,6 +199,7 @@ enum class SensorType {
 enum class SensorId {
     S0 = 0x0,
     S1 = 0x1,
+    UNUSED = 0x2,
 };
 
 /** Links sensor threshold triggers to pins. */

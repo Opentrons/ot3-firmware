@@ -79,22 +79,37 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     }
 };
 
-struct SensorSyncMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
-    : public Move {
+struct SensorSyncMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    uint32_t message_index;
+    stepper_timer_ticks duration;  // in stepper timer ticks
+    steps_per_tick velocity;
+    steps_per_tick_sq acceleration;
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint8_t stop_condition = static_cast<uint8_t>(MoveStopCondition::none);
+    int32_t start_encoder_position;
+    uint16_t usage_key;
     can::ids::SensorId sensor_id;
 
-    auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
+    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
+                   AckMessageId _id) -> Ack {
         return Ack{
             .message_index = message_index,
             .group_id = group_id,
             .seq_id = seq_id,
-            .current_position_steps = 0,
+            .current_position_steps = position,
             .encoder_position = pulses,
             .position_flags = flags,
             .ack_id = _id,
             .start_encoder_position = start_encoder_position,
             .usage_key = usage_key,
         };
+    }
+
+    [[nodiscard]] auto check_stop_condition(MoveStopCondition cond) const
+        -> bool {
+        return ((stop_condition & static_cast<uint8_t>(cond)) ==
+                static_cast<uint8_t>(cond));
     }
 };
 
@@ -103,7 +118,7 @@ struct GearMotorMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint32_t start_step_position;
     can::ids::PipetteTipActionType action;
     can::ids::GearMotorId gear_motor_id;
-
+    can::ids::SensorId sensor_id;
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
                    AckMessageId _id) -> GearMotorAck {
         return GearMotorAck{message_index, group_id,
