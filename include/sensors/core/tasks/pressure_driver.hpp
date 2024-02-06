@@ -36,7 +36,7 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version)
+           const sensors::mmr920::SensorVersion version, std::array<float,3000> p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -44,6 +44,7 @@ class MMR920 {
           hardware(hardware),
           sensor_id(id),
           sensor_version(version) {}
+          p_buff(p_buff) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -514,6 +515,7 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
+    std::array<float, 3000> p_buff;
 };
 
 }  // namespace tasks
