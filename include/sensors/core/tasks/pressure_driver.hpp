@@ -350,12 +350,12 @@ class MMR920 {
         }
 
         if (echo_this_time) {
-            (*p_buff)[pressure_buffer_index] = pressure;
-            pressure_buffer_index++;
-
             // send a response with 9999 to make an overload of the buffer
             // visible
-            if (pressure_buffer_index > 3000) {
+            if (pressure_buffer_index < 3000) {
+                (*p_buff)[pressure_buffer_index] = pressure;
+                pressure_buffer_index++;
+            } else {
                 can_client.send_can_message(
                     can::ids::NodeId::host,
                     can::messages::ReadFromSensorResponse{
@@ -364,7 +364,6 @@ class MMR920 {
                         .sensor_id = sensor_id,
                         .sensor_data = 9999});
             }
-
             //            can_client.send_can_message(
             //                can::ids::NodeId::host,
             //                can::messages::ReadFromSensorResponse{
@@ -511,7 +510,7 @@ class MMR920 {
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
 
     mmr920::MeasurementRate measurement_mode_rate =
-        mmr920::MeasurementRate::MEASURE_4;
+        mmr920::MeasurementRate::MEASURE_1;
 
     bool _initialized = false;
     bool echoing = false;
