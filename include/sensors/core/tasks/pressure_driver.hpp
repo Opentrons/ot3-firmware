@@ -63,7 +63,12 @@ class MMR920 {
         filter_setting = static_cast<mmr920::FilterSetting>(should_filter);
     }
 
-    void set_echoing(bool should_echo) { echoing = should_echo; }
+    void set_echoing(bool should_echo) {
+        echoing = should_echo;
+        if (should_echo) {
+            pressure_buffer_index = 0;  // reset buffer index
+        }
+    }
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
@@ -339,7 +344,6 @@ class MMR920 {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
-                pressure_buffer_index = 0;  // reset buffer index
             } else {
                 hardware.reset_sync();
             }
