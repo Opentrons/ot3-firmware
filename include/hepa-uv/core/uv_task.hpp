@@ -15,7 +15,7 @@ namespace uv_task {
 // How long to keep the UV light on in ms.
 static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
 
-using TaskMessage = interrupt_task_messages::TaskMessage;
+using TaskMessage = uv_task_messages::TaskMessage;
 
 template <led_control_task::TaskClient LEDControlClient>
 class UVMessageHandler {
@@ -58,7 +58,7 @@ class UVMessageHandler {
     void visit(const std::monostate &) {}
 
     // Handle GPIO EXTI Interrupts here
-    void visit(const interrupt_task_messages::GPIOInterruptChanged &m) {
+    void visit(const GPIOInterruptChanged &m) {
         if (m.pin == drive_pins.hepa_push_button.pin) {
             // ignore hepa push button presses
             return;
@@ -108,6 +108,10 @@ class UVMessageHandler {
         }
 
         // TODO: send CAN message to host
+    }
+
+    void visit(const uv_task_messages::SetUVLightState &m) {
+        printf("Set UV light state: %lu", m.timeout);
     }
 
     // state tracking variables

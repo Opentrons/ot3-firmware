@@ -4,8 +4,6 @@
 #include "hepa-uv/core/constants.h"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 
-namespace interrupt_task_messages {
-
 /**
  * A message sent when external interurpts are triguered
  */
@@ -14,9 +12,31 @@ struct GPIOInterruptChanged {
     uint8_t state;
 };
 
-using TaskMessage = std::variant<std::monostate, GPIOInterruptChanged>;
+/*
+Messages for the Hepa Task
+*/
+namespace hepa_task_messages {
 
-}  // namespace interrupt_task_messages
+using TaskMessage = std::variant<std::monostate, GPIOInterruptChanged,
+                                 can::messages::GetHepaFanStateRequest,
+                                 can::messages::SetHepaFanStateRequest>;
+
+}  // namespace hepa_task_messages
+
+/*
+Messages for the UV Task
+*/
+namespace uv_task_messages {
+
+struct SetUVLightState {
+    uint8_t state;
+    uint32_t timeout;
+};
+
+using TaskMessage =
+    std::variant<std::monostate, GPIOInterruptChanged, SetUVLightState>;
+
+};  // namespace uv_task_messages
 
 namespace led_control_task_messages {
 

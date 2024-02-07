@@ -1581,6 +1581,51 @@ struct HepaUVInfoResponse : BaseMessage<MessageId::hepauv_info_response> {
     auto operator==(const HepaUVInfoResponse& other) const -> bool = default;
 };
 
+struct SetHepaFanStateRequest
+    : BaseMessage<MessageId::set_hepa_fan_state_request> {
+    uint32_t message_index;
+    uint32_t duty_cycle;
+    uint8_t fan_on;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetHepaFanStateRequest {
+        uint8_t fan_on = 0;
+        uint32_t duty_cycle = 0;
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        body = bit_utils::bytes_to_int(body, limit, fan_on);
+        return SetHepaFanStateRequest{.message_index = msg_ind,
+                                         .duty_cycle = duty_cycle,
+                                         .fan_on = fan_on};
+    }
+
+    auto operator==(const SetHepaFanStateRequest& other) const
+        -> bool = default;
+};
+
+using GetHepaFanStateRequest = Empty<MessageId::get_hepa_fan_state_request>;
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct GetHepaFanStateResponse
+    : BaseMessage<MessageId::get_hepa_fan_state_response> {
+    uint32_t message_index;
+    uint32_t duty_cycle;
+    uint8_t fan_on;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(duty_cycle, iter, limit);
+        iter = bit_utils::int_to_bytes(fan_on, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const GetHepaFanStateResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -1597,6 +1642,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse, HepaUVInfoResponse>;
+    GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse>;
 
 }  // namespace can::messages
