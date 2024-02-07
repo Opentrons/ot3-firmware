@@ -9,7 +9,9 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#ifdef PIPETTE_TYPE_DEFINE
 #include "pipettes/core/sensor_tasks.hpp"
+#endif
 namespace motor_handler {
 
 using namespace motor_messages;
@@ -376,6 +378,7 @@ class MotorInterruptHandler {
             hardware.enable_encoder();
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
+#ifdef PIPETTE_TYPE_DEFINE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
                 auto msg = can::messages::BindSensorOutputRequest{
                     .message_index = buffered_move.message_index,
@@ -385,6 +388,7 @@ class MotorInterruptHandler {
                 };
                 send_to_pressure_sensor_queue(msg);
             }
+#endif
         }
         if (set_direction_pin()) {
             hardware.positive_direction();
@@ -467,6 +471,7 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         stall_handled = false;
         build_and_send_ack(ack_msg_id);
+#ifdef PIPETTE_TYPE_DEFINE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
             auto stop_msg = can::messages::BindSensorOutputRequest{
                 .message_index = buffered_move.message_index,
@@ -476,6 +481,7 @@ class MotorInterruptHandler {
                     static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
             send_to_pressure_sensor_queue(stop_msg);
         }
+#endif
         set_buffered_move(MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
         // last known location
@@ -618,13 +624,14 @@ class MotorInterruptHandler {
         hardware.set_step_tracker(
             static_cast<uint32_t>(position_tracker >> 31));
     }
+#ifdef PIPETTE_TYPE_DEFINE
     void send_to_pressure_sensor_queue(
         can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_tasks::get_queues()
                           .pressure_sensor_queue_rear->try_write_isr(m);
         // if (!success) {this->cancel_and_clear_moves();}
     }
-
+#endif
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;

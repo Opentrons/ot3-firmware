@@ -23,7 +23,7 @@ class PressureMessageHandler {
         CanClient &can_client, OwnQueue &own_queue,
         sensors::hardware::SensorHardwareBase &hardware,
         const can::ids::SensorId &id,
-        const sensors::mmr920::SensorVersion &version, std::array<float, 3000> *p_buff)
+        const sensors::mmr920::SensorVersion &version, std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
         : driver{i2c_writer, i2c_poller, can_client, own_queue,
                  hardware,   id,         version, p_buff)} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
@@ -203,7 +203,7 @@ class PressureSensorTask {
         i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,
         sensors::hardware::SensorHardwareBase *hardware,
         sensors::mmr920::SensorVersion *sensor_version,
-        std::array<float, 3000> *p_buff) {
+        std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff) {
         auto handler = PressureMessageHandler{
             *writer,   *poller,   *can_client,    get_queue(),
             *hardware, sensor_id, *sensor_version, p_buff};

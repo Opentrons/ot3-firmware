@@ -6,7 +6,7 @@
 
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
-static std::array<float, 3000> p_buff;
+static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff;
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 

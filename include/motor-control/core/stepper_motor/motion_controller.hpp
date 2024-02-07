@@ -25,7 +25,11 @@ template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
     using GenericQueue =
+#ifdef PIPETTE_TYPE_DEFINE
         freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
+#else
+        freertos_message_queue::FreeRTOSMessageQueue<Move>;
+#endif
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
@@ -59,7 +63,7 @@ class MotionController {
         -> const lms::LinearMotionSystemConfig<MEConfig>& {
         return linear_motion_sys_config;
     }
-
+#ifdef PIPETTE_TYPE_DEFINE
     void move(const can::messages::AddSensorMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
@@ -122,6 +126,48 @@ class MotionController {
         }
         queue.try_write(msg);
     }
+#else
+
+    void move(const can::messages::AddLinearMoveRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        steps_per_tick_sq acceleration_steps =
+            fixed_point_multiply(steps_per_um, can_msg.acceleration);
+        Move msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .velocity = velocity_steps,
+            .acceleration = acceleration_steps,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = can_msg.request_stop_condition,
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+        if (!enabled) {
+            enable_motor();
+        }
+        queue.try_write(msg);
+    }
+
+    void move(const can::messages::HomeRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        Move msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .velocity = velocity_steps,
+            .acceleration = 0,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition =
+                static_cast<uint8_t>(MoveStopCondition::limit_switch),
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
+        if (!enabled) {
+            enable_motor();
+        }
+        queue.try_write(msg);
+    }
+
+#endif
 
     [[nodiscard]] auto update_position(
         const can::messages::UpdateMotorPositionEstimationRequest& can_msg)
