@@ -358,20 +358,13 @@ class MMR920 {
             } else {
                 can_client.send_can_message(
                     can::ids::NodeId::host,
-                    can::messages::ReadFromSensorResponse{
-                        .message_index = m.message_index,
-                        .sensor = can::ids::SensorType::pressure,
-                        .sensor_id = sensor_id,
-                        .sensor_data = 9999});
+                    can::messages::ErrorMessage{
+                            .message_index = 0,
+                            .severity = can::ids::ErrorSeverity::warning,
+                            .error_code = can::ids::ErrorCode::stop_requested
+                    }
+                );
             }
-            //            can_client.send_can_message(
-            //                can::ids::NodeId::host,
-            //                can::messages::ReadFromSensorResponse{
-            //                    .message_index = m.message_index,
-            //                    .sensor = can::ids::SensorType::pressure,
-            //                    .sensor_id = sensor_id,
-            //                    .sensor_data =
-            //                        mmr920C04::reading_to_fixed_point(pressure)});
         }
     }
 
