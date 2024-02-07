@@ -36,7 +36,7 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version, std::array<float,3000> p_buff)
+           const sensors::mmr920::SensorVersion version, std::array<float,3000> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -282,9 +282,9 @@ class MMR920 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920C04::reading_to_fixed_point(p_buff[i])});
+                        mmr920C04::reading_to_fixed_point((*p_buff)[i])});
 
-            p_buff[i] = 0;
+            (*p_buff)[i] = 0;
         }
     }
 
@@ -346,7 +346,7 @@ class MMR920 {
         }
 
         if (echo_this_time) {
-            p_buff[pressure_buffer_index] = pressure;
+            (*p_buff)[pressure_buffer_index] = pressure;
             pressure_buffer_index++;
 
             // send a response with 9999 to make an overload of the buffer
@@ -548,7 +548,7 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
-    std::array<float, 3000> p_buff;
+    std::array<float, 3000> *p_buff;
     uint16_t pressure_buffer_index = 0;
 };
 
