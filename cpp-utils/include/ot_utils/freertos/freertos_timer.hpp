@@ -6,8 +6,13 @@
 #include "task.h"
 #include "timers.h"
 
-#define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
-#define TICKS_TO_MS(TICKS) (uint32_t)ROUNDED_DIV((TICKS) * 1000, configTICK_RATE_HZ)
+constexpr auto ROUNDED_DIV(uint32_t A, uint32_t B) noexcept -> uint32_t {
+    return (((A) + ((B) / 2)) / (B));
+}
+
+constexpr auto TICKS_TO_MS(uint32_t ticks) noexcept -> uint32_t {
+    return (uint32_t)ROUNDED_DIV((ticks) * 1000, (uint32_t)configTICK_RATE_HZ);
+}
 
 namespace ot_utils {
 namespace freertos_timer {
@@ -57,11 +62,11 @@ class FreeRTOSTimer {
         }
     }
 
-    uint32_t get_remaining_time() {
+    auto get_remaining_time() -> uint32_t {
         /*
         The time in ms remaining before this timer expires and the callback is executed.
         */
-        if (!is_running()) return uint32_t(0);
+        if (!is_running()) { return uint32_t(0); }
         return TICKS_TO_MS(xTimerGetExpiryTime( timer ) - xTaskGetTickCount());
     }
 
