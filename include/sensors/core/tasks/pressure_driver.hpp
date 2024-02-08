@@ -301,7 +301,7 @@ class MMR920 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         mmr920C04::reading_to_fixed_point((*p_buff)[i])});
-            if (i%10 == 0) { vTaskDelay(100); } // slow it down so the can buffer doesn't choke
+            if (i%10 == 0) { vTaskDelay(50); } // slow it down so the can buffer doesn't choke
             (*p_buff)[i] = 0;
         }
     }
