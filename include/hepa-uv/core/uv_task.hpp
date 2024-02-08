@@ -13,8 +13,7 @@
 namespace uv_task {
 
 // How long to keep the UV light on in seconds.
-// static constexpr uint32_t DELAY_S = 60 * 15;      // 15 minutes
-static constexpr uint32_t DELAY_S = 5;            // 5s FOR TESTING
+static constexpr uint32_t DELAY_S = 60 * 15;      // 15 minutes
 static constexpr uint32_t MAX_DELAY_S = 60 * 60;  // 1hr max timeout
 
 using TaskMessage = uv_task_messages::TaskMessage;
