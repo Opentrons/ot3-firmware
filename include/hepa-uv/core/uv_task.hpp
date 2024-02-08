@@ -1,8 +1,8 @@
 #pragma once
 
+#include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "hepa-uv/core/constants.h"
 #include "hepa-uv/core/led_control_task.hpp"
@@ -12,21 +12,25 @@
 
 namespace uv_task {
 
-// How long to keep the UV light on in ms.
-static constexpr uint32_t DELAY_MS = 1000 * 60 * 15;  // 15 minutes
+// How long to keep the UV light on in seconds.
+static constexpr uint32_t DELAY_S = 60 * 15;      // 15 minutes
+static constexpr uint32_t MAX_DELAY_S = 60 * 60;  // 1hr max timeout
 
-using TaskMessage = interrupt_task_messages::TaskMessage;
+using TaskMessage = uv_task_messages::TaskMessage;
 
-template <led_control_task::TaskClient LEDControlClient>
+template <led_control_task::TaskClient LEDControlClient,
+          can::message_writer_task::TaskClient CanClient>
 class UVMessageHandler {
   public:
     explicit UVMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins,
-                              LEDControlClient &led_control_client)
+                              LEDControlClient &led_control_client,
+                              CanClient &can_client)
         : drive_pins{drive_pins},
           led_control_client{led_control_client},
+          can_client{can_client},
           _timer(
               "UVTask", [ThisPtr = this] { ThisPtr->timer_callback(); },
-              DELAY_MS) {
+              DELAY_S * 1000) {
         // get current state
         uv_push_button = gpio::is_set(drive_pins.uv_push_button);
         door_closed = gpio::is_set(drive_pins.door_open);
@@ -46,19 +50,15 @@ class UVMessageHandler {
 
   private:
     // call back to turn off the UV ballast
-    auto timer_callback() -> void {
-        gpio::reset(drive_pins.uv_on_off);
-        // Set the push button LED's to idle (white)
-        led_control_client.send_led_control_message(
-            led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0, 50));
+    void timer_callback() {
+        set_uv_light_state(false);
         uv_push_button = false;
-        uv_fan_on = false;
     }
 
     void visit(const std::monostate &) {}
 
     // Handle GPIO EXTI Interrupts here
-    void visit(const interrupt_task_messages::GPIOInterruptChanged &m) {
+    void visit(const GPIOInterruptChanged &m) {
         if (m.pin == drive_pins.hepa_push_button.pin) {
             // ignore hepa push button presses
             return;
@@ -73,30 +73,56 @@ class UVMessageHandler {
             reed_switch_set = gpio::is_set(drive_pins.reed_switch);
         }
 
+        // Drive the UV light
+        set_uv_light_state(uv_push_button, uv_off_timeout_s);
+    }
+
+    void visit(const can::messages::SetHepaUVStateRequest &m) {
+        uv_off_timeout_s = (static_cast<uint32_t>(
+            std::clamp(m.timeout_s, uint32_t(0), MAX_DELAY_S)));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
+        set_uv_light_state(bool(m.uv_light_on), uv_off_timeout_s);
+    }
+
+    void visit(const can::messages::GetHepaUVStateRequest &m) {
+        auto resp = can::messages::GetHepaUVStateResponse{
+            .message_index = m.message_index,
+            .timeout_s = uv_off_timeout_s,
+            .uv_light_on = uv_light_on,
+            .remaining_time_s = (_timer.get_remaining_time() / 1000)};
+        can_client.send_can_message(can::ids::NodeId::host, resp);
+    }
+
+    void set_uv_light_state(bool light_on, uint32_t timeout_s = DELAY_S) {
         // reset push button state if the door is opened or the reed switch is
         // not set
         if (!door_closed || !reed_switch_set) {
-            uv_push_button = false;
-            gpio::set(drive_pins.uv_on_off);
-            // TODO: Pulse this instead of solid blue
+            gpio::reset(drive_pins.uv_on_off);
             // Set the push button LED's to user intervention (blue)
             led_control_client.send_led_control_message(
                 led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50,
                                                          0));
             if (_timer.is_running()) _timer.stop();
+            uv_push_button = false;
+            uv_light_on = false;
             return;
         }
 
         // set the UV Ballast
-        if (uv_push_button) {
+        uv_light_on = (light_on && timeout_s > 0);
+        // update the push button state
+        uv_push_button = uv_light_on;
+        if (uv_light_on) {
             gpio::set(drive_pins.uv_on_off);
             // Set the push button LED's to running (green)
             led_control_client.send_led_control_message(
                 led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 50, 0,
                                                          0));
             if (_timer.is_running()) _timer.stop();
+            // Update the timer in ms
+            _timer.update_period(timeout_s * 1000);
             _timer.start();
-            uv_fan_on = true;
         } else {
             gpio::reset(drive_pins.uv_on_off);
             // Set the push button LED's to idle (white)
@@ -104,20 +130,21 @@ class UVMessageHandler {
                 led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0,
                                                          50));
             if (_timer.is_running()) _timer.stop();
-            uv_fan_on = false;
         }
 
-        // TODO: send CAN message to host
+        // TODO: send state change CAN message to host
     }
 
     // state tracking variables
     bool door_closed = false;
     bool reed_switch_set = false;
     bool uv_push_button = false;
-    bool uv_fan_on = false;
+    bool uv_light_on = false;
+    uint32_t uv_off_timeout_s = DELAY_S;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
     LEDControlClient &led_control_client;
+    CanClient &can_client;
     ot_utils::freertos_timer::FreeRTOSTimer _timer;
 };
 
@@ -140,10 +167,13 @@ class UVTask {
     /**
      * Task entry point.
      */
-    template <led_control_task::TaskClient LEDControlClient>
+    template <led_control_task::TaskClient LEDControlClient,
+              can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
-                                 LEDControlClient *led_control_client) {
-        auto handler = UVMessageHandler{*drive_pins, *led_control_client};
+                                 LEDControlClient *led_control_client,
+                                 CanClient *can_client) {
+        auto handler =
+            UVMessageHandler{*drive_pins, *led_control_client, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -157,4 +187,14 @@ class UVTask {
   private:
     QueueType &queue;
 };
+
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage &m) {
+    {client.send_uv_message(m)};
+};
+
 };  // namespace uv_task

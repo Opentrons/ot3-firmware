@@ -135,13 +135,11 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case UV_NO_MCU_PIN:
             if (hepauv_queues.hepa_queue != nullptr) {
                 static_cast<void>(hepauv_queues.hepa_queue->try_write_isr(
-                    interrupt_task_messages::GPIOInterruptChanged{
-                        .pin = GPIO_Pin}));
+                    GPIOInterruptChanged{.pin = GPIO_Pin}));
             }
             if (hepauv_queues.uv_queue != nullptr) {
                 static_cast<void>(hepauv_queues.uv_queue->try_write_isr(
-                    interrupt_task_messages::GPIOInterruptChanged{
-                        .pin = GPIO_Pin}));
+                    GPIOInterruptChanged{.pin = GPIO_Pin}));
             }
             break;
         default:

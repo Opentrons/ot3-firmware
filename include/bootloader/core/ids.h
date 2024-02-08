@@ -112,6 +112,12 @@ typedef enum {
     can_messageid_peripheral_status_request = 0x8c,
     can_messageid_peripheral_status_response = 0x8d,
     can_messageid_baseline_sensor_response = 0x8e,
+    can_messageid_set_hepa_fan_state_request = 0x90,
+    can_messageid_get_hepa_fan_state_request = 0x91,
+    can_messageid_get_hepa_fan_state_response = 0x92,
+    can_messageid_set_hepa_uv_state_request = 0x93,
+    can_messageid_get_hepa_uv_state_request = 0x94,
+    can_messageid_get_hepa_uv_state_response = 0x95,
 } CANMessageId;
 
 /** Can bus arbitration id node id. */

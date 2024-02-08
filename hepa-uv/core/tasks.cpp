@@ -71,9 +71,9 @@ void hepauv_tasks::start_tasks(
                                                   eeprom_hw_iface);
 
     auto& hepa_task = hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins,
-                                              hepa_hardware, queues);
+                                              hepa_hardware, queues, queues);
     auto& uv_task =
-        uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, queues);
+        uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, queues, queues);
     auto& led_control_task =
         led_control_task_builder.start(5, "push_button_leds", led_hardware);
 
