@@ -7,7 +7,7 @@
 #include "timers.h"
 
 #define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
-#define PASSED_MS(TICKS) (uint32_t)ROUNDED_DIV((TICKS) * 1000, configTICK_RATE_HZ)
+#define TICKS_TO_MS(TICKS) (uint32_t)ROUNDED_DIV((TICKS) * 1000, configTICK_RATE_HZ)
 
 namespace ot_utils {
 namespace freertos_timer {
@@ -62,7 +62,7 @@ class FreeRTOSTimer {
         The time in ms remaining before this timer expires and the callback is executed.
         */
         if (!is_running()) return uint32_t(0);
-        return PASSED_MS(xTimerGetExpiryTime( timer ) - xTaskGetTickCount());
+        return TICKS_TO_MS(xTimerGetExpiryTime( timer ) - xTaskGetTickCount());
     }
 
     void start() { xTimerStart(timer, 1); }
