@@ -94,7 +94,7 @@ class UVMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
-    void set_uv_light_state(bool uv_light_on, uint32_t timeout_s = DELAY_S) {
+    void set_uv_light_state(bool light_on, uint32_t timeout_s = DELAY_S) {
         // reset push button state if the door is opened or the reed switch is
         // not set
         if (!door_closed || !reed_switch_set) {
@@ -110,7 +110,7 @@ class UVMessageHandler {
         }
 
         // set the UV Ballast
-        uv_light_on = uv_light_on && timeout_s > 0;
+        uv_light_on = (light_on && timeout_s > 0);
         // update the push button state
         uv_push_button = uv_light_on;
         if (uv_light_on) {

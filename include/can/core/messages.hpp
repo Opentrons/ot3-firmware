@@ -1597,8 +1597,8 @@ struct SetHepaFanStateRequest
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
         body = bit_utils::bytes_to_int(body, limit, fan_on);
         return SetHepaFanStateRequest{.message_index = msg_ind,
-                                         .duty_cycle = duty_cycle,
-                                         .fan_on = fan_on};
+                                      .duty_cycle = duty_cycle,
+                                      .fan_on = fan_on};
     }
 
     auto operator==(const SetHepaFanStateRequest& other) const
@@ -1642,12 +1642,11 @@ struct SetHepaUVStateRequest
         body = bit_utils::bytes_to_int(body, limit, timeout_s);
         body = bit_utils::bytes_to_int(body, limit, uv_light_on);
         return SetHepaUVStateRequest{.message_index = msg_ind,
-                                         .timeout_s = timeout_s,
-                                         .uv_light_on = uv_light_on};
+                                     .timeout_s = timeout_s,
+                                     .uv_light_on = uv_light_on};
     }
 
-    auto operator==(const SetHepaUVStateRequest& other) const
-        -> bool = default;
+    auto operator==(const SetHepaUVStateRequest& other) const -> bool = default;
 };
 
 using GetHepaUVStateRequest = Empty<MessageId::get_hepa_uv_state_request>;
@@ -1689,6 +1688,7 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse, GetHepaUVStateResponse>;
+    GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse,
+    GetHepaUVStateResponse>;
 
 }  // namespace can::messages
