@@ -18,6 +18,7 @@ static auto hepauv_info_handler =
     hepauv_info::HepaUVInfoMessageHandler{main_queues, main_queues};
 
 static auto hepa_fan_handler = hepa::message_handler::HepaHandler{main_queues};
+static auto uv_light_handler = uv::message_handler::UVHandler{main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -47,6 +48,8 @@ static auto hepauv_info_dispatch_target =
 static auto hepa_dispatch_target =
     can_task::HepaDispatchTarget{hepa_fan_handler};
 
+static auto uv_dispatch_target = can_task::UVDispatchTarget{uv_light_handler};
+
 struct CheckForNodeId {
     can::ids::NodeId node_id;
     auto operator()(uint32_t arbitration_id) const {
@@ -67,7 +70,7 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
                 (node_id == can::ids::NodeId::hepa_uv));
     },
     system_dispatch_target, hepauv_info_dispatch_target, eeprom_dispatch_target,
-    hepa_dispatch_target);
+    hepa_dispatch_target, uv_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};

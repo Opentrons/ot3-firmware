@@ -28,14 +28,9 @@ Messages for the UV Task
 */
 namespace uv_task_messages {
 
-struct SetUVLightState {
-    uint8_t state;
-    uint32_t timeout;
-};
-
-using TaskMessage =
-    std::variant<std::monostate, GPIOInterruptChanged, SetUVLightState>;
-
+using TaskMessage = std::variant<std::monostate, GPIOInterruptChanged,
+                                 can::messages::GetHepaUVStateRequest,
+                                 can::messages::SetHepaUVStateRequest>;
 };  // namespace uv_task_messages
 
 namespace led_control_task_messages {

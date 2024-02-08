@@ -25,7 +25,12 @@ using HepaUVInfoDispatchTarget = can::dispatch::DispatchParseTarget<
 
 using HepaDispatchTarget = can::dispatch::DispatchParseTarget<
     hepa::message_handler::HepaHandler<hepauv_tasks::QueueClient>,
-    can::messages::SetHepaFanStateRequest, can::messages::GetHepaFanStateRequest>;
+    can::messages::SetHepaFanStateRequest,
+    can::messages::GetHepaFanStateRequest>;
+
+using UVDispatchTarget = can::dispatch::DispatchParseTarget<
+    uv::message_handler::UVHandler<hepauv_tasks::QueueClient>,
+    can::messages::SetHepaUVStateRequest, can::messages::GetHepaUVStateRequest>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

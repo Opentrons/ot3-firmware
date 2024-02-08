@@ -50,8 +50,8 @@ class HepaUVInfoMessageHandler : eeprom::accessor::ReadListener {
         -> HepaUVInfoMessageHandler && = delete;
     ~HepaUVInfoMessageHandler() final = default;
 
-    using MessageType = std::variant<std::monostate, InstrumentInfoRequest,
-                                     SetSerialNumber>;
+    using MessageType =
+        std::variant<std::monostate, InstrumentInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
