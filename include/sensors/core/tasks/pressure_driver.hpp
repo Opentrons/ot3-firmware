@@ -284,6 +284,13 @@ class MMR920 {
     }
 
     void send_accumulated_pressure_data(uint32_t message_index) {
+        can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = pressure_buffer_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = sensor_id,
+                    .sensor_data = 9999});
         for (int i = 0; i < pressure_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
@@ -294,7 +301,7 @@ class MMR920 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         mmr920C04::reading_to_fixed_point((*p_buff)[i])});
-
+            if (i%10 == 0) { vTaskDelay(100); } // slow it down so the can buffer doesn't choke
             (*p_buff)[i] = 0;
         }
     }
