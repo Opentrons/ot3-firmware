@@ -28,6 +28,7 @@ enum class MessageId {
     instrument_info_request = 0x306,
     pipette_info_response = 0x307,
     gripper_info_response = 0x308,
+    hepauv_info_response = 0x309,
     set_serial_number = 0x30a,
     get_motor_usage_request = 0x30b,
     get_motor_usage_response = 0x30c,
@@ -113,6 +114,12 @@ enum class MessageId {
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
     baseline_sensor_response = 0x8e,
+    set_hepa_fan_state_request = 0x90,
+    get_hepa_fan_state_request = 0x91,
+    get_hepa_fan_state_response = 0x92,
+    set_hepa_uv_state_request = 0x93,
+    get_hepa_uv_state_request = 0x94,
+    get_hepa_uv_state_response = 0x95,
 };
 
 /** Can bus arbitration id node id. */

@@ -31,6 +31,6 @@ class HepaControlInterface {
         -> HepaControlInterface& = delete;
     virtual ~HepaControlInterface() = default;
 
-    virtual void set_hepa_fan_speed(uint32_t duty_cycle);
+    virtual auto set_hepa_fan_speed(uint32_t duty_cycle) -> void = 0;
 };
 }  // namespace hepa_control

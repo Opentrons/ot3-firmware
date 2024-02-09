@@ -1,8 +1,8 @@
 #pragma once
 
+#include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/firmware/gpio.hpp"
 #include "hepa-uv/core/constants.h"
@@ -13,22 +13,24 @@
 
 namespace hepa_task {
 
-using TaskMessage = interrupt_task_messages::TaskMessage;
+const uint32_t DEFAULT_HEPA_PWM = 75;
 
-template <led_control_task::TaskClient LEDControlClient>
+using TaskMessage = hepa_task_messages::TaskMessage;
+
+template <led_control_task::TaskClient LEDControlClient,
+          can::message_writer_task::TaskClient CanClient>
 class HepaMessageHandler {
   public:
     explicit HepaMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
         hepa_control_hardware::HepaControlHardware &hepa_hardware,
-        LEDControlClient &led_control_client)
+        LEDControlClient &led_control_client, CanClient &can_client)
         : drive_pins{drive_pins},
           hepa_hardware{hepa_hardware},
-          led_control_client{led_control_client} {
-        // get current state
-        hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
+          led_control_client{led_control_client},
+          can_client{can_client} {
         // turn off the HEPA fan
-        gpio::reset(drive_pins.hepa_on_off);
+        set_hepa_fan_state(false, 0);
     }
     HepaMessageHandler(const HepaMessageHandler &) = delete;
     HepaMessageHandler(const HepaMessageHandler &&) = delete;
@@ -45,35 +47,54 @@ class HepaMessageHandler {
     void visit(const std::monostate &) {}
 
     // Handle GPIO EXTI Interrupts here
-    void visit(const interrupt_task_messages::GPIOInterruptChanged &m) {
+    void visit(const GPIOInterruptChanged &m) {
         if (m.pin == drive_pins.hepa_push_button.pin) {
-            hepa_push_button = !hepa_push_button;
-            // handle state changes here
-            if (hepa_push_button) {
-                hepa_hardware.set_hepa_fan_speed(50);
-                gpio::set(drive_pins.hepa_on_off);
-                led_control_client.send_led_control_message(
-                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50,
-                                                             0, 0});
-            } else {
-                hepa_hardware.set_hepa_fan_speed(0);
-                gpio::reset(drive_pins.hepa_on_off);
-                led_control_client.send_led_control_message(
-                    led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0,
-                                                             0, 50});
-            }
+            hepa_fan_on = !hepa_fan_on;
+            set_hepa_fan_state(hepa_fan_on, hepa_fan_pwm);
         }
-
         // TODO: send CAN message to host
     }
 
-    // state tracking variables
-    bool hepa_push_button = false;
+    void visit(const can::messages::SetHepaFanStateRequest &m) {
+        hepa_fan_pwm = (static_cast<uint32_t>(
+            std::clamp(m.duty_cycle, uint32_t(0), uint32_t(100))));
+        set_hepa_fan_state(bool(m.fan_on), hepa_fan_pwm);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
+    }
+
+    void visit(const can::messages::GetHepaFanStateRequest &m) {
+        auto resp = can::messages::GetHepaFanStateResponse{
+            .message_index = m.message_index,
+            .duty_cycle = hepa_fan_pwm,
+            .fan_on = hepa_fan_on};
+        can_client.send_can_message(can::ids::NodeId::host, resp);
+    }
+
+    void set_hepa_fan_state(bool turn_on = false,
+                            uint32_t duty_cycle = DEFAULT_HEPA_PWM) {
+        hepa_hardware.set_hepa_fan_speed(duty_cycle);
+        hepa_fan_on = (turn_on && duty_cycle > 0);
+        if (hepa_fan_on) {
+            gpio::set(drive_pins.hepa_on_off);
+            led_control_client.send_led_control_message(
+                led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 50, 0,
+                                                         0});
+        } else {
+            gpio::reset(drive_pins.hepa_on_off);
+            led_control_client.send_led_control_message(
+                led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0, 0,
+                                                         50});
+        }
+    }
+
+    uint32_t hepa_fan_pwm = DEFAULT_HEPA_PWM;
     bool hepa_fan_on = false;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
     hepa_control_hardware::HepaControlHardware &hepa_hardware;
     LEDControlClient &led_control_client;
+    CanClient &can_client;
 };
 
 /**
@@ -95,13 +116,14 @@ class HepaTask {
     /**
      * Task entry point.
      */
-    template <led_control_task::TaskClient LEDControlClient>
+    template <led_control_task::TaskClient LEDControlClient,
+              can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins *drive_pins,
         hepa_control_hardware::HepaControlHardware *hepa_hardware,
-        LEDControlClient *led_control_client) {
+        LEDControlClient *led_control_client, CanClient *can_client) {
         auto handler = HepaMessageHandler{*drive_pins, *hepa_hardware,
-                                          *led_control_client};
+                                          *led_control_client, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -115,4 +137,14 @@ class HepaTask {
   private:
     QueueType &queue;
 };
+
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage &m) {
+    {client.send_hepa_message(m)};
+};
+
 };  // namespace hepa_task

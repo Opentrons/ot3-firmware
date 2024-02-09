@@ -4,9 +4,7 @@
 
 namespace hepa_control_hardware {
 
-using namespace hepa_control;
-
-class HepaControlHardware : public HepaControlInterface {
+class HepaControlHardware : public hepa_control::HepaControlInterface {
   public:
     HepaControlHardware() = default;
     HepaControlHardware(const HepaControlHardware&) = delete;

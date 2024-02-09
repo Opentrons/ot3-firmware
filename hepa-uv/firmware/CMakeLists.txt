@@ -35,11 +35,12 @@ set(HEPAUV_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
-set(HEPAUV_SRCS_B1
+set(HEPAUV_SRCS_A1
         ${HEPA_UV_FW_LINTABLE_SRCS}
         ${HEPAUV_FW_NON_LINTABLE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
 )
+set(HEPAUV_SRCS_B1 ${HEPAUV_SRCS_A1})
 set(HEPAUV_SRCS_C1 ${HEPAUV_SRCS_B1})
 set(HEPAUV_SRCS_C2 ${HEPAUV_SRCS_C1})
 
@@ -81,10 +82,11 @@ endmacro()
 
 foreach_revision(
     PROJECT_NAME hepa-uv
-    REVISIONS b1
-    SOURCES HEPAUV_SRCS_B1
+    REVISIONS a1 b1
+    SOURCES HEPAUV_SRCS_A1 HEPAUV_SRCS_B1
     CALL_FOREACH_REV hepa_uv_loop)
 
+alias_for_revision(PROJECT_NAME hepa-uv REVISION a1 REVISION_ALIAS proto)
 alias_for_revision(PROJECT_NAME hepa-uv REVISION b1 REVISION_ALIAS rev1)
 
 add_clang_tidy_target(
