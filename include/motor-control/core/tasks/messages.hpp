@@ -14,7 +14,7 @@ using MotionControlTaskMessage = std::variant<
     can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
@@ -47,7 +47,7 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::SetGripperErrorToleranceRequest,
     can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest,
     can::messages::SetGripperJawHoldoffRequest,
-    can::messages::GripperJawHoldoffRequest>;
+    can::messages::GripperJawHoldoffRequest, can::messages::MotorStatusRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,
