@@ -147,8 +147,8 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                     sensors::tip_presence::TipStatusChangeDetected{}));
         }
     } else if (GPIO_Pin == linear_motor_hardware.get_pins().diag0.pin) {
-        if (call_diag0_handler != NULL) {
-            if (*call_diag0_handler != NULL) {
+        if (call_diag0_handler != nullptr) {
+            if (*call_diag0_handler != nullptr) {
                 (*call_diag0_handler)();
             }
         }

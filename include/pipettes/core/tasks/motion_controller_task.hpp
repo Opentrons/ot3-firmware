@@ -62,9 +62,7 @@ class MotionControllerMessageHandler {
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(can::ids::NodeId::host,
-                                        can::messages::MotorDriverInErrorState{
-                                            .message_index = m.message_index});
+            can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = m.message_index, .severity = can::ids::ErrorSeverity::unrecoverable, .error_code = can::ids::ErrorCode::motor_driver_error_detected});
         } else {
             controller.enable_motor();
             can_client.send_can_message(can::ids::NodeId::host,
@@ -109,9 +107,7 @@ class MotionControllerMessageHandler {
             "acceleration=%d, groupid=%d, seqid=%d\n",
             m.velocity, m.acceleration, m.group_id, m.seq_id);
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(can::ids::NodeId::host,
-                                        can::messages::MotorDriverInErrorState{
-                                            .message_index = m.message_index});
+            can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = m.message_index, .severity = can::ids::ErrorSeverity::unrecoverable, .error_code = can::ids::ErrorCode::motor_driver_error_detected});
         } else {
             controller.move(m);
         }

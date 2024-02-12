@@ -198,8 +198,6 @@ using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
 
-using MotorDriverInErrorState = Empty<MessageId::motor_driver_in_error_state>;
-
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
@@ -1614,7 +1612,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse, ReadMotorDriverErrorStatusResponse,
-    MotorDriverInErrorState>;
+    GripperJawHoldoffResponse, ReadMotorDriverErrorStatusResponse>;
 
 }  // namespace can::messages
