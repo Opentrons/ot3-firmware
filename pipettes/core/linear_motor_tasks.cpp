@@ -39,7 +39,7 @@ auto linear_motor_tasks::start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::linear_motor::diag0_handler {
+        tail_accessor) -> interfaces::diag0_handler {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -93,7 +93,7 @@ auto linear_motor_tasks::start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::linear_motor::diag0_handler {
+        tail_accessor) -> interfaces::diag0_handler {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 

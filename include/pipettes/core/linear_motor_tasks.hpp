@@ -40,7 +40,7 @@ auto start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::linear_motor::diag0_handler;
+        tail_accessor) -> interfaces::diag0_handler;
 
 // 96/384 linear motor tasks
 auto start_tasks(
@@ -51,7 +51,7 @@ auto start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::linear_motor::diag0_handler;
+        tail_accessor) -> interfaces::diag0_handler;
 
 void call_run_diag0_interrupt();
 

@@ -50,6 +50,7 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
 template <typename Client>
 concept GearTaskClient = requires(Client client, const GearTaskMessage& m) {
     {client.send_motor_driver_queue(m)};
+    {client.send_motor_driver_queue_isr(m)};
 };
 };  // namespace tasks
 };  // namespace tmc

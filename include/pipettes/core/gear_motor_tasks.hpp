@@ -31,7 +31,7 @@ using CanWriterTask = can::message_writer_task::MessageWriterTask<
 using SPIWriterClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
-void start_tasks(
+auto start_tasks(
     CanWriterTask& can_writer,
     interfaces::gear_motor::GearMotionControl& motion_controllers,
     SPIWriterClient& spi_writer,
@@ -39,7 +39,9 @@ void start_tasks(
     can::ids::NodeId id,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor);
+        tail_accessor) -> std::tuple<interfaces::diag0_handler, interfaces::diag0_handler>;
+
+void call_run_diag0_interrupt();
 
 /**
  * Access to all the gear motion tasks.
