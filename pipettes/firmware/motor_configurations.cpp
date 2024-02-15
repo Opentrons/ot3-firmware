@@ -11,8 +11,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
     switch (which) {
         case TMC2160PipetteAxis::left_gear_motor:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1,
-                                          .diag0_error = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
@@ -39,8 +38,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                 }};
         case TMC2160PipetteAxis::right_gear_motor:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1,
-                                          .diag0_error = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},

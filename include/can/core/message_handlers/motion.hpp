@@ -35,13 +35,6 @@ class MotionHandler {
   private:
     void handle_message(std::monostate &m) { static_cast<void>(m); }
 
-    /*
-    void handle_message(const auto &m) {
-        motion_client.send_motion_controller_queue(utils::variant_cast(m)); //
-    try to compile, talk with Seth
-    }
-    */
-
     void handle_message(const auto &m) {
         motion_client.send_motion_controller_queue(m);
     }

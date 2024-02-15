@@ -37,7 +37,6 @@ static auto move_status_task_builder_right = freertos_task::TaskStarter<
 static auto left_usage_storage_task_builder =
     freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};
 
-
 void call_run_diag0_left_interrupt() {
     if (gear_motor_tasks::get_left_gear_tasks().motion_controller) {
         return gear_motor_tasks::get_left_gear_tasks()
@@ -60,7 +59,8 @@ auto gear_motor_tasks::start_tasks(
     can::ids::NodeId id,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> std::tuple<interfaces::diag0_handler, interfaces::diag0_handler> {
+        tail_accessor)
+    -> std::tuple<interfaces::diag0_handler, interfaces::diag0_handler> {
     left_queue_client.set_node_id(id);
     right_queue_client.set_node_id(id);
 
@@ -70,10 +70,9 @@ auto gear_motor_tasks::start_tasks(
     auto& right_tasks = gear_motor_tasks::get_right_gear_tasks();
 
     // Left Gear Motor Tasks
-    auto& motion_left = mc_task_builder_left.start(5, "motion controller",
-                                                   motion_controllers.left,
-                                                   left_queues, left_queues,
-                                                   left_queues, left_queues);
+    auto& motion_left = mc_task_builder_left.start(
+        5, "motion controller", motion_controllers.left, left_queues,
+        left_queues, left_queues, left_queues);
     auto& tmc2160_driver_left = tmc2160_driver_task_builder_left.start(
         5, "tmc2160 driver", gear_driver_configs.left_gear_motor, left_queues,
         spi_writer);

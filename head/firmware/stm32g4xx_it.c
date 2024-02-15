@@ -178,7 +178,6 @@ void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
 void EXTI15_10_IRQHandler(void) {
-    // make this get/deduce pin! Needs to work for C13/z and C15/a!
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
     } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {

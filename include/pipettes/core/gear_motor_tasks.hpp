@@ -39,7 +39,8 @@ auto start_tasks(
     can::ids::NodeId id,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> std::tuple<interfaces::diag0_handler, interfaces::diag0_handler>;
+        tail_accessor)
+    -> std::tuple<interfaces::diag0_handler, interfaces::diag0_handler>;
 
 void call_run_diag0_interrupt();
 

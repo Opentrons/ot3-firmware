@@ -70,7 +70,13 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = m.message_index, .severity = can::ids::ErrorSeverity::unrecoverable, .error_code = can::ids::ErrorCode::motor_driver_error_detected});
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
         } else {
             controller.enable_motor();
             can_client.send_can_message(can::ids::NodeId::host,
@@ -114,7 +120,13 @@ class MotionControllerMessageHandler {
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = m.message_index, .severity = can::ids::ErrorSeverity::unrecoverable, .error_code = can::ids::ErrorCode::motor_driver_error_detected});
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
         } else {
             controller.move(m);
         }
@@ -125,7 +137,13 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d\n",
             m.velocity, m.group_id, m.seq_id);
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = m.message_index, .severity = can::ids::ErrorSeverity::unrecoverable, .error_code = can::ids::ErrorCode::motor_driver_error_detected});
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
         } else {
             controller.move(m);
         }
@@ -170,7 +188,8 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
-    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
+    void handle(
+        const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
         if (m.debounce_count > 9) {
             if (controller.read_tmc_diag0()) {
                 controller.stop(
@@ -194,12 +213,17 @@ class MotionControllerMessageHandler {
             diag0_debounced = false;
         } else {
             vTaskDelay(pdMS_TO_TICKS(100));
-            motion_client.send_motion_controller_queue(increment_message_debounce_count(m));
+            motion_client.send_motion_controller_queue(
+                increment_message_debounce_count(m));
         }
     }
 
-    auto increment_message_debounce_count(const motor_control_task_messages::RouteMotorDriverInterrupt& m) -> motor_control_task_messages::RouteMotorDriverInterrupt {
-        return motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index, .debounce_count = static_cast<uint8_t>(m.debounce_count + 1)};
+    auto increment_message_debounce_count(
+        const motor_control_task_messages::RouteMotorDriverInterrupt& m)
+        -> motor_control_task_messages::RouteMotorDriverInterrupt {
+        return motor_control_task_messages::RouteMotorDriverInterrupt{
+            .message_index = m.message_index,
+            .debounce_count = static_cast<uint8_t>(m.debounce_count + 1)};
     }
 
     MotorControllerType& controller;

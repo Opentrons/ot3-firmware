@@ -212,9 +212,11 @@ auto initialize_motor_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
         tail_accessor);
-    std::tie(call_left_gear_diag0_handler, call_right_gear_diag0_handler) = gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, gear_motion,
-        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks, tail_accessor);
+    std::tie(call_left_gear_diag0_handler, call_right_gear_diag0_handler) =
+        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                      gear_motion,
+                                      peripheral_tasks::get_spi_client(), conf,
+                                      id, gmh_tsks, tail_accessor);
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,

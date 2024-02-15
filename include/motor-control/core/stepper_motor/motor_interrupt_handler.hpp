@@ -208,9 +208,7 @@ class MotorInterruptHandler {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
         } else if (static_cast<can::ids::ErrorCode>(cancel_request.code) !=
-                   can::ids::ErrorCode::ok) {  // is this correct? Should be
-                                               // zero-initialized. Check,
-                                               // confirm!
+                   can::ids::ErrorCode::ok) {
             cancel_and_clear_moves(
                 static_cast<can::ids::ErrorCode>(cancel_request.code),
                 static_cast<can::ids::ErrorSeverity>(cancel_request.severity));
