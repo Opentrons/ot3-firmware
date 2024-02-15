@@ -126,7 +126,6 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers = {.gconfig = {.en_pwm_mode = 0x0,
                               .diag0_error = 1,
-                              .diag0_otpw = 1,
                               .stop_enable = use_stop_enable},
                   .ihold_irun = {.hold_current = 0x2,  // 0.177A
                                  .run_current = 0xA,   // 0.648A

@@ -223,8 +223,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 // TODO clean up the head main file by using interfaces.
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers = {.gconfig = {.en_pwm_mode = 0,
-                              .diag0_error = 1,
-                              .diag0_otpw = 1},
+                              .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -251,8 +250,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers = {.gconfig = {.en_pwm_mode = 0,
-                              .diag0_error = 1,
-                              .diag0_otpw = 1},
+                              .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
