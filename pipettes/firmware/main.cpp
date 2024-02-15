@@ -30,6 +30,7 @@
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/firmware/interfaces_g4.hpp"
 #include "pipettes/firmware/utility_configurations.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -167,6 +168,14 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
 }
 
+#if PCBA_PRIMARY_REVISION == 'e'
+static constexpr auto pressure_sensor_version =
+    sensors::mmr920::SensorVersion::mmr920c10;
+#else
+static constexpr auto pressure_sensor_version =
+    sensors::mmr920::SensorVersion::mmr920c04;
+#endif
+
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -203,7 +212,7 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_poller_client(),
                               sensor_hardware_container.primary,
                               sensor_hardware_container.secondary.value(), id,
-                              eeprom_hardware_iface);
+                              eeprom_hardware_iface, pressure_sensor_version);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -232,7 +241,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   sensor_hardware_container.primary,
                                   sensor_hardware_container.secondary.value(),
-                                  id, eeprom_hardware_iface);
+                                  id, eeprom_hardware_iface,
+                                  pressure_sensor_version);
     } else {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                   peripheral_tasks::get_i2c3_client(),
@@ -240,7 +250,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   sensor_hardware_container.primary, id,
-                                  eeprom_hardware_iface);
+                                  eeprom_hardware_iface,
+                                  pressure_sensor_version);
     }
 
     initialize_linear_timer(plunger_callback);

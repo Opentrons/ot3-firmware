@@ -39,7 +39,15 @@ void utility_gpio_init();
 // AUX_ID_MCU PC12
 #define AUX_ID_MCU_PORT GPIOC
 #define AUX_ID_MCU_PIN GPIO_PIN_12
-// CAN_RXD
+// EEPROM_SDA PA8
+#define EEPROM_SDA_PORT GPIOA
+#define EEPROM_SDA_PIN GPIO_PIN_8
+// EEPROM_SCL PC4
+#define EEPROM_SCL_PORT GPIOC
+#define EEPROM_SCL_PIN GPIO_PIN_4
+// nEEPROM_WP PC10
+#define EEPROM_WP_PORT GPIOC
+#define EEPROM_WP_PIN GPIO_PIN_10
 
 
 /* ---- Hepa Pins ---- */

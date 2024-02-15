@@ -102,7 +102,7 @@ foreach_revision(
 macro(pipettes_single_bootloader_loop)
 
   target_compile_definitions(${REVISION_TARGET} PUBLIC PIPETTE_TYPE_DEFINE=SINGLE_CHANNEL node_id_pipette_dynamic)
-  
+
   target_link_libraries(${REVISION_TARGET}
     PUBLIC STM32G491RETx_bootloader
     STM32G4xx_Drivers_Bootloader
@@ -132,8 +132,8 @@ set(_pipette_sources ${_g4_sources} ./pipette_handle_messages.c)
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-single
     CALL_FOREACH_REV pipettes_single_bootloader_loop
-    REVISIONS b1 c2 d1
-    SOURCES _pipette_sources _pipette_sources _pipette_sources
+    REVISIONS b1 c2 d1 e1
+    SOURCES _pipette_sources _pipette_sources _pipette_sources _pipette_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
@@ -141,8 +141,8 @@ foreach_revision(
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-multi
     CALL_FOREACH_REV pipettes_multi_bootloader_loop
-    SOURCES _pipette_sources _pipette_sources _pipette_sources
-    REVISIONS b1 c2 d1
+    SOURCES _pipette_sources _pipette_sources _pipette_sources _pipette_sources
+    REVISIONS b1 c2 d1 e1
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
@@ -150,8 +150,8 @@ foreach_revision(
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-96
     CALL_FOREACH_REV pipettes_ninety_six_bootloader_loop
-    REVISIONS b1 c1 d2
-    SOURCES _pipette_sources _pipette_sources _pipette_sources
+    REVISIONS b1 c1 d2 e1
+    SOURCES _pipette_sources _pipette_sources _pipette_sources _pipette_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
@@ -170,8 +170,8 @@ endmacro()
 foreach_revision(
     PROJECT_NAME bootloader-hepa-uv
     CALL_FOREACH_REV hepauv_bootloader_loop
-    REVISIONS b1
-    SOURCES hepauv_sources
+    REVISIONS a1 b1
+    SOURCES hepauv_sources hepauv_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )

@@ -4,7 +4,7 @@
 
 #include "motor-control/core/utils.hpp"
 /*
- * MMR920C04 Pressure Sensor
+ * MMR920 Pressure Sensor
  *
  * Datasheet:
  * https://nmbtc.com/wp-content/uploads/2021/03/mmr920_leaflet_e_rev1.pdf
@@ -26,11 +26,26 @@
  * Leaving them alone for now.
  */
 namespace sensors {
-namespace mmr920C04 {
+namespace mmr920 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
-// Pressure cannot be measured beyond +/-8226.4F
-constexpr float MAX_PRESSURE_READING = 8226.4F;
+// Pressure cannot be measured beyond +/-8226.4F on the old sensors
+// New sensors have double the threshold but half the fidelity
+
+enum class SensorVersion : int {
+    mmr920c04 = 0,
+    mmr920c10 = 1,
+};
+
+[[nodiscard]] inline static auto get_max_pressure_reading(SensorVersion version)
+    -> float {
+    // Defined as max pressure for mmr920x04 by default
+    float max_pressure = 8226.4F;
+    if (version == SensorVersion::mmr920c10) {
+        max_pressure = 16452.8F;
+    }
+    return max_pressure;
+}
 
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
@@ -96,7 +111,7 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept MMR920C04CommandRegister =
+concept MMR920CommandRegister =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)>;
@@ -263,12 +278,19 @@ struct __attribute__((packed, __may_alias__)) StatusCommand {
 struct PressureResult {
     // Pascals per 1 cmH20
     static constexpr float CMH20_TO_PASCALS = 98.0665;
-    static constexpr float PA_PER_COUNT =
-        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
-
     uint32_t reading : 32 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
+    [[nodiscard]] static auto get_pa_per_count(SensorVersion version) -> float {
+        // conversion factor of a given 3 byte measurement to Pascals
+        if (version == SensorVersion::mmr920c10) {
+            return 2 * 1e-5 *
+                   CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+        }
+        return 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+    }
+
+    [[nodiscard]] static auto to_pressure(uint32_t reg, SensorVersion version)
+        -> float {
         // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
@@ -276,8 +298,9 @@ struct PressureResult {
         } else {
             reg &= 0x007FFFFF;
         }
-        float pressure =
-            static_cast<float>(static_cast<int32_t>(reg)) * PA_PER_COUNT;
+
+        float pressure = static_cast<float>(static_cast<int32_t>(reg)) *
+                         get_pa_per_count(version);
         return pressure;
     }
 };
@@ -324,7 +347,7 @@ struct StatusResult {
     return convert_to_fixed_point(reading, S15Q16_RADIX);
 }
 
-struct MMR920C04RegisterMap {
+struct MMR920RegisterMap {
     Reset reset = {};
     Idle idle = {};
     MeasureMode1 measure_mode_1 = {};
@@ -346,5 +369,5 @@ using RegisterSerializedType = uint8_t;
 // Command Registers are all 8 bits
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint8_t;
-};  // namespace mmr920C04
+};  // namespace mmr920
 };  // namespace sensors

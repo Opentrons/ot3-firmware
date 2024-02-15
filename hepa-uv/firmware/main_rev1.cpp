@@ -25,6 +25,7 @@
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "timer_hardware.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -56,6 +57,36 @@ static auto canbus = can::hal::bus::HalCanBus(
 static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
+
+/**
+ * I2C handles
+ */
+static auto i2c_comms2 = i2c::hardware::I2C();
+static auto i2c_handles = I2CHandlerStruct{};
+
+// The address for the eeprom on rev a is 0x50
+#if PCBA_PRIMARY_REVISION == 'a'
+static constexpr uint16_t eeprom_i2c_addr = 0x50;
+#else
+static constexpr uint16_t eeprom_i2c_addr = 0x51;
+#endif
+
+class EEPromHardwareInterface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
+  public:
+    EEPromHardwareInterface()
+        : eeprom::hardware_iface::EEPromHardwareIface(
+              eeprom::hardware_iface::EEPromChipType::ST_M24128_BF,
+              eeprom_i2c_addr) {}
+    void set_write_protect(bool enable) final {
+        if (enable) {
+            disable_eeprom_write();
+        } else {
+            enable_eeprom_write();
+        }
+    }
+};
+static auto eeprom_hw_iface = EEPromHardwareInterface();
 
 static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .door_open =
@@ -104,13 +135,11 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case UV_NO_MCU_PIN:
             if (hepauv_queues.hepa_queue != nullptr) {
                 static_cast<void>(hepauv_queues.hepa_queue->try_write_isr(
-                    interrupt_task_messages::GPIOInterruptChanged{
-                        .pin = GPIO_Pin}));
+                    GPIOInterruptChanged{.pin = GPIO_Pin}));
             }
             if (hepauv_queues.uv_queue != nullptr) {
                 static_cast<void>(hepauv_queues.uv_queue->try_write_isr(
-                    interrupt_task_messages::GPIOInterruptChanged{
-                        .pin = GPIO_Pin}));
+                    GPIOInterruptChanged{.pin = GPIO_Pin}));
             }
             break;
         default:
@@ -132,10 +161,13 @@ auto main() -> int {
 
     app_update_clear_flags();
 
+    i2c_setup(&i2c_handles);
+    i2c_comms2.set_handle(i2c_handles.i2c2);
+
     canbus.start(can_bit_timings);
 
     hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware,
-                              led_hardware);
+                              led_hardware, i2c_comms2, eeprom_hw_iface);
 
     iWatchdog.start(6);
 
