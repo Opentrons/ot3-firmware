@@ -295,9 +295,9 @@ class TMC2160 {
      * be read, so this function gets it from the actual device.
      */
     auto update_glob_scaler(uint32_t data) -> void {
-        auto ret = read_register<GConfig>(data);
+        auto ret = read_register<GlobalScaler>(data);
         if (ret.has_value()) {
-            _registers.gconfig = ret.value();
+            _registers.glob_scale = ret.value();
         }
     }
 
