@@ -59,12 +59,24 @@ class MotorDriverMessageHandler {
             auto data = driver.handle_spi_read(
                 tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
-            can::messages::ReadMotorDriverRegisterResponse response_msg{
-                .message_index = m.id.message_index,
-                .reg_address = static_cast<uint8_t>(m.id.token),
-                .data = data,
-            };
-            can_client.send_can_message(can::ids::NodeId::host, response_msg);
+            if (spi::utils::tag_in_token(
+                    m.id.token, spi::utils::ResponseTag::IS_ERROR_RESPONSE)) {
+                can::messages::ReadMotorDriverErrorStatusResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            } else {
+                can::messages::ReadMotorDriverRegisterResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            }
         }
     }
 

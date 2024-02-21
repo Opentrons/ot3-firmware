@@ -10,6 +10,9 @@
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
+constexpr uint32_t DIAG0_DEBOUNCE_REPS = 9;
+constexpr uint32_t DIAG0_DEBOUNCE_DELAY = 100;
+
 namespace motion_controller_task {
 
 using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
@@ -190,7 +193,7 @@ class MotionControllerMessageHandler {
 
     void handle(
         const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
-        if (m.debounce_count > 9) {
+        if (m.debounce_count > DIAG0_DEBOUNCE_REPS) {
             if (controller.read_tmc_diag0()) {
                 controller.stop(
                     can::ids::ErrorSeverity::unrecoverable,
@@ -207,12 +210,10 @@ class MotionControllerMessageHandler {
                         can::messages::ReadMotorDriverErrorStatusRequest{
                             .message_index = m.message_index});
                 }
-            } else {
-                controller.clear_cancel_request();
             }
             diag0_debounced = false;
         } else {
-            vTaskDelay(pdMS_TO_TICKS(100));
+            vTaskDelay(pdMS_TO_TICKS(DIAG0_DEBOUNCE_DELAY));
             motion_client.send_motion_controller_queue(
                 increment_message_debounce_count(m));
         }

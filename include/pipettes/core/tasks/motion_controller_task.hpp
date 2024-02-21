@@ -173,8 +173,6 @@ class MotionControllerMessageHandler {
                         can::messages::ReadMotorDriverErrorStatusRequest{
                             .message_index = m.message_index});
                 }
-            } else {
-                controller.clear_cancel_request();
             }
             diag0_debounced = false;
         } else {
