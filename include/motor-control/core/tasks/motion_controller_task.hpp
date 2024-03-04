@@ -175,8 +175,8 @@ class MotionControllerTask {
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
-            if (first_run && controller->engage_at_startup) {
-                controller->enable_motor();
+            if (first_run && controller->disengage_at_startup) {
+                controller->disable_motor();
                 first_run = false;
             }
             if (queue.try_read(&message, queue.max_delay)) {

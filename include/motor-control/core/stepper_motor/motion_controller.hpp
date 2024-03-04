@@ -31,7 +31,7 @@ class MotionController {
                      StepperMotorHardwareIface& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue,
                      UpdatePositionQueue& update_queue,
-                     bool eng_on_strt = false)
+                     bool diseng_on_strt = false)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
@@ -45,7 +45,7 @@ class MotionController {
               linear_motion_sys_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_encoder_um_per_pulse(), 31)),
-          engage_at_startup(eng_on_strt) {}
+          disengage_at_startup(diseng_on_strt) {}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -179,7 +179,7 @@ class MotionController {
     bool enabled = false;
 
   public:
-    bool engage_at_startup;
+    bool disengage_at_startup;
 };
 
 }  // namespace motion_controller

@@ -131,7 +131,7 @@ inline static void ebrake_gpio_init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(EBRAKE_PORT, &GPIO_InitStruct);
 
-    HAL_GPIO_WritePin(EBRAKE_PORT, EBRAKE_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(EBRAKE_PORT, EBRAKE_PIN, GPIO_PIN_RESET);
 }
 #endif
 
