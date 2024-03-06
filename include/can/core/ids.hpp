@@ -35,6 +35,7 @@ enum class MessageId {
     stop_request = 0x0,
     error_message = 0x2,
     get_status_request = 0x1,
+    get_gear_status_response = 0x4,
     get_status_response = 0x5,
     enable_motor_request = 0x6,
     disable_motor_request = 0x7,

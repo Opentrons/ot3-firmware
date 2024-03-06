@@ -166,6 +166,8 @@ class MotionController {
         usage_client.send_usage_storage_queue(req);
     }
 
+    [[nodiscard]] auto is_motor_enabled() const -> bool { return enabled; }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
@@ -314,16 +316,18 @@ class PipetteMotionController {
         usage_client.send_usage_storage_queue(req);
     }
 
+    [[nodiscard]] auto is_motor_enabled() const -> bool { return enabled; }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
 
+    bool enabled = false;
     sq31_31 steps_per_um{0};
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_step{0};
-    bool enabled = false;
     can::ids::GearMotorId gear_motor_id;
 };
 

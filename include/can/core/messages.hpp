@@ -110,6 +110,36 @@ using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
 using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
 
+using MotorStatusRequest = Empty<MessageId::get_status_request>;
+
+struct MotorStatusResponse : BaseMessage<MessageId::get_status_response> {
+    uint32_t message_index;
+    uint8_t enabled;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(enabled, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const MotorStatusResponse& other) const -> bool = default;
+};
+
+struct GearMotorStatusResponse
+    : BaseMessage<MessageId::get_gear_status_response> {
+    uint32_t message_index;
+    uint8_t enabled;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(enabled, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const GearMotorStatusResponse& other) const
+        -> bool = default;
+};
+
 using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
 struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
@@ -1689,6 +1719,6 @@ using ResponseMessageType = std::variant<
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
     GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse,
-    GetHepaUVStateResponse>;
+    GetHepaUVStateResponse, MotorStatusResponse, GearMotorStatusResponse>;
 
 }  // namespace can::messages

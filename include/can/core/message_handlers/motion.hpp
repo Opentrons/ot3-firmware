@@ -17,8 +17,8 @@ class MotionHandler {
         std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
                      GetMotionConstraintsRequest, SetMotionConstraints,
                      ReadLimitSwitchRequest, MotorPositionRequest,
-                     UpdateMotorPositionEstimationRequest,
-                     GetMotorUsageRequest>;
+                     UpdateMotorPositionEstimationRequest, GetMotorUsageRequest,
+                     MotorStatusRequest>;
 
     MotionHandler(MotionTaskClient &motion_client)
         : motion_client{motion_client} {}
@@ -50,7 +50,7 @@ class BrushedMotionHandler {
                      ReadLimitSwitchRequest, MotorPositionRequest,
                      SetGripperErrorToleranceRequest, GetMotorUsageRequest,
                      GripperJawStateRequest, SetGripperJawHoldoffRequest,
-                     GripperJawHoldoffRequest>;
+                     GripperJawHoldoffRequest, MotorStatusRequest>;
 
     BrushedMotionHandler(BrushedMotionTaskClient &motion_client)
         : motion_client{motion_client} {}

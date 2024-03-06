@@ -33,6 +33,7 @@ typedef enum {
     can_messageid_stop_request = 0x0,
     can_messageid_error_message = 0x2,
     can_messageid_get_status_request = 0x1,
+    can_messageid_get_gear_status_response = 0x4,
     can_messageid_get_status_response = 0x5,
     can_messageid_enable_motor_request = 0x6,
     can_messageid_disable_motor_request = 0x7,
