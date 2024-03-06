@@ -1693,6 +1693,7 @@ struct GetHepaUVStateResponse
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
     uint32_t message_index;
     uint8_t group_id;

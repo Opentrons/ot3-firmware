@@ -15,9 +15,9 @@
 #include "sensors/core/utils.hpp"
 
 #if PIPETTE_TYPE_DEFINE == NINETY_SIX_CHANNEL
-#define PRESSURE_SENSOR_BUFFER_SIZE 1800
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 1800;
 #else
-#define PRESSURE_SENSOR_BUFFER_SIZE 3000
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 3000;
 #endif
 
 namespace sensors {
@@ -42,14 +42,15 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version, std::array<float,PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
+           const sensors::mmr920::SensorVersion version,
+           std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_version(version) {}
+          sensor_version(version),
           p_buff(p_buff) {}
 
     /**
@@ -285,12 +286,12 @@ class MMR920 {
 
     void send_accumulated_pressure_data(uint32_t message_index) {
         can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = pressure_buffer_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = 9999});
+            can::ids::NodeId::host,
+            can::messages::ReadFromSensorResponse{
+                .message_index = pressure_buffer_index,
+                .sensor = can::ids::SensorType::pressure,
+                .sensor_id = sensor_id,
+                .sensor_data = 9999});
         for (int i = 0; i < pressure_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
@@ -300,9 +301,12 @@ class MMR920 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920C04::reading_to_fixed_point((*p_buff)[i])});
-            if (i%10 == 0) { vTaskDelay(50); } // slow it down so the can buffer doesn't choke
-            (*p_buff)[i] = 0;
+                        mmr920::reading_to_fixed_point((*p_buff).at(i))});
+            if (i % 10 == 0) {
+                // slow it down so the can buffer doesn't choke
+                vTaskDelay(50);
+            }
+            (*p_buff).at(i) = 0;
         }
     }
 
@@ -366,17 +370,15 @@ class MMR920 {
             // send a response with 9999 to make an overload of the buffer
             // visible
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
-                (*p_buff)[pressure_buffer_index] = pressure;
+                (*p_buff).at(pressure_buffer_index) = pressure;
                 pressure_buffer_index++;
             } else {
                 can_client.send_can_message(
                     can::ids::NodeId::host,
                     can::messages::ErrorMessage{
-                            .message_index = 0,
-                            .severity = can::ids::ErrorSeverity::warning,
-                            .error_code = can::ids::ErrorCode::stop_requested
-                    }
-                );
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::warning,
+                        .error_code = can::ids::ErrorCode::stop_requested});
             }
         }
     }
