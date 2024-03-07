@@ -14,7 +14,7 @@ namespace move_group_task {
 
 constexpr std::size_t max_groups = 3;
 constexpr std::size_t max_moves_per_group = 12;
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
 using MoveGroupType = move_group::MoveGroupManager<
     max_groups, max_moves_per_group, can::messages::AddLinearMoveRequest,
     can::messages::HomeRequest, can::messages::AddSensorMoveRequest>;
@@ -126,7 +126,7 @@ class MoveGroupMessageHandler {
         mc_client.send_motion_controller_queue(m);
     }
 
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
     void visit_move(const can::messages::AddSensorMoveRequest& m) {
         mc_client.send_motion_controller_queue(m);
     }

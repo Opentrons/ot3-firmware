@@ -39,7 +39,7 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         linear_motor_tasks::QueueClient>,

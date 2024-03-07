@@ -11,7 +11,7 @@ using namespace can::messages;
 template <move_group_task::TaskClient Client>
 class MoveGroupHandler {
   public:
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest,
                      ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,

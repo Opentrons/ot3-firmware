@@ -95,7 +95,7 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
     void handle(const can::messages::AddSensorMoveRequest& m) {
         LOG("Received add linear move request: velocity=%d, acceleration=%d, "
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",

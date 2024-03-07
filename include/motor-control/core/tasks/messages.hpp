@@ -6,7 +6,7 @@
 
 namespace motor_control_task_messages {
 
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
 using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::AddLinearMoveRequest,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,

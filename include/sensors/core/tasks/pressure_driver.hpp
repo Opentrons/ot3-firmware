@@ -14,7 +14,9 @@
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
 
-#if PIPETTE_TYPE_DEFINE == NINETY_SIX_CHANNEL
+#ifndef USE_PRESSURE_MOVE
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
+#elif PIPETTE_TYPE_DEFINE == NINETY_SIX_CHANNEL
 constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 1800;
 #else
 constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 3000;
@@ -367,6 +369,7 @@ class MMR920 {
         }
 
         if (echo_this_time) {
+#ifdef USE_PRESSURE_MOVE
             // send a response with 9999 to make an overload of the buffer
             // visible
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
@@ -380,6 +383,15 @@ class MMR920 {
                         .severity = can::ids::ErrorSeverity::warning,
                         .error_code = can::ids::ErrorCode::stop_requested});
             }
+#else
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = m.message_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = sensor_id,
+                    .sensor_data = mmr920::reading_to_fixed_point(pressure)});
+#endif
         }
     }
 

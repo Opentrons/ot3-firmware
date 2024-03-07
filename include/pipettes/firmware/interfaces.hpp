@@ -18,10 +18,17 @@
 
 namespace interfaces {
 
+#ifdef USE_PRESSURE_MOVE
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware>;
+#else
+template <typename Client>
+using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
+    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
+    motor_hardware::MotorHardware>;
+#endif
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,

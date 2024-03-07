@@ -25,7 +25,7 @@ template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
     using GenericQueue =
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
         freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
 #else
         freertos_message_queue::FreeRTOSMessageQueue<Move>;
@@ -63,7 +63,7 @@ class MotionController {
         -> const lms::LinearMotionSystemConfig<MEConfig>& {
         return linear_motion_sys_config;
     }
-#ifdef PIPETTE_TYPE_DEFINE
+#ifdef USE_PRESSURE_MOVE
     void move(const can::messages::AddSensorMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
