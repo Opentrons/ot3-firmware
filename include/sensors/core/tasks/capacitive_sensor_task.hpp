@@ -65,8 +65,9 @@ class CapacitiveMessageHandler {
         }
     }
 
-    void visit(const can::messages::SendAccumulatedPressureDataRequest &) {
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
         LOG("Received request to dump pressure data buffer %d", m.sensor_id);
+        std::ignore = m;
     }
 
     void visit(can::messages::ReadFromSensorRequest &m) {

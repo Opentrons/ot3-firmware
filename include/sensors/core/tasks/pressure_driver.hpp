@@ -287,13 +287,7 @@ class MMR920 {
     }
 
     void send_accumulated_pressure_data(uint32_t message_index) {
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ReadFromSensorResponse{
-                .message_index = pressure_buffer_index,
-                .sensor = can::ids::SensorType::pressure,
-                .sensor_id = sensor_id,
-                .sensor_data = 9999});
+#ifdef USE_PRESSURE_MOVE
         for (int i = 0; i < pressure_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
@@ -310,6 +304,9 @@ class MMR920 {
             }
             (*p_buff).at(i) = 0;
         }
+#else
+        std::ignore = message_index;
+#endif
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
