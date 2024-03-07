@@ -56,9 +56,15 @@ auto linear_motor::get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler,
     UpdatePositionQueue& update_queue)
+#ifdef USE_PRESSURE_MOVE
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+#else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
+#endif
     return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw,
                                                         update_queue);
 }

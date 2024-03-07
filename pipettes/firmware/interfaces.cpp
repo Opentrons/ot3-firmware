@@ -57,20 +57,22 @@ void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
 
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
-                                 stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
-    return motor_handler::MotorInterruptHandler(
+                                 stall_check::StallCheck& stall,
+                                 sensor_tasks::QueueClient& sensor_client)
+    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
+    return pipettes::PipetteMotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
-        queues.plunger_update_queue);
+        queues.plunger_update_queue, sensor_client);
 }
 
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues,
-                                 stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
-    return motor_handler::MotorInterruptHandler(
+                                 stall_check::StallCheck& stall,
+                                 sensor_tasks::QueueClient& sensor_client)
+    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
+    return pipettes::PipetteMotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
-        queues.plunger_update_queue);
+        queues.plunger_update_queue, sensor_client);
 }
 
 struct motor_hardware::UsageEEpromConfig plunger_usage_config {

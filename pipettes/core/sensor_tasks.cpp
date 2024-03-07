@@ -6,7 +6,7 @@
 
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
-
+static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff;
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
@@ -70,7 +70,7 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller,
-        queues, sensor_hardware_primary, sensor_version);
+        queues, sensor_hardware_primary, sensor_version, p_buff);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -136,11 +136,11 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", primary_pressure_i2c_client,
         primary_pressure_i2c_poller, queues, sensor_hardware_primary,
-        sensor_version);
+        sensor_version, p_buff);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
         secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
-        sensor_version);
+        sensor_version, p_buff);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,

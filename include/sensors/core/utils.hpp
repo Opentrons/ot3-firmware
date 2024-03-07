@@ -18,12 +18,14 @@ using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected,
 
 namespace utils {
 
-using CanMessageTuple = std::tuple<can::messages::ReadFromSensorRequest,
-                                   can::messages::WriteToSensorRequest,
-                                   can::messages::BaselineSensorRequest,
-                                   can::messages::SetSensorThresholdRequest,
-                                   can::messages::BindSensorOutputRequest,
-                                   can::messages::PeripheralStatusRequest>;
+using CanMessageTuple =
+    std::tuple<can::messages::ReadFromSensorRequest,
+               can::messages::SendAccumulatedPressureDataRequest,
+               can::messages::WriteToSensorRequest,
+               can::messages::BaselineSensorRequest,
+               can::messages::SetSensorThresholdRequest,
+               can::messages::BindSensorOutputRequest,
+               can::messages::PeripheralStatusRequest>;
 using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
 using CanMessageHandler = typename ::utils::TuplesToVariants<
     std::tuple<std::monostate, can::messages::TipStatusQueryRequest>,

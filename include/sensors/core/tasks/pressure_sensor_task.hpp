@@ -23,9 +23,10 @@ class PressureMessageHandler {
         CanClient &can_client, OwnQueue &own_queue,
         sensors::hardware::SensorHardwareBase &hardware,
         const can::ids::SensorId &id,
-        const sensors::mmr920::SensorVersion &version)
+        const sensors::mmr920::SensorVersion &version,
+        std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
         : driver{i2c_writer, i2c_poller, can_client, own_queue,
-                 hardware,   id,         version} {}
+                 hardware,   id,         version,    p_buff} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -76,6 +77,12 @@ class PressureMessageHandler {
 
             LOG("limited transaction response");
         }
+    }
+
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
+        LOG("Received request to dump pressure data buffer");
+
+        driver.send_accumulated_pressure_data(m.message_index);
     }
 
     void visit(const can::messages::ReadFromSensorRequest &m) {
@@ -196,10 +203,11 @@ class PressureSensorTask {
         i2c::writer::Writer<QueueImpl> *writer,
         i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,
         sensors::hardware::SensorHardwareBase *hardware,
-        sensors::mmr920::SensorVersion *sensor_version) {
+        sensors::mmr920::SensorVersion *sensor_version,
+        std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff) {
         auto handler = PressureMessageHandler{
-            *writer,   *poller,   *can_client,    get_queue(),
-            *hardware, sensor_id, *sensor_version};
+            *writer,   *poller,   *can_client,     get_queue(),
+            *hardware, sensor_id, *sensor_version, p_buff};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

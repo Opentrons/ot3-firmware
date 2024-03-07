@@ -36,6 +36,8 @@ constexpr uint8_t pressure_temperature_id =
     static_cast<uint8_t>(can::ids::SensorType::pressure_temperature);
 constexpr uint8_t sensor_id_int = 0x0;
 
+static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff;
+
 SCENARIO("Receiving messages through the pressure sensor message handler") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
@@ -62,7 +64,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
         response_queue,
         mock_hw,
         sensor_id,
-        sensors::mmr920::SensorVersion::mmr920c04};
+        sensors::mmr920::SensorVersion::mmr920c04,
+        &p_buff};
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();
