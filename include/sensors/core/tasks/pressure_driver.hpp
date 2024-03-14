@@ -14,12 +14,10 @@
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
 
-#ifndef USE_PRESSURE_MOVE
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
-#elif PIPETTE_TYPE_DEFINE == NINETY_SIX_CHANNEL
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 1800;
+#if defined(USE_PRESSURE_MOVE)
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
 #else
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 3000;
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
 #endif
 
 namespace sensors {
