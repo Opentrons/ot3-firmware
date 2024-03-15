@@ -105,7 +105,7 @@ class UVMessageHandler {
                     // is on
                     auto resp = can::messages::ErrorMessage{
                     .message_index = 0,
-                    .severity = can::ids::ErrorSeverity::warning,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
                     .error_code = !door_closed ? can::ids::ErrorCode::door_open
                                                : can::ids::ErrorCode::reed_open,
                 };
