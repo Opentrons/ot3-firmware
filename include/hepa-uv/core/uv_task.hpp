@@ -101,9 +101,9 @@ class UVMessageHandler {
             if (_timer.is_running()) {
                 gpio::reset(drive_pins.uv_on_off);
                 _timer.stop();
-                    // send error message when door/reed state change while uv
-                    // is on
-                    auto resp = can::messages::ErrorMessage{
+                // send error message when door/reed state change while uv
+                // is on
+                auto resp = can::messages::ErrorMessage{
                     .message_index = 0,
                     .severity = can::ids::ErrorSeverity::unrecoverable,
                     .error_code = !door_closed ? can::ids::ErrorCode::door_open
