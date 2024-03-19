@@ -111,10 +111,14 @@ class UVMessageHandler {
                 };
                 can_client.send_can_message(can::ids::NodeId::host, resp);
             }
-            led_control_client.send_led_control_message(
-                // Set the push button LED's to user intervention (blue)
-                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50,
-                                                         0));
+            // Set the push button LED's to user intervention (blue) when
+            // attempting to turn on the uv light while the door is opened or
+            // reed switch is not set.
+            if (light_on) {
+                led_control_client.send_led_control_message(
+                    led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0,
+                                                             50, 0));
+            }
             uv_push_button = false;
             uv_light_on = false;
             return;
