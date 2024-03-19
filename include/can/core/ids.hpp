@@ -165,6 +165,8 @@ enum class ErrorCode {
     motor_busy = 0xb,
     stop_requested = 0xc,
     over_pressure = 0xd,
+    door_open = 0xe,
+    reed_open = 0xf,
 };
 
 /** Error Severity levels. */
