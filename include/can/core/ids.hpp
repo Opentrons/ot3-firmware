@@ -208,6 +208,7 @@ enum class SensorId {
     S0 = 0x0,
     S1 = 0x1,
     UNUSED = 0x2,
+    BOTH = 0x3,
 };
 
 /** Links sensor threshold triggers to pins. */
@@ -252,6 +253,7 @@ enum class MoveStopCondition {
     stall = 0x10,
     ignore_stalls = 0x20,
     limit_switch_backoff = 0x40,
+    sensor_report = 0x80,
 };
 
 /** High-level type of pipette. */

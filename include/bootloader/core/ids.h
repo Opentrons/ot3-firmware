@@ -194,6 +194,8 @@ typedef enum {
 typedef enum {
     can_sensorid_s0 = 0x0,
     can_sensorid_s1 = 0x1,
+    can_sensorid_unused = 0x2,
+    can_sensorid_both = 0x3,
 } CANSensorId;
 
 /** Links sensor threshold triggers to pins. */
@@ -238,6 +240,7 @@ typedef enum {
     can_movestopcondition_stall = 0x10,
     can_movestopcondition_ignore_stalls = 0x20,
     can_movestopcondition_limit_switch_backoff = 0x40,
+    can_movestopcondition_sensor_report = 0x80,
 } CANMoveStopCondition;
 
 /** A bit field of the arbitration id parts. */
