@@ -1709,6 +1709,7 @@ struct GetHepaUVStateResponse
     uint32_t timeout_s;
     uint8_t uv_light_on;
     uint32_t remaining_time_s;
+    uint32_t uv_voltage_mv;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -1716,6 +1717,7 @@ struct GetHepaUVStateResponse
         iter = bit_utils::int_to_bytes(timeout_s, iter, limit);
         iter = bit_utils::int_to_bytes(uv_light_on, iter, limit);
         iter = bit_utils::int_to_bytes(remaining_time_s, iter, limit);
+        iter = bit_utils::int_to_bytes(uv_voltage_mv, iter, limit);
         return iter - body;
     }
 

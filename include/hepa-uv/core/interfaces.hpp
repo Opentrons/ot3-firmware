@@ -34,3 +34,18 @@ class HepaControlInterface {
     virtual auto set_hepa_fan_speed(uint32_t duty_cycle) -> void = 0;
 };
 }  // namespace hepa_control
+
+namespace uv_control {
+
+class UVControlInterface {
+  public:
+    UVControlInterface() = default;
+    UVControlInterface(const UVControlInterface&) = delete;
+    UVControlInterface(UVControlInterface&&) = delete;
+    auto operator=(UVControlInterface&&) -> UVControlInterface& = delete;
+    auto operator=(const UVControlInterface&) -> UVControlInterface& = delete;
+    virtual ~UVControlInterface() = default;
+
+    virtual auto get_uv_light_voltage(void) -> uint32_t = 0;
+};
+}  // namespace uv_control

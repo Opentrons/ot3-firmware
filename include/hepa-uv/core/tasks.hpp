@@ -10,6 +10,7 @@
 #include "hepa-uv/core/uv_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
+#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
@@ -24,6 +25,7 @@ namespace hepauv_tasks {
 void start_tasks(can::bus::CanBus& can_bus,
                  gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
                  hepa_control_hardware::HepaControlHardware& hepa_hardware,
+                 uv_control_hardware::UVControlHardware& uv_hardware,
                  led_control_hardware::LEDControlHardware& led_hardware,
                  i2c::hardware::I2CBase& i2c2,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);

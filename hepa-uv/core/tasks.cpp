@@ -9,6 +9,7 @@
 #include "hepa-uv/core/can_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
+#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 
 #pragma GCC diagnostic push
@@ -56,6 +57,7 @@ void hepauv_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     gpio_drive_hardware::GpioDrivePins& gpio_drive_pins,
     hepa_control_hardware::HepaControlHardware& hepa_hardware,
+    uv_control_hardware::UVControlHardware& uv_hardware,
     led_control_hardware::LEDControlHardware& led_hardware,
     i2c::hardware::I2CBase& i2c2,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
@@ -72,8 +74,8 @@ void hepauv_tasks::start_tasks(
 
     auto& hepa_task = hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins,
                                               hepa_hardware, queues, queues);
-    auto& uv_task =
-        uv_task_builder.start(5, "uv_ballast", gpio_drive_pins, queues, queues);
+    auto& uv_task = uv_task_builder.start(5, "uv_ballast", gpio_drive_pins,
+                                              uv_hardware, queues, queues);
     auto& led_control_task =
         led_control_task_builder.start(5, "push_button_leds", led_hardware);
 
