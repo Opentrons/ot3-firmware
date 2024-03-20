@@ -26,8 +26,7 @@ class UVMessageHandler {
     explicit UVMessageHandler(
         gpio_drive_hardware::GpioDrivePins &drive_pins,
         uv_control_hardware::UVControlHardware &uv_hardware,
-        LEDControlClient &led_control_client,
-        CanClient &can_client)
+        LEDControlClient &led_control_client, CanClient &can_client)
         : drive_pins{drive_pins},
           uv_hardware{uv_hardware},
           led_control_client{led_control_client},
@@ -195,13 +194,12 @@ class UVTask {
      */
     template <led_control_task::TaskClient LEDControlClient,
               can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
-                                 uv_control_hardware::UVControlHardware *uv_hardware,
-                                 LEDControlClient *led_control_client,
-                                 CanClient *can_client) {
-        auto handler =
-            UVMessageHandler{*drive_pins, *uv_hardware,
-                             *led_control_client, *can_client};
+    [[noreturn]] void operator()(
+        gpio_drive_hardware::GpioDrivePins *drive_pins,
+        uv_control_hardware::UVControlHardware *uv_hardware,
+        LEDControlClient *led_control_client, CanClient *can_client) {
+        auto handler = UVMessageHandler{*drive_pins, *uv_hardware,
+                                        *led_control_client, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

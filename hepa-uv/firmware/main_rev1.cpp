@@ -23,9 +23,9 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
-#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
+#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "timer_hardware.h"
 #include "uv_hardware.h"
@@ -170,8 +170,9 @@ auto main() -> int {
 
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware, uv_hardware,
-                              led_hardware, i2c_comms2, eeprom_hw_iface);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware,
+                              uv_hardware, led_hardware, i2c_comms2,
+                              eeprom_hw_iface);
 
     iWatchdog.start(6);
 
