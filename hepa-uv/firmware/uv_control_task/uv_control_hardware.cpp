@@ -4,6 +4,6 @@
 
 using namespace uv_control_hardware;
 
-uint32_t UVControlHardware::get_uv_light_voltage() {
+auto UVControlHardware::get_uv_light_voltage() -> uint32_t {
     return get_uv_light_voltage_reading();
 }
