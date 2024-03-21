@@ -135,6 +135,16 @@ class MotionControllerMessageHandler {
         }
     }
 
+#ifdef USE_PRESSURE_MOVE
+    void handle(const can::messages::AddSensorMoveRequest& m) {
+        LOG("Received add linear move request: velocity=%d, acceleration=%d, "
+            "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
+            m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
+            m.request_stop_condition);
+        controller.move(m);
+    }
+#endif
+
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
@@ -226,6 +236,13 @@ class MotionControllerMessageHandler {
             .message_index = m.message_index,
             .debounce_count = static_cast<uint8_t>(m.debounce_count + 1)};
     }
+    
+    void handle(const can::messages::MotorStatusRequest& m) {
+        auto response = static_cast<uint8_t>(controller.is_motor_enabled());
+        can::messages::MotorStatusResponse msg{.message_index = m.message_index,
+                                               .enabled = response};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
 
     MotorControllerType& controller;
     CanClient& can_client;
@@ -268,8 +285,8 @@ class MotionControllerTask {
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
-            if (first_run && controller->engage_at_startup) {
-                controller->enable_motor();
+            if (first_run && controller->disengage_at_startup) {
+                controller->disable_motor();
                 first_run = false;
             }
             if (queue.try_read(&message, queue.max_delay)) {

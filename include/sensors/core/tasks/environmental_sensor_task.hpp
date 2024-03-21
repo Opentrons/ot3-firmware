@@ -75,6 +75,11 @@ class EnvironmentSensorMessageHandler {
         driver.trigger_on_demand();
     }
 
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
+        LOG("Received request to dump pressure data buffer %d", m.sensor_id);
+        std::ignore = m;
+    }
+
     void visit(const can::messages::BindSensorOutputRequest &m) {
         LOG("Received bind sensor output request from %d sensor", m.sensor);
         // sync doesn't quite mean the same thing here for us. We should

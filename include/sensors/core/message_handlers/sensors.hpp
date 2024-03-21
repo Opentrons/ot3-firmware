@@ -46,6 +46,11 @@ class SensorHandler {
                       can::ids::SensorId(m.sensor_id), m);
     }
 
+    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
+        send_to_queue(can::ids::SensorType::pressure,
+                      can::ids::SensorId(m.sensor_id), m);
+    }
+
     void visit(const can::messages::BindSensorOutputRequest &m) {
         send_to_queue(can::ids::SensorType(m.sensor),
                       can::ids::SensorId(m.sensor_id), m);

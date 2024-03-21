@@ -110,6 +110,36 @@ using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
 using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
 
+using MotorStatusRequest = Empty<MessageId::get_status_request>;
+
+struct MotorStatusResponse : BaseMessage<MessageId::get_status_response> {
+    uint32_t message_index;
+    uint8_t enabled;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(enabled, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const MotorStatusResponse& other) const -> bool = default;
+};
+
+struct GearMotorStatusResponse
+    : BaseMessage<MessageId::get_gear_status_response> {
+    uint32_t message_index;
+    uint8_t enabled;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(enabled, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const GearMotorStatusResponse& other) const
+        -> bool = default;
+};
+
 using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
 struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
@@ -753,6 +783,27 @@ struct FirmwareUpdateStatusResponse
         return iter - body;
     }
     auto operator==(const FirmwareUpdateStatusResponse& other) const
+        -> bool = default;
+};
+
+struct SendAccumulatedPressureDataRequest
+    : BaseMessage<MessageId::send_accumulated_pressure_data> {
+    uint32_t message_index = 0;
+    uint8_t sensor_id = 0;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> SendAccumulatedPressureDataRequest {
+        uint32_t msg_ind = 0;
+        uint8_t sensor_id = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
+        return SendAccumulatedPressureDataRequest{.message_index = msg_ind,
+                                                  .sensor_id = sensor_id};
+    }
+
+    auto operator==(const SendAccumulatedPressureDataRequest& other) const
         -> bool = default;
 };
 
@@ -1707,6 +1758,51 @@ struct GetHepaUVStateResponse
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
+    uint32_t message_index;
+    uint8_t group_id;
+    uint8_t seq_id;
+    stepper_timer_ticks duration;
+    um_per_tick_sq acceleration;
+    mm_per_tick velocity;
+    uint8_t request_stop_condition;
+    can::ids::SensorId sensor_id{};
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> AddSensorMoveRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        stepper_timer_ticks duration = 0;
+        um_per_tick_sq acceleration = 0;
+        mm_per_tick velocity = 0;
+        uint8_t request_stop_condition = 0;
+        uint32_t msg_ind = 0;
+        uint8_t sensor_id = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
+        return AddSensorMoveRequest{
+            .message_index = msg_ind,
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .duration = duration,
+            .acceleration = acceleration,
+            .velocity = velocity,
+            .request_stop_condition = request_stop_condition,
+            .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
+        };
+    }
+
+    auto operator==(const AddSensorMoveRequest& other) const -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -1723,7 +1819,8 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
-    GripperJawHoldoffResponse, ReadMotorDriverErrorStatusResponse,
-    HepaUVInfoResponse, GetHepaFanStateResponse, GetHepaUVStateResponse>;
+    GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse,
+    GetHepaUVStateResponse, MotorStatusResponse, GearMotorStatusResponse,
+    ReadMotorDriverErrorStatusResponse>;
 
 }  // namespace can::messages

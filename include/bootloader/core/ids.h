@@ -33,6 +33,7 @@ typedef enum {
     can_messageid_stop_request = 0x0,
     can_messageid_error_message = 0x2,
     can_messageid_get_status_request = 0x1,
+    can_messageid_get_gear_status_response = 0x4,
     can_messageid_get_status_response = 0x5,
     can_messageid_enable_motor_request = 0x6,
     can_messageid_disable_motor_request = 0x7,
@@ -46,6 +47,7 @@ typedef enum {
     can_messageid_execute_move_group_request = 0x18,
     can_messageid_clear_all_move_groups_request = 0x19,
     can_messageid_home_request = 0x20,
+    can_messageid_add_sensor_move_request = 0x23,
     can_messageid_move_completed = 0x13,
     can_messageid_motor_position_request = 0x12,
     can_messageid_motor_position_response = 0x14,
@@ -112,6 +114,7 @@ typedef enum {
     can_messageid_peripheral_status_request = 0x8c,
     can_messageid_peripheral_status_response = 0x8d,
     can_messageid_baseline_sensor_response = 0x8e,
+    can_messageid_send_accumulated_pressure_data = 0x8f,
     can_messageid_set_hepa_fan_state_request = 0x90,
     can_messageid_get_hepa_fan_state_request = 0x91,
     can_messageid_get_hepa_fan_state_response = 0x92,
@@ -160,6 +163,8 @@ typedef enum {
     can_errorcode_motor_busy = 0xb,
     can_errorcode_stop_requested = 0xc,
     can_errorcode_over_pressure = 0xd,
+    can_errorcode_door_open = 0xe,
+    can_errorcode_reed_open = 0xf,
 } CANErrorCode;
 
 /** Tool types detected on Head. */

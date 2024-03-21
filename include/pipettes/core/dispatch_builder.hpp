@@ -42,6 +42,16 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
+#ifdef USE_PRESSURE_MOVE
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<
+        linear_motor_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest, can::messages::StopRequest,
+    can::messages::AddSensorMoveRequest>;
+#else
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         linear_motor_tasks::QueueClient>,
@@ -49,6 +59,7 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest, can::messages::StopRequest>;
+#endif
 
 using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_move_group_handler::GearMoveGroupHandler<
@@ -65,7 +76,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,
@@ -73,7 +84,7 @@ using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearEnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
 
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
@@ -84,6 +95,7 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<sensor_tasks::QueueClient>,
     can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
+    can::messages::SendAccumulatedPressureDataRequest,
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,

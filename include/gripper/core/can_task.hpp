@@ -33,7 +33,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gripper_tasks::QueueClient>,
@@ -51,7 +51,7 @@ using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetGripperErrorToleranceRequest,
     can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest,
     can::messages::SetGripperJawHoldoffRequest,
-    can::messages::GripperJawHoldoffRequest>;
+    can::messages::GripperJawHoldoffRequest, can::messages::MotorStatusRequest>;
 using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::BrushedMoveGroupHandler<
         g_tasks::QueueClient>,
@@ -66,6 +66,7 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
     can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
+    can::messages::SendAccumulatedPressureDataRequest,
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,

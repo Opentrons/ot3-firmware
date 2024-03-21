@@ -74,10 +74,17 @@ auto linear_motor::get_interrupt_driver(
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
                               linear_motor_tasks::tmc2130_driver::QueueClient>&
         handler)
+#ifdef USE_PRESSURE_MOVE
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::SensorSyncMove,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+#else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
+#endif
     return motor_interrupt_driver::MotorInterruptDriver(
         queues.plunger_queue, handler, hw, queues.plunger_update_queue);
 }
@@ -88,10 +95,17 @@ auto linear_motor::get_interrupt_driver(
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
                               linear_motor_tasks::tmc2160_driver::QueueClient>&
         handler)
+#ifdef USE_PRESSURE_MOVE
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::SensorSyncMove,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+#else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
+#endif
     return motor_interrupt_driver::MotorInterruptDriver(
         queues.plunger_queue, handler, hw, queues.plunger_update_queue);
 }

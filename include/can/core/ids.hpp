@@ -35,6 +35,7 @@ enum class MessageId {
     stop_request = 0x0,
     error_message = 0x2,
     get_status_request = 0x1,
+    get_gear_status_response = 0x4,
     get_status_response = 0x5,
     enable_motor_request = 0x6,
     disable_motor_request = 0x7,
@@ -48,6 +49,7 @@ enum class MessageId {
     execute_move_group_request = 0x18,
     clear_all_move_groups_request = 0x19,
     home_request = 0x20,
+    add_sensor_move_request = 0x23,
     move_completed = 0x13,
     motor_position_request = 0x12,
     motor_position_response = 0x14,
@@ -116,6 +118,7 @@ enum class MessageId {
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
     baseline_sensor_response = 0x8e,
+    send_accumulated_pressure_data = 0x8f,
     set_hepa_fan_state_request = 0x90,
     get_hepa_fan_state_request = 0x91,
     get_hepa_fan_state_response = 0x92,
@@ -164,7 +167,9 @@ enum class ErrorCode {
     motor_busy = 0xb,
     stop_requested = 0xc,
     over_pressure = 0xd,
-    motor_driver_error_detected = 0xe,
+    door_open = 0xe,
+    reed_open = 0xf,
+    motor_driver_error_detected = 0x10,
 };
 
 /** Error Severity levels. */
@@ -202,6 +207,7 @@ enum class SensorType {
 enum class SensorId {
     S0 = 0x0,
     S1 = 0x1,
+    UNUSED = 0x2,
 };
 
 /** Links sensor threshold triggers to pins. */

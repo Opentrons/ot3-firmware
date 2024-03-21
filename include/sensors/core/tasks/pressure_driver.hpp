@@ -14,6 +14,12 @@
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
 
+#if defined(USE_PRESSURE_MOVE)
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
+#else
+constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
+#endif
+
 namespace sensors {
 
 namespace tasks {
@@ -36,14 +42,16 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version)
+           const sensors::mmr920::SensorVersion version,
+           std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_version(version) {}
+          sensor_version(version),
+          p_buff(p_buff) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -62,7 +70,12 @@ class MMR920 {
         filter_setting = static_cast<mmr920::FilterSetting>(should_filter);
     }
 
-    void set_echoing(bool should_echo) { echoing = should_echo; }
+    void set_echoing(bool should_echo) {
+        echoing = should_echo;
+        if (should_echo) {
+            pressure_buffer_index = 0;  // reset buffer index
+        }
+    }
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
@@ -271,6 +284,29 @@ class MMR920 {
             mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
+    void send_accumulated_pressure_data(uint32_t message_index) {
+#ifdef USE_PRESSURE_MOVE
+        for (int i = 0; i < pressure_buffer_index; i++) {
+            // send over buffer adn then clear buffer values
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = message_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = sensor_id,
+                    .sensor_data =
+                        mmr920::reading_to_fixed_point((*p_buff).at(i))});
+            if (i % 10 == 0) {
+                // slow it down so the can buffer doesn't choke
+                vTaskDelay(50);
+            }
+            (*p_buff).at(i) = 0;
+        }
+#else
+        std::ignore = message_index;
+#endif
+    }
+
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
         if (!bind_sync && !echoing && !max_pressure_sync) {
@@ -328,6 +364,21 @@ class MMR920 {
         }
 
         if (echo_this_time) {
+#ifdef USE_PRESSURE_MOVE
+            // send a response with 9999 to make an overload of the buffer
+            // visible
+            if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
+                (*p_buff).at(pressure_buffer_index) = pressure;
+                pressure_buffer_index++;
+            } else {
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::warning,
+                        .error_code = can::ids::ErrorCode::stop_requested});
+            }
+#else
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -335,6 +386,7 @@ class MMR920 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data = mmr920::reading_to_fixed_point(pressure)});
+#endif
         }
     }
 
@@ -473,7 +525,7 @@ class MMR920 {
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
 
     mmr920::MeasurementRate measurement_mode_rate =
-        mmr920::MeasurementRate::MEASURE_4;
+        mmr920::MeasurementRate::MEASURE_1;
 
     bool _initialized = false;
     bool echoing = false;
@@ -514,6 +566,8 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
+    std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff;
+    uint16_t pressure_buffer_index = 0;
 };
 
 }  // namespace tasks

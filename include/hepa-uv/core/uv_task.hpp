@@ -98,12 +98,27 @@ class UVMessageHandler {
         // reset push button state if the door is opened or the reed switch is
         // not set
         if (!door_closed || !reed_switch_set) {
-            gpio::reset(drive_pins.uv_on_off);
-            // Set the push button LED's to user intervention (blue)
-            led_control_client.send_led_control_message(
-                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50,
-                                                         0));
-            if (_timer.is_running()) _timer.stop();
+            if (_timer.is_running()) {
+                gpio::reset(drive_pins.uv_on_off);
+                _timer.stop();
+                // send error message when door/reed state change while uv
+                // is on
+                auto resp = can::messages::ErrorMessage{
+                    .message_index = 0,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code = !door_closed ? can::ids::ErrorCode::door_open
+                                               : can::ids::ErrorCode::reed_open,
+                };
+                can_client.send_can_message(can::ids::NodeId::host, resp);
+            }
+            // Set the push button LED's to user intervention (blue) when
+            // attempting to turn on the uv light while the door is opened or
+            // reed switch is not set.
+            if (light_on) {
+                led_control_client.send_led_control_message(
+                    led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0,
+                                                             50, 0));
+            }
             uv_push_button = false;
             uv_light_on = false;
             return;

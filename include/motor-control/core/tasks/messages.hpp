@@ -11,6 +11,7 @@ struct RouteMotorDriverInterrupt {
     uint8_t debounce_count;
 };
 
+#ifdef USE_PRESSURE_MOVE
 using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::AddLinearMoveRequest,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
@@ -19,13 +20,27 @@ using MotionControlTaskMessage = std::variant<
     can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest, RouteMotorDriverInterrupt>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest,
+    RouteMotorDriverInterrupt, can::messages::AddSensorMoveRequest>;
 
-using MotorDriverTaskMessage =
-    std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
-                 can::messages::WriteMotorDriverRegister,
-                 can::messages::WriteMotorCurrentRequest,
-                 can::messages::ReadMotorDriverErrorStatusRequest>;
+using MoveGroupTaskMessage =
+    std::variant<std::monostate, can::messages::AddLinearMoveRequest,
+                 can::messages::ClearAllMoveGroupsRequest,
+                 can::messages::ExecuteMoveGroupRequest,
+                 can::messages::GetMoveGroupRequest, can::messages::HomeRequest,
+                 can::messages::StopRequest,
+                 can::messages::AddSensorMoveRequest>;
+#else
+using MotionControlTaskMessage = std::variant<
+    std::monostate, can::messages::AddLinearMoveRequest,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
+    can::messages::HomeRequest,
+    can::messages::UpdateMotorPositionEstimationRequest,
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest,
+    RouteMotorDriverInterrupt>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,
@@ -33,6 +48,13 @@ using MoveGroupTaskMessage =
                  can::messages::ExecuteMoveGroupRequest,
                  can::messages::GetMoveGroupRequest, can::messages::HomeRequest,
                  can::messages::StopRequest>;
+#endif
+
+using MotorDriverTaskMessage =
+    std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
+                 can::messages::WriteMotorDriverRegister,
+                 can::messages::WriteMotorCurrentRequest,
+                 can::messages::ReadMotorDriverErrorStatusRequest>;
 
 using MoveStatusReporterTaskMessage = std::variant<
     std::monostate, motor_messages::Ack, motor_messages::UpdatePositionResponse,
@@ -53,7 +75,7 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::SetGripperErrorToleranceRequest,
     can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest,
     can::messages::SetGripperJawHoldoffRequest,
-    can::messages::GripperJawHoldoffRequest>;
+    can::messages::GripperJawHoldoffRequest, can::messages::MotorStatusRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,

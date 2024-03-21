@@ -157,6 +157,8 @@ class MotionController {
         return hardware.get_motor_state();
     }
 
+    [[nodiscard]] auto is_motor_enabled() const -> bool { return enabled; }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     BrushedMotorHardwareIface& hardware;
