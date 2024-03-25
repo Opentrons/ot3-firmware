@@ -191,7 +191,7 @@ class MotionControllerMessageHandler {
                 .message_index = m.message_index,
                 .debounce_count = static_cast<uint8_t>(m.debounce_count + 1)};
     }
-    
+
     void handle(const can::messages::MotorStatusRequest& m) {
         auto response = static_cast<uint8_t>(controller.is_motor_enabled());
         can::messages::GearMotorStatusResponse msg{
