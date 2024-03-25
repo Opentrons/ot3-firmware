@@ -29,21 +29,21 @@
 namespace interfaces {
 
 #ifdef USE_PRESSURE_MOVE
-template <typename Client, DriverClient>
+template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware>;
-template <typename Client, DriverClient>
+template <typename Client, typename DriverClient>
 using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware,
     sensor_tasks::QueueClient>;
 #else
-template <typename Client, DriverClient>
+template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::Move, motor_hardware::MotorHardware>;
-template <typename Client, DriverClient>
+template <typename Client, typename DriverClient>
 using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::Move, motor_hardware::MotorHardware,
