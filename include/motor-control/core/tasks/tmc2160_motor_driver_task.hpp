@@ -10,6 +10,7 @@
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #include "spi/core/messages.hpp"
+#include "spi/core/utils.hpp"
 
 namespace tmc2160 {
 
@@ -57,12 +58,24 @@ class MotorDriverMessageHandler {
             auto data = driver.handle_spi_read(
                 tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
-            can::messages::ReadMotorDriverRegisterResponse response_msg{
-                .message_index = m.id.message_index,
-                .reg_address = static_cast<uint8_t>(m.id.token),
-                .data = data,
-            };
-            can_client.send_can_message(can::ids::NodeId::host, response_msg);
+            if (spi::utils::tag_in_token(
+                    m.id.token, spi::utils::ResponseTag::IS_ERROR_RESPONSE)) {
+                can::messages::ReadMotorDriverErrorStatusResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            } else {
+                can::messages::ReadMotorDriverRegisterResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            }
         }
     }
 
@@ -83,6 +96,15 @@ class MotorDriverMessageHandler {
             driver.read(tmc2160::registers::Registers(m.reg_address), data,
                         m.message_index);
         }
+    }
+
+    void handle(const can::messages::ReadMotorDriverErrorStatusRequest& m) {
+        LOG("Received read motor driver error register request");
+        uint32_t data = 0;
+        std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};
+        uint8_t tag_byte = spi::utils::byte_from_tags(tags);
+        driver.read(tmc2160::registers::Registers::DRVSTATUS, data,
+                    m.message_index, tag_byte);
     }
 
     void handle(const can::messages::WriteMotorCurrentRequest& m) {
@@ -144,6 +166,16 @@ class MotorDriverTask {
 
   private:
     QueueType& queue;
+};
+
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_motor_driver_queue(m)};
+    {client.send_motor_driver_queue_isr(m)};
 };
 
 }  // namespace tasks

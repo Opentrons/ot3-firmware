@@ -9,9 +9,11 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #ifdef USE_PRESSURE_MOVE
 #include "pipettes/core/sensor_tasks.hpp"
 #endif
+
 namespace motor_handler {
 
 using namespace motor_messages;
@@ -44,7 +46,7 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, typename MotorHardware>
+          class DriverClient, typename MotorMoveMessage, typename MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
@@ -55,11 +57,13 @@ class MotorInterruptHandler {
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
+                          DriverClient& driver_queue,
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
+          driver_client(driver_queue),
           hardware(hardware_iface),
           stall_checker{stall},
           update_position_queue(incoming_update_position_queue) {
@@ -186,6 +190,8 @@ class MotorInterruptHandler {
 
     void run_interrupt() {
         // handle various error states
+        motor_hardware::CancelRequest cancel_request =
+            hardware.get_cancel_request();
         std::ignore = hardware.get_encoder_pulses();
         if (clear_queue_until_empty) {
             // If we were executing a move when estop asserted, and
@@ -205,9 +211,11 @@ class MotorInterruptHandler {
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
-        } else if (hardware.has_cancel_request()) {
-            cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
-                                   can::ids::ErrorSeverity::warning);
+        } else if (static_cast<can::ids::ErrorCode>(cancel_request.code) !=
+                   can::ids::ErrorCode::ok) {
+            cancel_and_clear_moves(
+                static_cast<can::ids::ErrorCode>(cancel_request.code),
+                static_cast<can::ids::ErrorSeverity>(cancel_request.severity));
         } else {
             // Normal Move logic
             run_normal_interrupt();
@@ -436,6 +444,11 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
+        if (err_code == can::ids::ErrorCode::motor_driver_error_detected) {
+            driver_client.send_motor_driver_queue_isr(
+                can::messages::ReadMotorDriverErrorStatusRequest{
+                    .message_index = message_index});
+        }
         if (err_code == can::ids::ErrorCode::collision_detected) {
             build_and_send_ack(AckMessageId::position_error);
         }
@@ -639,6 +652,7 @@ class MotorInterruptHandler {
     q31_31 position_tracker{0};
     MoveQueue& move_queue;
     StatusClient& status_queue_client;
+    DriverClient& driver_client;
     MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;

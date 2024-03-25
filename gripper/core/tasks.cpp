@@ -58,7 +58,7 @@ static auto eeprom_data_rev_update_builder =
 /**
  * Start gripper tasks.
  */
-void gripper_tasks::start_tasks(
+auto gripper_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
@@ -68,7 +68,8 @@ void gripper_tasks::start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
     motor_hardware_task::MotorHardwareTask& zmh_tsk,
-    motor_hardware_task::MotorHardwareTask& gmh_tsk) {
+    motor_hardware_task::MotorHardwareTask& gmh_tsk)
+    -> z_motor_iface::diag0_handler {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     tasks.can_writer = &can_writer;
@@ -122,8 +123,8 @@ void gripper_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
 
-    z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
-                        tail_accessor);
+    auto diag0_handler = z_tasks::start_task(
+        z_motor, spi_device, driver_configs, tasks, queues, tail_accessor);
 
     g_tasks::start_task(grip_motor, tasks, queues, tail_accessor);
 
@@ -132,6 +133,8 @@ void gripper_tasks::start_tasks(
 
     zmh_tsk.start_task();
     gmh_tsk.start_task();
+
+    return diag0_handler;
 }
 
 gripper_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)

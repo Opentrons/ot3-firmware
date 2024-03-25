@@ -78,10 +78,25 @@ static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
+
+void call_run_diag0_z_interrupt() {
+    if (head_tasks::get_left_tasks().motion_controller) {
+        return head_tasks::get_left_tasks()
+            .motion_controller->run_diag0_interrupt();
+    }
+}
+
+void call_run_diag0_a_interrupt() {
+    if (head_tasks::get_right_tasks().motion_controller) {
+        return head_tasks::get_right_tasks()
+            .motion_controller->run_diag0_interrupt();
+    }
+}
+
 /**
  * Start head tasks.
  */
-void head_tasks::start_tasks(
+auto head_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
@@ -95,7 +110,8 @@ void head_tasks::start_tasks(
     motor_hardware_task::MotorHardwareTask& rmh_tsk,
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     i2c::hardware::I2CBase& i2c3,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> std::tuple<diag0_handler, diag0_handler> {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -141,7 +157,8 @@ void head_tasks::start_tasks(
 
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(
-        5, "left mc", left_motion_controller, left_queues, left_queues);
+        5, "left mc", left_motion_controller, left_queues, left_queues,
+        left_queues, left_queues);
     auto& left_tmc2130_driver = left_motor_driver_task_builder.start(
         5, "left motor driver", left_driver_configs, left_queues,
         spi3_task_client);
@@ -170,7 +187,8 @@ void head_tasks::start_tasks(
 
     // Start the right motor tasks
     auto& right_motion = right_mc_task_builder.start(
-        5, "right mc", right_motion_controller, right_queues, right_queues);
+        5, "right mc", right_motion_controller, right_queues, right_queues,
+        right_queues, right_queues);
     auto& right_tmc2130_driver = right_motor_driver_task_builder.start(
         5, "right motor driver", right_driver_configs, right_queues,
         spi2_task_client);
@@ -199,6 +217,9 @@ void head_tasks::start_tasks(
     right_queues.move_status_report_queue =
         &right_move_status_reporter.get_queue();
     right_queues.usage_storage_queue = &right_usage_storage_task.get_queue();
+
+    return std::make_tuple(call_run_diag0_z_interrupt,
+                           call_run_diag0_a_interrupt);
 }
 
 // Implementation of HeadQueueClient
@@ -229,6 +250,11 @@ void head_tasks::MotorQueueClient::send_motion_controller_queue(
 void head_tasks::MotorQueueClient::send_motor_driver_queue(
     const tmc2130::tasks::TaskMessage& m) {
     motor_queue->try_write(m);
+}
+
+void head_tasks::MotorQueueClient::send_motor_driver_queue_isr(
+    const tmc2130::tasks::TaskMessage& m) {
+    static_cast<void>(motor_queue->try_write_isr(m));
 }
 
 void head_tasks::MotorQueueClient::send_move_group_queue(
