@@ -165,7 +165,7 @@ void utility_gpio_init(void) {
     reed_switch_input_gpio_init();
     aux_input_gpio_init();
     hepa_push_button_input_gpio_init();
-    uv_push_button_input_gpio_init();
     hepa_on_off_output_init();
+    uv_push_button_input_gpio_init();
     uv_on_off_output_init();
 }

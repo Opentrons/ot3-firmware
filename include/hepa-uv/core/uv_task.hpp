@@ -8,6 +8,7 @@
 #include "hepa-uv/core/led_control_task.hpp"
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
+#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
 
 namespace uv_task {
@@ -22,10 +23,12 @@ template <led_control_task::TaskClient LEDControlClient,
           can::message_writer_task::TaskClient CanClient>
 class UVMessageHandler {
   public:
-    explicit UVMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins,
-                              LEDControlClient &led_control_client,
-                              CanClient &can_client)
+    explicit UVMessageHandler(
+        gpio_drive_hardware::GpioDrivePins &drive_pins,
+        uv_control_hardware::UVControlHardware &uv_hardware,
+        LEDControlClient &led_control_client, CanClient &can_client)
         : drive_pins{drive_pins},
+          uv_hardware{uv_hardware},
           led_control_client{led_control_client},
           can_client{can_client},
           _timer(
@@ -86,11 +89,13 @@ class UVMessageHandler {
     }
 
     void visit(const can::messages::GetHepaUVStateRequest &m) {
+        uv_current_ma = uv_hardware.get_uv_light_current();
         auto resp = can::messages::GetHepaUVStateResponse{
             .message_index = m.message_index,
             .timeout_s = uv_off_timeout_s,
             .uv_light_on = uv_light_on,
-            .remaining_time_s = (_timer.get_remaining_time() / 1000)};
+            .remaining_time_s = (_timer.get_remaining_time() / 1000),
+            .uv_current_ma = uv_current_ma};
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
@@ -121,6 +126,7 @@ class UVMessageHandler {
             }
             uv_push_button = false;
             uv_light_on = false;
+            uv_current_ma = 0;
             return;
         }
 
@@ -147,6 +153,9 @@ class UVMessageHandler {
             if (_timer.is_running()) _timer.stop();
         }
 
+        // Update the voltage usage of the uv light
+        uv_current_ma = uv_hardware.get_uv_light_current();
+
         // TODO: send state change CAN message to host
     }
 
@@ -156,8 +165,10 @@ class UVMessageHandler {
     bool uv_push_button = false;
     bool uv_light_on = false;
     uint32_t uv_off_timeout_s = DELAY_S;
+    uint16_t uv_current_ma = 0;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
+    uv_control_hardware::UVControlHardware &uv_hardware;
     LEDControlClient &led_control_client;
     CanClient &can_client;
     ot_utils::freertos_timer::FreeRTOSTimer _timer;
@@ -184,11 +195,12 @@ class UVTask {
      */
     template <led_control_task::TaskClient LEDControlClient,
               can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(gpio_drive_hardware::GpioDrivePins *drive_pins,
-                                 LEDControlClient *led_control_client,
-                                 CanClient *can_client) {
-        auto handler =
-            UVMessageHandler{*drive_pins, *led_control_client, *can_client};
+    [[noreturn]] void operator()(
+        gpio_drive_hardware::GpioDrivePins *drive_pins,
+        uv_control_hardware::UVControlHardware *uv_hardware,
+        LEDControlClient *led_control_client, CanClient *can_client) {
+        auto handler = UVMessageHandler{*drive_pins, *uv_hardware,
+                                        *led_control_client, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
