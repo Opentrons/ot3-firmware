@@ -46,6 +46,6 @@ class UVControlInterface {
     auto operator=(const UVControlInterface&) -> UVControlInterface& = delete;
     virtual ~UVControlInterface() = default;
 
-    virtual auto get_uv_light_voltage() -> uint32_t = 0;
+    virtual auto get_uv_light_current() -> uint16_t = 0;
 };
 }  // namespace uv_control

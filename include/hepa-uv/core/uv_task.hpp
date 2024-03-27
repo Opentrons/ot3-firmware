@@ -89,12 +89,13 @@ class UVMessageHandler {
     }
 
     void visit(const can::messages::GetHepaUVStateRequest &m) {
+        uv_current_ma = uv_hardware.get_uv_light_current();
         auto resp = can::messages::GetHepaUVStateResponse{
             .message_index = m.message_index,
             .timeout_s = uv_off_timeout_s,
             .uv_light_on = uv_light_on,
             .remaining_time_s = (_timer.get_remaining_time() / 1000),
-            .uv_voltage_mv = uv_voltage_mv};
+            .uv_current_ma = uv_current_ma};
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
@@ -125,7 +126,7 @@ class UVMessageHandler {
             }
             uv_push_button = false;
             uv_light_on = false;
-            uv_voltage_mv = 0;
+            uv_current_ma = 0;
             return;
         }
 
@@ -153,7 +154,7 @@ class UVMessageHandler {
         }
 
         // Update the voltage usage of the uv light
-        uv_voltage_mv = uv_hardware.get_uv_light_voltage();
+        uv_current_ma = uv_hardware.get_uv_light_current();
 
         // TODO: send state change CAN message to host
     }
@@ -164,7 +165,7 @@ class UVMessageHandler {
     bool uv_push_button = false;
     bool uv_light_on = false;
     uint32_t uv_off_timeout_s = DELAY_S;
-    uint32_t uv_voltage_mv = 0;
+    uint16_t uv_current_ma = 0;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
     uv_control_hardware::UVControlHardware &uv_hardware;

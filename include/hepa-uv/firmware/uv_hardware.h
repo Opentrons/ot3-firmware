@@ -6,7 +6,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-uint32_t get_uv_light_voltage_reading(void);
+uint16_t get_uv_current_reading(void);
 
 #ifdef __cplusplus
 }  // extern "C"

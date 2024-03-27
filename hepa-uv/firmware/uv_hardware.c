@@ -64,8 +64,8 @@ static void MX_ADC_Init(ADC_TypeDef* adc, uint32_t channel) {
     // Configure Regular Channel
     hadc_sConfig->Channel = channel;
     hadc_sConfig->Rank = ADC_REGULAR_RANK_1;
-    hadc_sConfig->SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
-    hadc_sConfig->SingleDiff = ADC_DIFFERENTIAL_ENDED;
+    hadc_sConfig->SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+    hadc_sConfig->SingleDiff = ADC_SINGLE_ENDED;
     hadc_sConfig->OffsetNumber = ADC_OFFSET_NONE;
     hadc_sConfig->Offset = 0;
     if (HAL_ADC_ConfigChannel(hadc, hadc_sConfig) != HAL_OK)
@@ -75,15 +75,20 @@ static void MX_ADC_Init(ADC_TypeDef* adc, uint32_t channel) {
 }
 
 uint32_t get_adc_reading(ADC_HandleTypeDef* hadc, uint32_t channel) {
-    // Calibrate the ADC to get more accurate reading
-    if (HAL_ADCEx_Calibration_Start(hadc, ADC_DIFFERENTIAL_ENDED) != HAL_OK) Error_Handler();
+    ADC_ChannelConfTypeDef* hadc_sConfig;
+    if (hadc->Instance == ADC1) {
+        hadc_sConfig = &hadc1_sConfig;
+    } else {
+        Error_Handler();
+        return 0;
+    }
+
+    // Calibrate the ADC to get a more accurate reading
+    if (HAL_ADCEx_Calibration_Start(hadc, ADC_SINGLE_ENDED) != HAL_OK) Error_Handler();
 
     // Configure the Channel
-    ADC_ChannelConfTypeDef sConfig = {0};
-    sConfig.Channel = channel;
-    sConfig.Rank = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
-    if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) Error_Handler();
+    hadc_sConfig->Channel = channel;
+    if (HAL_ADC_ConfigChannel(hadc, hadc_sConfig) != HAL_OK) Error_Handler();
 
     // Start The adc
     if (HAL_ADC_Start(hadc) != HAL_OK) Error_Handler();
@@ -94,10 +99,13 @@ uint32_t get_adc_reading(ADC_HandleTypeDef* hadc, uint32_t channel) {
     return HAL_ADC_GetValue(hadc);
 }
 
-uint32_t get_uv_light_voltage_reading(void) {
+uint16_t get_uv_current_reading(void) {
     uint32_t adc_reading = get_adc_reading(&hadc1, ADC_CHANNEL_1);
-    // mvolts = (ADC Reading * System mV) / 12-bit adc resolution
-    return (uint32_t)(adc_reading*3300)/4095;;
+    /*
+    We calculate the current in mA the uv ballast is drawing as followed
+    current mA = (ADC Reading * System mV) / 12-bit adc resolution / 50 Op-amp gain / 0.025 Rsns
+    */
+    return (uint16_t)((adc_reading*3300)/4095)/50/0.025;
 }
 
 void initialize_adc_hardware() {

@@ -17,7 +17,7 @@ class UVControlHardware : public uv_control::UVControlInterface {
     // lets migrate gpio.set/reset to it, so we can de-couple hardware
     // specific functionality from logic so we can fix simulation.
 
-    auto get_uv_light_voltage() -> uint32_t final;
+    auto get_uv_light_current() -> uint16_t final;
 };
 
 }  // namespace uv_control_hardware
