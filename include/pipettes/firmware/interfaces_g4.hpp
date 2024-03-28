@@ -29,28 +29,29 @@
 namespace interfaces {
 
 #ifdef USE_PRESSURE_MOVE
-template <typename Client>
+template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware>;
-template <typename Client>
+template <typename Client, typename DriverClient>
 using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware,
     sensor_tasks::QueueClient>;
 #else
-template <typename Client>
+template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware>;
-template <typename Client>
+    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
+    motor_messages::Move, motor_hardware::MotorHardware>;
+template <typename Client, typename DriverClient>
 using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware, sensor_tasks::QueueClient>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
+    motor_messages::Move, motor_hardware::MotorHardware,
+    sensor_tasks::QueueClient>;
 #endif
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    freertos_message_queue::FreeRTOSMessageQueue, Client, Client,
     motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
 
 template <PipetteType P>
@@ -94,12 +95,16 @@ auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall,
                    sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+    -> PipetteMotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall,
                    sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+    -> PipetteMotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient>;
 auto get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware;
 auto get_motion_control(motor_hardware::MotorHardware& hw,

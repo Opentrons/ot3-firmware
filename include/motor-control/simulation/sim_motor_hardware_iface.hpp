@@ -51,6 +51,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
@@ -87,10 +88,21 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
-    auto has_cancel_request() -> bool final {
-        return cancel_request.exchange(false);
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
+        motor_hardware::CancelRequest exchange_request;
+        return cancel_request.exchange(exchange_request);
     }
-    void request_cancel() final { cancel_request.store(true); }
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
+                            can::ids::ErrorCode error_code) final {
+        motor_hardware::CancelRequest update_request{
+            .severity = static_cast<uint8_t>(error_severity),
+            .code = static_cast<uint8_t>(error_code)};
+        cancel_request.store(update_request);
+    }
+    void clear_cancel_request() final {
+        motor_hardware::CancelRequest clear_request;
+        cancel_request.store(clear_request);
+    }
     auto get_usage_eeprom_config()
         -> motor_hardware::UsageEEpromConfig & final {
         return eeprom_config;
@@ -106,7 +118,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
-    std::atomic<bool> cancel_request = false;
+    std::atomic<motor_hardware::CancelRequest> cancel_request = {};
     motor_hardware::UsageEEpromConfig eeprom_config = {
         std::array<UsageRequestSet, 1>{UsageRequestSet{
             .eeprom_key = 0,
@@ -137,6 +149,7 @@ class SimBrushedMotorHardwareIface
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void trigger_limit_switch() { limit_switch_status = true; }
     void grip() final {}
     void ungrip() final {}
@@ -177,11 +190,21 @@ class SimBrushedMotorHardwareIface
         return ret;
     }
 
-    auto has_cancel_request() -> bool final {
-        return cancel_request.exchange(false);
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
+        motor_hardware::CancelRequest exchange_request;
+        return cancel_request.exchange(exchange_request);
     }
-    void request_cancel() final { cancel_request.store(true); }
-
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
+                            can::ids::ErrorCode error_code) final {
+        motor_hardware::CancelRequest update_request{
+            .severity = static_cast<uint8_t>(error_severity),
+            .code = static_cast<uint8_t>(error_code)};
+        cancel_request.store(update_request);
+    }
+    void clear_cancel_request() final {
+        motor_hardware::CancelRequest clear_request;
+        cancel_request.store(clear_request);
+    }
     void disable_encoder() final {}
     void enable_encoder() final {}
 
@@ -201,7 +224,7 @@ class SimBrushedMotorHardwareIface
     StateManagerHandle _state_manager = nullptr;
     MoveMessageHardware _id;
     bool estop_detected = false;
-    std::atomic<bool> cancel_request = false;
+    std::atomic<motor_hardware::CancelRequest> cancel_request = {};
     BrushedMotorState motor_state = BrushedMotorState::UNHOMED;
     motor_hardware::UsageEEpromConfig eeprom_config{
         std::array<UsageRequestSet, 1>{UsageRequestSet{
@@ -235,6 +258,7 @@ class SimGearMotorHardwareIface
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
@@ -267,10 +291,21 @@ class SimGearMotorHardwareIface
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
-    auto has_cancel_request() -> bool final {
-        return cancel_request.exchange(false);
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
+        motor_hardware::CancelRequest exchange_request;
+        return cancel_request.exchange(exchange_request);
     }
-    void request_cancel() final { cancel_request.store(true); }
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
+                            can::ids::ErrorCode error_code) final {
+        motor_hardware::CancelRequest update_request{
+            .severity = static_cast<uint8_t>(error_severity),
+            .code = static_cast<uint8_t>(error_code)};
+        cancel_request.store(update_request);
+    }
+    void clear_cancel_request() final {
+        motor_hardware::CancelRequest clear_request;
+        cancel_request.store(clear_request);
+    }
 
     auto get_usage_eeprom_config()
         -> motor_hardware::UsageEEpromConfig & final {
@@ -287,7 +322,7 @@ class SimGearMotorHardwareIface
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
-    std::atomic<bool> cancel_request = false;
+    std::atomic<motor_hardware::CancelRequest> cancel_request = {};
     motor_hardware::UsageEEpromConfig eeprom_config = {
         std::array<UsageRequestSet, 1>{UsageRequestSet{
             .eeprom_key = 0,

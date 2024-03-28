@@ -26,6 +26,8 @@
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 #include "hepa-uv/firmware/hepa_hardware.h"
+#include "hepa-uv/firmware/uv_hardware.h"
+#include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "timer_hardware.h"
 
@@ -150,12 +152,14 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 static auto led_hardware = led_control_hardware::LEDControlHardware();
 static auto hepa_hardware = hepa_control_hardware::HepaControlHardware();
+static auto uv_hardware = uv_control_hardware::UVControlHardware();
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
     initialize_pwm_hardware();
+    initialize_adc_hardware();
     initialize_tachometer();
     // set push button leds white
     led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
@@ -169,7 +173,8 @@ auto main() -> int {
     canbus.start(can_bit_timings);
 
     hepauv_tasks::start_tasks(canbus, gpio_drive_pins, hepa_hardware,
-                              led_hardware, i2c_comms2, eeprom_hw_iface);
+                              uv_hardware, led_hardware, i2c_comms2,
+                              eeprom_hw_iface);
 
     iWatchdog.start(6);
 

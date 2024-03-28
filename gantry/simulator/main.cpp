@@ -12,6 +12,8 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
+static interfaces::diag0_handler call_diag0_handler = NULL;
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
 
@@ -21,10 +23,10 @@ int main(int argc, char** argv) {
             return pcTaskGetName(xTaskGetCurrentTaskHandle());
         });
 
-    interfaces::initialize();
+    interfaces::initialize(&call_diag0_handler);
     interfaces::initialize_sim(argc, argv);
 
-    gantry::tasks::start_tasks(
+    call_diag0_handler = gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,
         interfaces::get_spi(), interfaces::get_driver_config(),
         interfaces::get_motor_hardware_task(), *interfaces::get_sim_i2c2(),

@@ -76,6 +76,12 @@ jobs:
           name: 'firmware-gripper-images-${{github.ref_name}}'
           path: |
             dist/gripper-images/*.hex
+      - name: 'Upload hepa-uv-images artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: 'firmware-hepa-uv-images-${{github.ref_name}}'
+          path: |
+            dist/hepa-uv-images/*.hex
   release:
     name: 'Do a release'
     runs-on: 'ubuntu-latest'

@@ -11,7 +11,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
     switch (which) {
         case TMC2160PipetteAxis::left_gear_motor:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
@@ -24,6 +24,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                                            .tbl = 0x2,
                                            .mres = 0x4},
                               .coolconf = {.sgt = 0x6},
+                              .drvconf = {.ot_select = 0},
                               .glob_scale = {.global_scaler = 0xa7}},
                 .current_config =
                     {
@@ -37,7 +38,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                 }};
         case TMC2160PipetteAxis::right_gear_motor:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
@@ -50,6 +51,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                                            .tbl = 0x2,
                                            .mres = 0x4},
                               .coolconf = {.sgt = 0x6},
+                              .drvconf = {.ot_select = 0},
                               .glob_scale = {.global_scaler = 0xa7}},
                 .current_config =
                     {
@@ -64,7 +66,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
         case TMC2160PipetteAxis::linear_motor:
         default:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 0},
+                .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
@@ -79,6 +81,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                                            .mres = 0x4,
                                            .intpol = 0x1},
                               .coolconf = {.sgt = 0x6},
+                              .drvconf = {.ot_select = 0},
                               .glob_scale = {.global_scaler = 0xff}},
                 .current_config =
                     {
@@ -99,7 +102,7 @@ auto motor_configs::driver_config_by_axis(TMC2130PipetteAxis which)
         case TMC2130PipetteAxis::linear_motor:
         default:
             return tmc2130::configs::TMC2130DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                               .ihold_irun = {.hold_current = 0x2,
                                              .run_current = 0x10,
                                              .hold_current_delay = 0x7},
@@ -162,6 +165,11 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_12,
+                     .active_setting = GPIO_PIN_RESET},
+                .diag0 =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_11,
                      .active_setting = GPIO_PIN_RESET},
             };
     }
@@ -264,6 +272,11 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
                      .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
+                .diag0 =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_6,
                      .active_setting = GPIO_PIN_RESET},
             };
     }
