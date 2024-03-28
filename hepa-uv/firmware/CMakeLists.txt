@@ -14,6 +14,7 @@ set(HEPA_UV_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/led_control_task/led_control_hardware.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/hepa_control_task/hepa_control_hardware.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/uv_control_task/uv_control_hardware.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/utils.c
@@ -27,6 +28,7 @@ set(HEPAUV_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/timer_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/hepa_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/uv_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
