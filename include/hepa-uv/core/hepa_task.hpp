@@ -64,10 +64,12 @@ class HepaMessageHandler {
     }
 
     void visit(const can::messages::GetHepaFanStateRequest &m) {
+        hepa_fan_rpm = get_hepa_fan_speed();
         auto resp = can::messages::GetHepaFanStateResponse{
             .message_index = m.message_index,
             .duty_cycle = hepa_fan_pwm,
-            .fan_on = hepa_fan_on};
+            .fan_on = hepa_fan_on,
+            .fan_rpm = hepa_fan_rpm};
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
@@ -82,14 +84,32 @@ class HepaMessageHandler {
                                                          0});
         } else {
             gpio::reset(drive_pins.hepa_on_off);
+            hepa_hardware.reset_hepa_fan_rpm();
             led_control_client.send_led_control_message(
                 led_control_task_messages::PushButtonLED{HEPA_BUTTON, 0, 0, 0,
                                                          50});
         }
     }
 
-    uint32_t hepa_fan_pwm = DEFAULT_HEPA_PWM;
+    uint16_t get_hepa_fan_speed() {
+        if (!hepa_fan_on) return 0;
+        hepa_hardware.enable_tachometer(true);
+        // wait some time to measure rpm
+        vTaskDelay(pdMS_TO_TICKS(100));
+        hepa_hardware.enable_tachometer(false);
+        // NOTE: The hepa fan only turns on if the duty cycle is at least 10%.
+        // So read the rpm and if it has not changed, reset the cached rpm
+        // value.
+        if (hepa_fan_pwm < 10 &&
+            hepa_fan_rpm == hepa_hardware.get_hepa_fan_rpm()) {
+            hepa_hardware.reset_hepa_fan_rpm();
+        }
+        return hepa_hardware.get_hepa_fan_rpm();
+    }
+
     bool hepa_fan_on = false;
+    uint32_t hepa_fan_pwm = DEFAULT_HEPA_PWM;
+    uint16_t hepa_fan_rpm = 0;
 
     gpio_drive_hardware::GpioDrivePins &drive_pins;
     hepa_control_hardware::HepaControlHardware &hepa_hardware;

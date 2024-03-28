@@ -201,10 +201,15 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
 
     // Set the counter clock frequency to 25kHz for the HEPA fan pwm.
-    if (tim == TIM3) htim->Init.Prescaler = calc_prescaler(SystemCoreClock, HEPA_TIMER_FREQ);
+    if (tim == TIM3) {
+        htim->Init.Prescaler = calc_prescaler(SystemCoreClock, HEPA_TIMER_FREQ);;
+        htim->Init.Period = PWM_WIDTH - 1;
+    }
     // Setting counter clock frequency to 2 kHz for push button LED's
-    else htim->Init.Prescaler = calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim->Init.Period = PWM_WIDTH - 1;
+    else {
+        htim->Init.Prescaler = calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
+        htim->Init.Period = PWM_WIDTH - 1;
+    }
     htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim->Init.RepetitionCounter = 0;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;

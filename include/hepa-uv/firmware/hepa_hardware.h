@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "hepa-uv/core/constants.h"
 
@@ -8,11 +9,11 @@
 extern "C" {
 #endif  // __cplusplus
 
-#define HEPA_TACHOMETER_TIMER_FREQ (20000U)
+typedef void (*hepa_rpm_callback)(uint16_t);
 
-void initialize_tachometer();
+void initialize_tachometer(hepa_rpm_callback rpm_callback);
+bool enable_hepa_fan_tachometer(bool enable);
 void set_hepa_fan_pwm(uint32_t duty_cycle);
-uint32_t get_hepa_fan_rpm();
 
 #ifdef __cplusplus
 }  // extern "C"
