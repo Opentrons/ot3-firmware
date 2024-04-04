@@ -43,6 +43,7 @@
 /* Private functions ---------------------------------------------------------*/
 
 /* External variables --------------------------------------------------------*/
+extern TIM_HandleTypeDef htim2;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 
@@ -134,6 +135,12 @@ void EXTI15_10_IRQHandler(void) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
     }
 }
+
+/**
+ * @brief This function handles TIM2 global interrupt.
+ */
+__attribute__((section(".ccmram")))
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 /**
  * @brief This function handles DMA1 channel2 global interrupt.

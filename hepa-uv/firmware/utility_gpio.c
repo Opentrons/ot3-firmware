@@ -141,7 +141,7 @@ void uv_on_off_output_init() {
  */
 static void nvic_priority_enable_init() {
     /* EXTI interrupt init DOOR_OPEN_MCU : PC7*/
-    // PC7 -> GPIO_EXTI6 (EXTI9_5_IRQn)
+    // PC7 -> GPIO_EXTI7 (EXTI9_5_IRQn)
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
@@ -149,12 +149,12 @@ static void nvic_priority_enable_init() {
     /* EXTI interrupt init HEPA_NO_MCU : PB10*/
     // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
     // PB11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
     /* EXTI interrupt init UV_NO_MCU : PC2*/
     // PC2 -> GPIO_EXTI2 (EXTI2_IRQn)
-    HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(EXTI2_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 

@@ -32,6 +32,10 @@ class HepaControlInterface {
     virtual ~HepaControlInterface() = default;
 
     virtual auto set_hepa_fan_speed(uint32_t duty_cycle) -> void = 0;
+    virtual auto get_hepa_fan_rpm() -> uint16_t = 0;
+    virtual auto reset_hepa_fan_rpm() -> void = 0;
+    virtual auto hepa_fan_rpm_irq(uint16_t rpm) -> void = 0;
+    virtual auto enable_tachometer(bool enable) -> bool = 0;
 };
 }  // namespace hepa_control
 

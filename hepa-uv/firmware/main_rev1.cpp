@@ -23,9 +23,11 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/hepa_control_hardware.hpp"
+#include "hepa-uv/firmware/hepa_hardware.h"
 #include "hepa-uv/firmware/led_control_hardware.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 #include "hepa-uv/firmware/uv_control_hardware.hpp"
+#include "hepa-uv/firmware/uv_hardware.h"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "timer_hardware.h"
 #include "uv_hardware.h"
@@ -129,6 +131,10 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
 
 static auto& hepauv_queues = hepauv_tasks::get_main_queues();
 
+static auto led_hardware = led_control_hardware::LEDControlHardware();
+static auto hepa_hardware = hepa_control_hardware::HepaControlHardware();
+static auto uv_hardware = uv_control_hardware::UVControlHardware();
+
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     switch (GPIO_Pin) {
         case DOOR_OPEN_MCU_PIN:
@@ -149,9 +155,9 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
 }
 
-static auto led_hardware = led_control_hardware::LEDControlHardware();
-static auto hepa_hardware = hepa_control_hardware::HepaControlHardware();
-static auto uv_hardware = uv_control_hardware::UVControlHardware();
+extern "C" void hepa_fan_rpm_callback(uint16_t rpm) {
+    hepa_hardware.hepa_fan_rpm_irq(rpm);
+}
 
 auto main() -> int {
     HardwareInit();
@@ -159,6 +165,7 @@ auto main() -> int {
     utility_gpio_init();
     initialize_pwm_hardware();
     initialize_adc_hardware();
+    initialize_tachometer(&hepa_fan_rpm_callback);
     // set push button leds white
     led_hardware.set_button_led_power(HEPA_BUTTON, 0, 0, 0, 50);
     led_hardware.set_button_led_power(UV_BUTTON, 0, 0, 0, 50);

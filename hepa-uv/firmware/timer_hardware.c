@@ -31,6 +31,8 @@ uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
     if(htim->Instance == TIM1) {
         __HAL_RCC_TIM1_CLK_ENABLE();
+    } else if(htim->Instance == TIM2) {
+        __HAL_RCC_TIM2_CLK_ENABLE();
     } else if(htim->Instance == TIM3) {
         __HAL_RCC_TIM3_CLK_ENABLE();
     } else if(htim->Instance == TIM8) {
@@ -199,10 +201,15 @@ static void MX_TIM_Init(TIM_TypeDef* tim) {
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
 
     // Set the counter clock frequency to 25kHz for the HEPA fan pwm.
-    if (tim == TIM3) htim->Init.Prescaler = calc_prescaler(SystemCoreClock, HEPA_TIMER_FREQ);
+    if (tim == TIM3) {
+        htim->Init.Prescaler = calc_prescaler(SystemCoreClock, HEPA_TIMER_FREQ);;
+        htim->Init.Period = PWM_WIDTH - 1;
+    }
     // Setting counter clock frequency to 2 kHz for push button LED's
-    else htim->Init.Prescaler = calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
-    htim->Init.Period = PWM_WIDTH - 1;
+    else {
+        htim->Init.Prescaler = calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
+        htim->Init.Period = PWM_WIDTH - 1;
+    }
     htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim->Init.RepetitionCounter = 0;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;

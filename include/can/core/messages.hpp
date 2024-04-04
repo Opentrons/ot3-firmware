@@ -1699,12 +1699,14 @@ struct GetHepaFanStateResponse
     uint32_t message_index;
     uint32_t duty_cycle;
     uint8_t fan_on;
+    uint16_t fan_rpm;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
         iter = bit_utils::int_to_bytes(duty_cycle, iter, limit);
         iter = bit_utils::int_to_bytes(fan_on, iter, limit);
+        iter = bit_utils::int_to_bytes(fan_rpm, iter, limit);
         return iter - body;
     }
 
