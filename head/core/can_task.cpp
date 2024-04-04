@@ -81,7 +81,7 @@ static auto system_message_handler =
         std::span(std::cbegin(version_get()->sha),
                   std::cend(version_get()->sha)),
         revision_get()->primary, revision_get()->secondary,
-        revision_get()->tertiary);
+        reinterpret_cast<const std::array<char, 2>&>(revision_get()->tertiary));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 
