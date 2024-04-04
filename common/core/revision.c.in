@@ -4,7 +4,7 @@
 static const struct revision _revision = {
     .primary = '${PRIMARY_REVISION}',
     .secondary = '${SECONDARY_REVISION}',
-    .tertiary = {0x00,'${TERTIARY_FLAG}'}
+    .tertiary = {0x00,${TERTIARY_FLAG}}
 };
 
 const struct revision* revision_get() {
