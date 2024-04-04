@@ -51,6 +51,7 @@ static auto system_message_handler =
         std::span(std::cbegin(version_get()->sha),
                   std::cend(version_get()->sha)),
         revision_get()->primary, revision_get()->secondary,
+        revision_get()->tertiary,
         // this is the high-throughput path so we can only be a 96
         static_cast<uint8_t>(can::ids::PipetteType::pipette_96)};
 
