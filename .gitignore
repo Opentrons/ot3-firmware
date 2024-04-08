@@ -18,3 +18,4 @@ state_manager/coverage.xml
 state_manager/dist/
 state_manager/poetry.toml
 dist/
+dist-sensor/
