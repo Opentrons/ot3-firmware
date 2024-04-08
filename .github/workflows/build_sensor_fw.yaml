@@ -1,4 +1,4 @@
-name: "Build firmware release bundles"
+name: "Build firmware sensor variant bundles"
 on:
   push:
     branches:
