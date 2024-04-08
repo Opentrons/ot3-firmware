@@ -5,6 +5,7 @@ CMakeUserPresets.json
 *.pyc
 build-cross/
 build-cross-pipettes/
+build-cross-sensor/
 stm32-tools/
 build-host/
 cmake-build-debug/
