@@ -32,7 +32,7 @@ jobs:
           cmake --preset=cross-sensor-buffer . -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: 'Build images'
         run: |
-          cmake --build --preset=firmware-g4-sensors --target firmware-applications
+          cmake --build --preset=firmware-g4-sensors --target firmware-applications firmware-images
       - name: 'Prep images for upload'
         run: |
           cmake --install ./build-cross-sensor
