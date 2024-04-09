@@ -14,10 +14,10 @@ class HepaControlHardware : public hepa_control::HepaControlInterface {
     ~HepaControlHardware() final = default;
 
     void set_hepa_fan_speed(uint32_t duty_cycle) final;
-    uint16_t get_hepa_fan_rpm() final;
+    auto get_hepa_fan_rpm() -> uint16_t final;
     void reset_hepa_fan_rpm() final;
     void hepa_fan_rpm_irq(uint16_t rpm) final;
-    bool enable_tachometer(bool enable) final;
+    auto enable_tachometer(bool enable) -> bool final;
 
   private:
     uint16_t hepa_fan_rpm = 0;
