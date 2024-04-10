@@ -5,6 +5,7 @@ CMakeUserPresets.json
 *.pyc
 build-cross/
 build-cross-pipettes/
+build-cross-sensor/
 stm32-tools/
 build-host/
 cmake-build-debug/
@@ -17,3 +18,4 @@ state_manager/coverage.xml
 state_manager/dist/
 state_manager/poetry.toml
 dist/
+dist-sensor/

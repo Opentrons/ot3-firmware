@@ -1,4 +1,4 @@
-name: "cross-compile/format/lint all targets"
+name: "cross-compile-sensors/format/lint all targets"
 on:
   push:
     branches:
@@ -47,10 +47,10 @@ jobs:
           cache-version: ${{ secrets.CACHE_VERSION }}
 
       - name: Configure
-        run: cmake --preset=cross . -DUSE_PRESSURE_MOVE=true
+        run: cmake --preset=cross-sensor-buffer .
 
       - name: Build all STM32G4 applications
-        run: cmake --build --preset=${{ matrix.target }} --target ${{ matrix.target }}-images ${{ matrix.target }}-applications
+        run: cmake --build ./build-cross-sensor --target ${{ matrix.target }}-images ${{ matrix.target }}-applications
 
   format:
     runs-on: "ubuntu-20.04"
@@ -76,10 +76,10 @@ jobs:
           cache-version: ${{ secrets.CACHE_VERSION }}
 
       - name: Configure
-        run: cmake --preset=cross . -DUSE_PRESSURE_MOVE=true
+        run: cmake --preset=cross-sensor-buffer .
 
       - name: Format
-        run: cmake --build ./build-cross --target format-ci
+        run: cmake --build ./build-cross-sensor --target format-ci
 
   lint:
     runs-on: "ubuntu-20.04"
@@ -110,7 +110,7 @@ jobs:
           cache-version: ${{ secrets.CACHE_VERSION }}
 
       - name: Configure
-        run: cmake --preset=cross . -DUSE_PRESSURE_MOVE=true
+        run: cmake --preset=cross-sensor-buffer .
 
       - name: Format
-        run: cmake --build ./build-cross --target ${{ matrix.target }}-lint
+        run: cmake --build ./build-cross-sensor --target ${{ matrix.target }}-lint
