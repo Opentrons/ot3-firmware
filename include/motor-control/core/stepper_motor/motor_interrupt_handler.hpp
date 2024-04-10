@@ -10,7 +10,7 @@
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 #include "pipettes/core/sensor_tasks.hpp"
 #endif
 
@@ -386,7 +386,7 @@ class MotorInterruptHandler {
             hardware.enable_encoder();
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
                 auto msg = can::messages::BindSensorOutputRequest{
                     .message_index = buffered_move.message_index,
@@ -484,7 +484,7 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         stall_handled = false;
         build_and_send_ack(ack_msg_id);
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
             auto stop_msg = can::messages::BindSensorOutputRequest{
                 .message_index = buffered_move.message_index,
@@ -637,7 +637,7 @@ class MotorInterruptHandler {
         hardware.set_step_tracker(
             static_cast<uint32_t>(position_tracker >> 31));
     }
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
     void send_to_pressure_sensor_queue(
         can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_tasks::get_queues()

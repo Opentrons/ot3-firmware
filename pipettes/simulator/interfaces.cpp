@@ -74,7 +74,7 @@ auto linear_motor::get_interrupt_driver(
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
                               linear_motor_tasks::tmc2130_driver::QueueClient>&
         handler)
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2130_driver::QueueClient,
@@ -96,7 +96,7 @@ auto linear_motor::get_interrupt_driver(
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
                               linear_motor_tasks::tmc2160_driver::QueueClient>&
         handler)
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2160_driver::QueueClient,

@@ -42,7 +42,7 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         linear_motor_tasks::QueueClient>,

@@ -135,7 +135,7 @@ class MotionControllerMessageHandler {
         }
     }
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
     void handle(const can::messages::AddSensorMoveRequest& m) {
         LOG("Received add linear move request: velocity=%d, acceleration=%d, "
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",

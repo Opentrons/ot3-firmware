@@ -11,7 +11,7 @@ struct RouteMotorDriverInterrupt {
     uint8_t debounce_count;
 };
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::AddLinearMoveRequest,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,

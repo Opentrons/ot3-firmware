@@ -28,7 +28,7 @@
 
 namespace interfaces {
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,

@@ -14,7 +14,7 @@
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
 
-#if defined(USE_PRESSURE_MOVE)
+#if defined(USE_SENSOR_MOVE)
 constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
 #else
 constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
@@ -285,7 +285,7 @@ class MMR920 {
     }
 
     void send_accumulated_pressure_data(uint32_t message_index) {
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
         for (int i = 0; i < pressure_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
@@ -364,7 +364,7 @@ class MMR920 {
         }
 
         if (echo_this_time) {
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
             // send a response with 9999 to make an overload of the buffer
             // visible
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
