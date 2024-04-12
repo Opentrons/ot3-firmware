@@ -386,7 +386,11 @@ class MotorInterruptHandler {
             .sensor = can::ids::SensorType::pressure,
             .sensor_id = sensor,
             .binding = binding};
-        send_to_pressure_sensor_queue(msg);
+        if (sensor == can::ids::SensorId::S0) {
+            send_to_pressure_sensor_queue_rear(msg);
+        } else {
+            send_to_pressure_sensor_queue_front(msg);
+        }
     }
 #endif
     void update_move() {
@@ -648,10 +652,18 @@ class MotorInterruptHandler {
             static_cast<uint32_t>(position_tracker >> 31));
     }
 #ifdef USE_PRESSURE_MOVE
-    void send_to_pressure_sensor_queue(
+    void send_to_pressure_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_tasks::get_queues()
                           .pressure_sensor_queue_rear->try_write_isr(m);
+        // if (!success) {this->cancel_and_clear_moves();}
+    }
+    void send_to_pressure_sensor_queue_front(
+        can::messages::BindSensorOutputRequest& m) {
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        std::ignore = sensor_tasks::get_queues()
+                          .pressure_sensor_queue_front->try_write_isr(m);
         // if (!success) {this->cancel_and_clear_moves();}
     }
 #endif
