@@ -59,8 +59,12 @@ def _build_fw(zip_path, apps_path):
         for fname in os.listdir(apps_path):
             zf.write(os.path.join(apps_path, fname), fname)
 
-def _transfer_firmware(host, repo_path, scp, ssh):
-    apps_path = os.path.join(repo_path, 'dist', 'applications')
+def _transfer_firmware(host, repo_path, scp, ssh, sensors):
+    dist_dir = "dist"
+    if sensors
+        dist_dir = dist_dir+"-sensors"
+    apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
+    apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
         robot_zip_path = '/tmp/fw.zip'
@@ -69,9 +73,14 @@ def _transfer_firmware(host, repo_path, scp, ssh):
         _ssh(ssh, host, 'unzip -o {zip_path} -d /usr/lib/firmware/'.format(zip_path=robot_zip_path))
         _ssh(ssh, host, 'rm {zip_path}'.format(zip_path=robot_zip_path))
 
-def _prep_firmware(repo_path, cmake):
-    _cmd([cmake, '--build', '--preset=firmware-g4', '--target', 'firmware-applications'], cwd=repo_path)
-    _cmd([cmake, '--install', './build-cross', '--component', 'Applications'], cwd=repo_path)
+def _prep_firmware(repo_path, cmake, sensors):
+    preset = "firmware-g4"
+    working_dir = "./build-cross"
+    if sensors
+        preset = preset+"-sensors"
+        working_dir = working_dir+"-sensors"
+    _cmd([cmake, '--build', f'--preset={preset}', '--target', 'firmware-applications'], cwd=repo_path)
+    _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
 
 @contextmanager
 def _prep_robot(host, ssh):
@@ -99,13 +108,13 @@ def _restart_robot(host, ssh):
 def _do_push(host, repo_path, build, restart):
     ssh, scp, cmake = _find_utils()
     if build:
-        _prep_firmware(repo_path, cmake)
+        _prep_firmware(repo_path, cmake, sensors)
     with _prep_robot(host, ssh):
-        _transfer_firmware(host, repo_path, scp, ssh)
+        _transfer_firmware(host, repo_path, scp, ssh, sensors)
     if restart:
         _restart_robot(host, ssh)
 
-def push(host, repo_path=None, build=True, restart=True):
+def push(host, repo_path=None, build=True, restart=True, sensors=False):
     repo = repo_path or os.dirname(__file__)
     try:
         _do_push(host, repo, build, restart)
@@ -125,7 +134,7 @@ def _push_from_argparse(args):
     if args.key:
         _SSH_EXTRA_OPTS.append('-i')
         _SSH_EXTRA_OPTS.append(args.key)
-    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart)
+    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart, args.sensors)
 
 def _arg_parser(parent=None):
     parents = []
@@ -153,6 +162,11 @@ def _arg_parser(parent=None):
     )
     parser.add_argument(
         '--key',
+        type=str,
+        help='Private SSH key to use'
+    )
+    parser.add_argument(
+        '--sensors',
         type=str,
         help='Private SSH key to use'
     )
