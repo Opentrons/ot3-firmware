@@ -7,7 +7,7 @@
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
 static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff;
-#if PIPETTE_TYPE_DEFINE != SINGLE_CHANNEL
+#ifdef USE_TWO_BUFFERS
 static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff_front;
 #endif
 static auto eeprom_task_builder =
@@ -144,7 +144,7 @@ void sensor_tasks::start_tasks(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
         secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
         sensor_version,
-#if PIPETTE_TYPE_DEFINE != SINGLE_CHANNEL
+#ifdef USE_TWO_BUFFERS
         p_buff_front);
 #else
         // we don't want to build a second buffer for the single channel, but if
