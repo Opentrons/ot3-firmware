@@ -10,9 +10,6 @@
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
-#ifdef USE_SENSOR_MOVE
-#include "pipettes/core/sensor_tasks.hpp"
-#endif
 
 namespace motor_handler {
 
@@ -45,8 +42,28 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
+// take macros up a level to this?
+//see tabs
+struct Empty {};
+
+template <class SensorClient>
+struct SensorAccessHelper {
+    inline static void send_to_pressure_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        sensor_client.send_to_pressure_sensor_queue(m); // handle return type/data. use send_to_isr like previously
+    }
+    inline static void send_to_capacitive_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        sensor_client.send_to_capacitive_sensor_queue(m);
+    }
+}
+
+template<> struct SensorAccessHelper<Empty> {
+    inline static void send_to_pressure_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {}
+    inline static void send_to_capacitive_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {}
+}
+
 template <template <class> class QueueImpl, class StatusClient,
-          class DriverClient, typename MotorMoveMessage, typename MotorHardware>
+          class DriverClient, typename MotorMoveMessage, typename MotorHardware,
+          class SensorClient = Empty>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
@@ -60,13 +77,15 @@ class MotorInterruptHandler {
                           DriverClient& driver_queue,
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
-                          UpdatePositionQueue& incoming_update_position_queue)
+                          UpdatePositionQueue& incoming_update_position_queue,
+                          SensorClient& sensor_queue_client) // make optional, default nullopt
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
           driver_client(driver_queue),
           hardware(hardware_iface),
           stall_checker{stall},
-          update_position_queue(incoming_update_position_queue) {
+          update_position_queue(incoming_update_position_queue),
+          sensor_client(sensor_client) {
         hardware.unstep();
     }
     ~MotorInterruptHandler() = default;
@@ -388,13 +407,23 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
 #ifdef USE_SENSOR_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-                auto msg = can::messages::BindSensorOutputRequest{
-                    .message_index = buffered_move.message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = buffered_move.sensor_id,
-                    .binding = static_cast<uint8_t>(0x3)  // sync and report
-                };
-                send_to_pressure_sensor_queue(msg);
+                if (buffered_move.sensor_type == can::ids::SensorType::pressure) {
+                    auto msg = can::messages::BindSensorOutputRequest{
+                        .message_index = buffered_move.message_index,
+                        .sensor = can::ids::SensorType::pressure,
+                        .sensor_id = buffered_move.sensor_id,
+                        .binding = static_cast<uint8_t>(0x3)  // sync and report
+                    };
+                    send_to_pressure_sensor_queue(msg);
+                } else if (buffered_move.sensor_type == can::ids::SensorType::capacitive) {
+                    auto msg = can::messages::BindSensorOutputRequest{
+                        .message_index = buffered_move.message_index,
+                        .sensor = can::ids::SensorType::capacitive,
+                        .sensor_id = buffered_move.sensor_id,
+                        .binding = static_cast<uint8_t>(0x3)  // sync and report
+                    };
+                    send_to_capacitive_sensor_queue(msg);
+                }
             }
 #endif
         }
@@ -486,13 +515,23 @@ class MotorInterruptHandler {
         build_and_send_ack(ack_msg_id);
 #ifdef USE_SENSOR_MOVE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            auto stop_msg = can::messages::BindSensorOutputRequest{
-                .message_index = buffered_move.message_index,
-                .sensor = can::ids::SensorType::pressure,
-                .sensor_id = buffered_move.sensor_id,
-                .binding =
-                    static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
-            send_to_pressure_sensor_queue(stop_msg);
+            if (buffered_move.sensor_type == can::ids::SensorType::pressure) {
+                auto stop_msg = can::messages::BindSensorOutputRequest{
+                    .message_index = buffered_move.message_index,
+                    .sensor = can::ids::SensorType::pressure,
+                    .sensor_id = buffered_move.sensor_id,
+                    .binding =
+                        static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
+                send_to_pressure_sensor_queue(stop_msg);
+            } else if (buffered_move.sensor_type == can::ids::SensorType::pressure) {
+                auto stop_msg = can::messages::BindSensorOutputRequest{
+                    .message_index = buffered_move.message_index,
+                    .sensor = can::ids::SensorType::capacitive,
+                    .sensor_id = buffered_move.sensor_id,
+                    .binding =
+                        static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
+                send_to_capacitive_sensor_queue(stop_msg);
+            }
         }
 #endif
         set_buffered_move(MotorMoveMessage{});
@@ -640,9 +679,11 @@ class MotorInterruptHandler {
 #ifdef USE_SENSOR_MOVE
     void send_to_pressure_sensor_queue(
         can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_tasks::get_queues()
-                          .pressure_sensor_queue_rear->try_write_isr(m);
-        // if (!success) {this->cancel_and_clear_moves();}
+        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue(sensor_client, m);
+    }
+    void send_to_capacitive_sensor_queue(
+        can::messages::BindSensorOutputRequest& m) {
+        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue(sensor_client, m);
     }
 #endif
     uint64_t tick_count = 0x0;
@@ -656,6 +697,7 @@ class MotorInterruptHandler {
     MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
+    SensorClient& sensor_client;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
     bool clear_queue_until_empty = false;
     bool stall_handled = false;

@@ -786,24 +786,28 @@ struct FirmwareUpdateStatusResponse
         -> bool = default;
 };
 
-struct SendAccumulatedPressureDataRequest
-    : BaseMessage<MessageId::send_accumulated_pressure_data> {
+struct SendAccumulatedSensorDataRequest
+    : BaseMessage<MessageId::send_accumulated_sensor_data> {
     uint32_t message_index = 0;
     uint8_t sensor_id = 0;
+    uint8_t sensor_type = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> SendAccumulatedPressureDataRequest {
+        -> SendAccumulatedSensorDataRequest {
         uint32_t msg_ind = 0;
         uint8_t sensor_id = 0;
+        uint8_t sensor_type = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
-        return SendAccumulatedPressureDataRequest{.message_index = msg_ind,
-                                                  .sensor_id = sensor_id};
+        body = bit_utils::bytes_to_int(body, limit, sensor_type);
+        return SendAccumulatedSensorDataRequest{.message_index = msg_ind,
+                                                  .sensor_id = sensor_id,
+                                                  .sensor_type = sensor_type};
     }
 
-    auto operator==(const SendAccumulatedPressureDataRequest& other) const
+    auto operator==(const SendAccumulatedSensorDataRequest& other) const
         -> bool = default;
 };
 
@@ -1772,6 +1776,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
     mm_per_tick velocity;
     uint8_t request_stop_condition;
     can::ids::SensorId sensor_id{};
+    can::ids::SensorType sensor_type{};
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> AddSensorMoveRequest {
@@ -1783,6 +1788,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
         uint8_t request_stop_condition = 0;
         uint32_t msg_ind = 0;
         uint8_t sensor_id = 0;
+        uint8_t sensor_type = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
         body = bit_utils::bytes_to_int(body, limit, group_id);
@@ -1792,6 +1798,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
         body = bit_utils::bytes_to_int(body, limit, velocity);
         body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
+        body = bit_utils::bytes_to_int(body, limit, sensor_type);
         return AddSensorMoveRequest{
             .message_index = msg_ind,
             .group_id = group_id,
@@ -1801,6 +1808,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
             .velocity = velocity,
             .request_stop_condition = request_stop_condition,
             .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
+            .sensor_type = static_cast<can::ids::SensorType>(sensor_type),
         };
     }
 

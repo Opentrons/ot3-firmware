@@ -118,7 +118,7 @@ enum class MessageId {
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
     baseline_sensor_response = 0x8e,
-    send_accumulated_pressure_data = 0x8f,
+    send_accumulated_sensor_data = 0x8f,
     set_hepa_fan_state_request = 0x90,
     get_hepa_fan_state_request = 0x91,
     get_hepa_fan_state_response = 0x92,
@@ -197,6 +197,7 @@ enum class SensorType {
     pressure_temperature = 0x4,
     humidity = 0x5,
     temperature = 0x6,
+    UNUSED = 0x7,
 };
 
 /** Sensor IDs available.

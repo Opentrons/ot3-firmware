@@ -15,9 +15,9 @@
 #include "sensors/core/utils.hpp"
 
 #if defined(USE_SENSOR_MOVE)
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
+constexpr size_t SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
 #else
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
+constexpr size_t SENSOR_BUFFER_SIZE = 0;
 #endif
 
 namespace sensors {
@@ -43,7 +43,7 @@ class MMR920 {
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
            const sensors::mmr920::SensorVersion version,
-           std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
+           std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -284,7 +284,7 @@ class MMR920 {
             mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
-    void send_accumulated_pressure_data(uint32_t message_index) {
+    void send_accumulated_sensor_data(uint32_t message_index) {
 #ifdef USE_SENSOR_MOVE
         for (int i = 0; i < pressure_buffer_index; i++) {
             // send over buffer adn then clear buffer values
@@ -367,7 +367,7 @@ class MMR920 {
 #ifdef USE_SENSOR_MOVE
             // send a response with 9999 to make an overload of the buffer
             // visible
-            if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
+            if (pressure_buffer_index < SENSOR_BUFFER_SIZE) {
                 (*p_buff).at(pressure_buffer_index) = pressure;
                 pressure_buffer_index++;
             } else {
@@ -566,7 +566,7 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
-    std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff;
+    std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
     uint16_t pressure_buffer_index = 0;
 };
 

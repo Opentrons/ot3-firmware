@@ -59,10 +59,10 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<
+    -> MotorInterruptHandlerType<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2130_driver::QueueClient> {
-    return pipettes::PipetteMotorInterruptHandler(
+    return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
         linear_motor_tasks::tmc2130_driver::get_queues(), hw, stall,
         queues.plunger_update_queue, sensor_client);
@@ -72,10 +72,10 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<
+    -> MotorInterruptHandlerType<
         linear_motor_tasks::QueueClient,
         linear_motor_tasks::tmc2160_driver::QueueClient> {
-    return pipettes::PipetteMotorInterruptHandler(
+    return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
         linear_motor_tasks::tmc2160_driver::get_queues(), hw, stall,
         queues.plunger_update_queue, sensor_client);
@@ -140,11 +140,11 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
             gear_motor_tasks::get_left_gear_queues(), hw.left, stall.left,
-            queues.left_update_queue),
+            queues.left_update_queue, nullptr), //make SensorMotorInterruptHandler
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
             gear_motor_tasks::get_right_gear_queues(), hw.right, stall.right,
-            queues.right_update_queue)};
+            queues.right_update_queue, nullptr)};
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
