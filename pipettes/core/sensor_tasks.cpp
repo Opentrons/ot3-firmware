@@ -20,7 +20,7 @@ static auto capacitive_sensor_task_builder_rear =
 
 static auto capacitive_sensor_task_builder_front =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto pressure_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
