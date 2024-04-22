@@ -379,7 +379,20 @@ class MotorInterruptHandler {
          */
         return tick_count < buffered_move.duration;
     }
-
+#ifdef USE_PRESSURE_MOVE
+    auto send_bind_message(can::ids::SensorId sensor, uint8_t binding) -> void {
+        auto msg = can::messages::BindSensorOutputRequest{
+            .message_index = buffered_move.message_index,
+            .sensor = can::ids::SensorType::pressure,
+            .sensor_id = sensor,
+            .binding = binding};
+        if (sensor == can::ids::SensorId::S0) {
+            send_to_pressure_sensor_queue_rear(msg);
+        } else {
+            send_to_pressure_sensor_queue_front(msg);
+        }
+    }
+#endif
     void update_move() {
         _has_active_move = move_queue.try_read_isr(&buffered_move);
         if (_has_active_move) {
@@ -388,13 +401,13 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
 #ifdef USE_PRESSURE_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-                auto msg = can::messages::BindSensorOutputRequest{
-                    .message_index = buffered_move.message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = buffered_move.sensor_id,
-                    .binding = static_cast<uint8_t>(0x3)  // sync and report
-                };
-                send_to_pressure_sensor_queue(msg);
+                auto binding = static_cast<uint8_t>(0x3);  // sync and report
+                if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
+                    send_bind_message(can::ids::SensorId::S0, binding);
+                    send_bind_message(can::ids::SensorId::S1, binding);
+                } else {
+                    send_bind_message(buffered_move.sensor_id, binding);
+                }
             }
 #endif
         }
@@ -486,13 +499,14 @@ class MotorInterruptHandler {
         build_and_send_ack(ack_msg_id);
 #ifdef USE_PRESSURE_MOVE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            auto stop_msg = can::messages::BindSensorOutputRequest{
-                .message_index = buffered_move.message_index,
-                .sensor = can::ids::SensorType::pressure,
-                .sensor_id = buffered_move.sensor_id,
-                .binding =
-                    static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)};
-            send_to_pressure_sensor_queue(stop_msg);
+            auto binding =
+                static_cast<uint8_t>(can::ids::SensorOutputBinding::sync);
+            if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
+                send_bind_message(can::ids::SensorId::S0, binding);
+                send_bind_message(can::ids::SensorId::S1, binding);
+            } else {
+                send_bind_message(buffered_move.sensor_id, binding);
+            }
         }
 #endif
         set_buffered_move(MotorMoveMessage{});
@@ -638,11 +652,17 @@ class MotorInterruptHandler {
             static_cast<uint32_t>(position_tracker >> 31));
     }
 #ifdef USE_PRESSURE_MOVE
-    void send_to_pressure_sensor_queue(
+    void send_to_pressure_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_tasks::get_queues()
                           .pressure_sensor_queue_rear->try_write_isr(m);
-        // if (!success) {this->cancel_and_clear_moves();}
+    }
+    void send_to_pressure_sensor_queue_front(
+        can::messages::BindSensorOutputRequest& m) {
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        std::ignore = sensor_tasks::get_queues()
+                          .pressure_sensor_queue_front->try_write_isr(m);
     }
 #endif
     uint64_t tick_count = 0x0;
