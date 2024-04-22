@@ -61,7 +61,7 @@ def _build_fw(zip_path, apps_path):
 
 def _transfer_firmware(host, repo_path, scp, ssh, sensors):
     dist_dir = "dist"
-    if sensors
+    if sensors:
         dist_dir = dist_dir+"-sensors"
     apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
     apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
@@ -76,11 +76,11 @@ def _transfer_firmware(host, repo_path, scp, ssh, sensors):
 def _prep_firmware(repo_path, cmake, sensors):
     preset = "firmware-g4"
     working_dir = "./build-cross"
-    if sensors
+    if sensors:
         preset = preset+"-sensors"
         working_dir = working_dir+"-sensors"
     _cmd([cmake, '--build', f'--preset={preset}', '--target', 'firmware-applications'], cwd=repo_path)
-    _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
+    _cmd([cmake, '--install', f'{working_dir}/', '--component', 'Applications'], cwd=repo_path)
 
 @contextmanager
 def _prep_robot(host, ssh):
@@ -105,7 +105,7 @@ def _find_utils():
 def _restart_robot(host, ssh):
     _ssh(ssh, host, 'nohup systemctl restart opentrons-robot-server &')
 
-def _do_push(host, repo_path, build, restart):
+def _do_push(host, repo_path, build, restart, sensors):
     ssh, scp, cmake = _find_utils()
     if build:
         _prep_firmware(repo_path, cmake, sensors)
@@ -117,7 +117,7 @@ def _do_push(host, repo_path, build, restart):
 def push(host, repo_path=None, build=True, restart=True, sensors=False):
     repo = repo_path or os.dirname(__file__)
     try:
-        _do_push(host, repo, build, restart)
+        _do_push(host, repo, build, restart, sensors)
         return 0
     except subprocess.CalledProcessError as e:
         print(
@@ -167,7 +167,7 @@ def _arg_parser(parent=None):
     )
     parser.add_argument(
         '--sensors',
-        type=str,
+        action='store_true',
         help='Private SSH key to use'
     )
     return parser

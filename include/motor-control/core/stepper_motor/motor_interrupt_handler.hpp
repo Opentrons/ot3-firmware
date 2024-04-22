@@ -401,7 +401,7 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
 #ifdef USE_PRESSURE_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-                uint8_t binding = static_cast<uint8_t>(0x3);  // sync and report
+                auto binding = static_cast<uint8_t>(0x3);  // sync and report
                 if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                     send_bind_message(can::ids::SensorId::S0, binding);
                     send_bind_message(can::ids::SensorId::S1, binding);
@@ -499,7 +499,7 @@ class MotorInterruptHandler {
         build_and_send_ack(ack_msg_id);
 #ifdef USE_PRESSURE_MOVE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            uint8_t binding =
+            auto binding =
                 static_cast<uint8_t>(can::ids::SensorOutputBinding::sync);
             if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                 send_bind_message(can::ids::SensorId::S0, binding);
@@ -656,7 +656,6 @@ class MotorInterruptHandler {
         can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_tasks::get_queues()
                           .pressure_sensor_queue_rear->try_write_isr(m);
-        // if (!success) {this->cancel_and_clear_moves();}
     }
     void send_to_pressure_sensor_queue_front(
         can::messages::BindSensorOutputRequest& m) {
@@ -664,7 +663,6 @@ class MotorInterruptHandler {
         // sensor id
         std::ignore = sensor_tasks::get_queues()
                           .pressure_sensor_queue_front->try_write_isr(m);
-        // if (!success) {this->cancel_and_clear_moves();}
     }
 #endif
     uint64_t tick_count = 0x0;
