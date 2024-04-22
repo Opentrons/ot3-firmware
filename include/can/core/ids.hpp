@@ -64,8 +64,6 @@ enum class MessageId {
     write_motor_current_request = 0x33,
     read_motor_current_request = 0x34,
     read_motor_current_response = 0x35,
-    read_motor_driver_error_status_request = 0x36,
-    read_motor_driver_error_status_response = 0x37,
     set_brushed_motor_vref_request = 0x40,
     set_brushed_motor_pwm_request = 0x41,
     gripper_grip_request = 0x42,
@@ -169,12 +167,10 @@ enum class ErrorCode {
     over_pressure = 0xd,
     door_open = 0xe,
     reed_open = 0xf,
-    motor_driver_error_detected = 0x10,
 };
 
 /** Error Severity levels. */
 enum class ErrorSeverity {
-    none = 0x0,
     warning = 0x1,
     recoverable = 0x2,
     unrecoverable = 0x3,

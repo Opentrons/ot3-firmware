@@ -8,14 +8,11 @@ namespace tmc {
 namespace tasks {
 
 using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple =
-    std::tuple<can::messages::ReadMotorDriverRegister,
-               can::messages::WriteMotorDriverRegister,
-               can::messages::WriteMotorCurrentRequest,
-               can::messages::ReadMotorDriverErrorStatusRequest>;
+using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
+                                   can::messages::WriteMotorDriverRegister,
+                                   can::messages::WriteMotorCurrentRequest>;
 using GearCanMessageTuple =
     std::tuple<can::messages::GearReadMotorDriverRegister,
-               can::messages::ReadMotorDriverErrorStatusRequest,
                can::messages::GearWriteMotorDriverRegister,
                can::messages::GearWriteMotorCurrentRequest>;
 using CanMessage =
@@ -40,7 +37,6 @@ using GearTaskMessage = typename ::utils::VariantCat<
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_motor_driver_queue(m)};
-    {client.send_motor_driver_queue_isr(m)};
 };
 
 /**
@@ -50,7 +46,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
 template <typename Client>
 concept GearTaskClient = requires(Client client, const GearTaskMessage& m) {
     {client.send_motor_driver_queue(m)};
-    {client.send_motor_driver_queue_isr(m)};
 };
 };  // namespace tasks
 };  // namespace tmc

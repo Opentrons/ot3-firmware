@@ -12,7 +12,6 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
-#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "spi/core/writer.hpp"
 
@@ -32,7 +31,7 @@ using SPIWriterClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
 // single channel/8 channel linear motor tasks
-auto start_tasks(
+void start_tasks(
     CanWriterTask& can_writer,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
@@ -40,10 +39,10 @@ auto start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::diag0_handler;
+        tail_accessor);
 
 // 96/384 linear motor tasks
-auto start_tasks(
+void start_tasks(
     CanWriterTask& can_writer,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
@@ -51,9 +50,7 @@ auto start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) -> interfaces::diag0_handler;
-
-void call_run_diag0_interrupt();
+        tail_accessor);
 
 /**
  * Access to all the linear motion task queues on the pipette.
@@ -137,11 +134,6 @@ struct QueueClient : can::message_writer::MessageWriter {
         driver_queue->try_write(m);
     }
 
-    void send_motor_driver_queue_isr(
-        const tmc2130::tasks::TaskMessage& m) const {
-        static_cast<void>(driver_queue->try_write_isr(m));
-    }
-
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
         driver_queue{nullptr};
 };
@@ -179,11 +171,6 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);
-    }
-
-    void send_motor_driver_queue_isr(
-        const tmc2160::tasks::TaskMessage& m) const {
-        static_cast<void>(driver_queue->try_write_isr(m));
     }
 
     freertos_message_queue::FreeRTOSMessageQueue<tmc2160::tasks::TaskMessage>*

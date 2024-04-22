@@ -55,8 +55,6 @@ struct MotorQueueClient : can::message_writer::MessageWriter {
 
     void send_motor_driver_queue(const tmc::tasks::TaskMessage& m);
 
-    void send_motor_driver_queue_isr(const tmc::tasks::TaskMessage& m);
-
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
     void send_move_status_reporter_queue(

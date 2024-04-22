@@ -505,21 +505,6 @@ struct __attribute__((packed, __may_alias__)) DriveStatus {
     uint32_t stst : 1 = 0;
 };
 
-struct __attribute__((packed, __may_alias__)) DriveConf {
-    static constexpr Registers address = Registers::DRV_CONF;
-    static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 22) - 1;
-
-    uint32_t bbm_time : 5 = 0;
-    uint32_t bit_padding_1 : 3 = 0;
-    uint32_t bbm_clks : 4 = 0;
-    uint32_t bit_padding_2 : 4 = 0;
-    // 00 = 150*C, 01 = 143*C, 10 = 136*C, 11 = 120*C
-    uint32_t ot_select : 2 = 0;
-    uint32_t drv_strength : 2 = 0;
-    uint32_t filt_isense : 2 = 0;
-};
-
 /**
  * This register sets the control current for voltage PWM mode stealth chop.
  */
@@ -559,7 +544,6 @@ struct TMC2160RegisterMap {
     StealthChop pwmconf = {};
     DriveStatus drvstatus = {};
     GStatus gstat = {};
-    DriveConf drvconf = {};
     GlobalScaler glob_scale = {};
 };
 

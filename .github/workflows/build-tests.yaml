@@ -18,7 +18,7 @@ jobs:
   build-and-test:
     name: Run all tests
     runs-on: "ubuntu-20.04"
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout ot3-firmware repo
         uses: actions/checkout@v4
