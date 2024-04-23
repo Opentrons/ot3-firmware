@@ -138,6 +138,7 @@ class MotionControllerMessageHandler {
                     .error_code =
                         can::ids::ErrorCode::motor_driver_error_detected});
         } else {
+            controller.enable_motor();
             controller.move(m);
         }
     }

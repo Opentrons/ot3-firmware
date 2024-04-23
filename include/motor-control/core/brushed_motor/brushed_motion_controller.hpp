@@ -51,9 +51,6 @@ class MotionController {
             .stay_engaged = can_msg.stay_engaged,
             .stop_condition = MoveStopCondition::none,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -66,9 +63,6 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = MoveStopCondition::limit_switch,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -84,16 +78,15 @@ class MotionController {
                         get_mechanical_config().get_encoder_um_per_pulse()),
             .stop_condition = MoveStopCondition::encoder_position,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
     void enable_motor() {
-        hardware.activate_motor();
-        hardware.start_timer_interrupt();
-        enabled = true;
+        if (!enabled) {
+            hardware.activate_motor();
+            hardware.start_timer_interrupt();
+            enabled = true;
+        }
     }
 
     void disable_motor() {

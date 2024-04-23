@@ -131,6 +131,7 @@ class MotionControllerMessageHandler {
                     .error_code =
                         can::ids::ErrorCode::motor_driver_error_detected});
         } else {
+            controller.enable_motor();
             controller.move(m);
         }
     }
@@ -141,6 +142,7 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
+        controller.enable_motor();
         controller.move(m);
     }
 #endif
@@ -158,6 +160,7 @@ class MotionControllerMessageHandler {
                     .error_code =
                         can::ids::ErrorCode::motor_driver_error_detected});
         } else {
+            controller.enable_motor();
             controller.move(m);
         }
     }

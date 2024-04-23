@@ -80,9 +80,6 @@ class MotionController {
             0,
             hardware.get_usage_eeprom_config().get_distance_key(),
             can_msg.sensor_id};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -101,9 +98,6 @@ class MotionController {
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
             .sensor_id = can::ids::SensorId::UNUSED};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -121,9 +115,6 @@ class MotionController {
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
             .sensor_id = can::ids::SensorId::UNUSED};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 #else
@@ -142,9 +133,6 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -161,9 +149,6 @@ class MotionController {
             .stop_condition =
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -211,9 +196,11 @@ class MotionController {
     auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
-        hardware.start_timer_interrupt();
-        hardware.activate_motor();
-        enabled = true;
+        if (!enabled) {
+            hardware.start_timer_interrupt();
+            hardware.activate_motor();
+            enabled = true;
+        }
     }
 
     void disable_motor() {
@@ -330,10 +317,6 @@ class PipetteMotionController {
             can_msg.action,
             gear_motor_id,
             can::ids::SensorId::UNUSED};
-
-        if (!enabled) {
-            enable_motor();
-        }
         queue.try_write(msg);
     }
 
@@ -369,9 +352,11 @@ class PipetteMotionController {
     auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
-        hardware.start_timer_interrupt();
-        hardware.activate_motor();
-        enabled = true;
+        if (!enabled) {
+            hardware.start_timer_interrupt();
+            hardware.activate_motor();
+            enabled = true;
+        }
     }
 
     void disable_motor() {
