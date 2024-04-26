@@ -62,9 +62,8 @@ def _build_fw(zip_path, apps_path):
 def _transfer_firmware(host, repo_path, scp, ssh, sensors):
     dist_dir = "dist"
     if sensors:
-        dist_dir = dist_dir+"-sensors"
-    apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
-    apps_path = os.path.join(repo_path, 'dist-sensor', 'applications')
+        dist_dir = dist_dir+"-sensor"
+    apps_path = os.path.join(repo_path, dist_dir, 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
         robot_zip_path = '/tmp/fw.zip'
@@ -78,9 +77,9 @@ def _prep_firmware(repo_path, cmake, sensors):
     working_dir = "./build-cross"
     if sensors:
         preset = preset+"-sensors"
-        working_dir = working_dir+"-sensors"
-    _cmd([cmake, '--build', f'--preset={preset}', '--target', 'firmware-applications'], cwd=repo_path)
-    _cmd([cmake, '--install', f'{working_dir}/', '--component', 'Applications'], cwd=repo_path)
+        working_dir = working_dir+"-sensor"
+    _cmd([cmake, '--build', f'--preset={preset}', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+    _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
 
 @contextmanager
 def _prep_robot(host, ssh):
