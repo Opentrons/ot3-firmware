@@ -7,6 +7,9 @@
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
 static std::array<float, SENSOR_BUFFER_SIZE> p_buff;
+#ifdef USE_TWO_BUFFERS
+static std::array<float, SENSOR_BUFFER_SIZE> p_buff_front;
+#endif
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
@@ -20,7 +23,7 @@ static auto capacitive_sensor_task_builder_rear =
 
 static auto capacitive_sensor_task_builder_front =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto pressure_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
@@ -140,7 +143,15 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
         secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
-        sensor_version, p_buff);
+        sensor_version,
+#ifdef USE_TWO_BUFFERS
+        p_buff_front);
+#else
+        // we don't want to build a second buffer for the single channel, but if
+        // we dont pass in the correct sized array here, compilation fails
+        // this doesn't matter though cause single channels will never call this
+        p_buff);
+#endif
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,

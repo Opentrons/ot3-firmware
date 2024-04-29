@@ -1,0 +1,44 @@
+name: "Build firmware sensor variant bundles"
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  ci: 1
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 20
+    steps:
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - uses: "actions/cache@v3"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+      - name: 'CMake configure'
+        run: |
+          cmake --preset=cross-sensor-buffer . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: 'Build images'
+        run: |
+          cmake --build --preset=firmware-g4-sensors --target firmware-applications firmware-images
+      - name: 'Prep images for upload'
+        run: |
+          cmake --install ./build-cross-sensor
+      - name: 'Upload application artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: 'firmware-applications-${{github.ref_name}}'
+          path: |
+            dist-sensor/applications/*
