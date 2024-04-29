@@ -22,9 +22,9 @@ class CapacitiveMessageHandler {
     explicit CapacitiveMessageHandler(
         I2CQueueWriter &i2c_writer, I2CQueuePoller &i2c_poller,
         sensors::hardware::SensorHardwareBase &hardware, CanClient &can_client,
-        OwnQueue &own_queue, bool shared_task)
+        OwnQueue &own_queue, bool shared_task, std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
         : driver{i2c_writer, i2c_poller, can_client,
-                 own_queue,  hardware,   shared_task} {}
+                 own_queue, hardware, shared_task, p_buff} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -212,12 +212,12 @@ class CapacitiveSensorTask {
         i2c::writer::Writer<QueueImpl> *writer,
         i2c::poller::Poller<QueueImpl> *poller,
         sensors::hardware::SensorHardwareBase *hardware, CanClient *can_client,
-        bool shared_task = false) {
+        std::array<float, SENSOR_BUFFER_SIZE> *p_buff, bool shared_task = false) {
         // On the 8 channel, there is a singular cap sensor but we're using
         // multiple channels. We will thus rely on the sensor id in this case
         // to determine which CIN configuration the sensor should be in.
         auto handler = CapacitiveMessageHandler{
-            *writer, *poller, *hardware, *can_client, get_queue(), shared_task};
+            *writer, *poller, *hardware, *can_client, get_queue(), shared_task, p_buff};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

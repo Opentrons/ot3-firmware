@@ -140,11 +140,11 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
             gear_motor_tasks::get_left_gear_queues(), hw.left, stall.left,
-            queues.left_update_queue, nullptr), //make SensorMotorInterruptHandler
+            queues.left_update_queue),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
             gear_motor_tasks::get_right_gear_queues(), hw.right, stall.right,
-            queues.right_update_queue, nullptr)};
+            queues.right_update_queue)};
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,

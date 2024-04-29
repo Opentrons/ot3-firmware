@@ -43,23 +43,31 @@ using namespace motor_messages;
  */
 
 // take macros up a level to this?
-//see tabs
-struct Empty {};
+struct Empty {
+    static Empty& get_default();
+};
 
 template <class SensorClient>
-struct SensorAccessHelper {
+struct SensorClientHelper {
     inline static void send_to_pressure_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_to_pressure_sensor_queue(m); // handle return type/data. use send_to_isr like previously
+        sensor_client.send_pressure_sensor_queue_rear_isr(m);
     }
     inline static void send_to_capacitive_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_to_capacitive_sensor_queue(m);
+        sensor_client.send_capacitive_sensor_queue_rear_isr(m);
     }
-}
+};
 
-template<> struct SensorAccessHelper<Empty> {
-    inline static void send_to_pressure_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {}
-    inline static void send_to_capacitive_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {}
-}
+template<>
+struct SensorClientHelper<Empty> {
+    inline static void send_to_pressure_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        std::ignore = sensor_client;
+        std::ignore = m;
+    }
+    inline static void send_to_capacitive_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        std::ignore = sensor_client;
+        std::ignore = m;
+    }
+};
 
 template <template <class> class QueueImpl, class StatusClient,
           class DriverClient, typename MotorMoveMessage, typename MotorHardware,
@@ -77,15 +85,24 @@ class MotorInterruptHandler {
                           DriverClient& driver_queue,
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
+                          UpdatePositionQueue& incoming_update_position_queue)
+        : MotorInterruptHandler(incoming_move_queue, outgoing_queue, 
+            driver_queue, hardware_iface, stall, incoming_update_position_queue, 
+            Empty::get_default()) {}
+    MotorInterruptHandler(MoveQueue& incoming_move_queue,
+                          StatusClient& outgoing_queue,
+                          DriverClient& driver_queue,
+                          MotorHardware& hardware_iface,
+                          stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue,
-                          SensorClient& sensor_queue_client) // make optional, default nullopt
+                          SensorClient& sensor_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
           driver_client(driver_queue),
           hardware(hardware_iface),
           stall_checker{stall},
           update_position_queue(incoming_update_position_queue),
-          sensor_client(sensor_client) {
+          sensor_client(sensor_queue) {
         hardware.unstep();
     }
     ~MotorInterruptHandler() = default;

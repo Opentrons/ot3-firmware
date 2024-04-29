@@ -74,7 +74,7 @@ void sensor_tasks::start_tasks(
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
-            sensor_hardware_primary, queues);
+            sensor_hardware_primary, queues, p_buff);
     auto& tip_notification_task_rear = tip_notification_task_builder_rear.start(
         5, "tip notification sensor s0", queues, sensor_hardware_primary);
 
@@ -144,7 +144,7 @@ void sensor_tasks::start_tasks(
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
-            sensor_hardware_primary, queues, shared_cap_task);
+            sensor_hardware_primary, queues, p_buff, shared_cap_task);
     auto& tip_notification_task_rear = tip_notification_task_builder_rear.start(
         5, "tip notification sensor s0", queues, sensor_hardware_primary);
 
@@ -177,7 +177,7 @@ void sensor_tasks::start_tasks(
         auto& capacitive_sensor_task_front =
             capacitive_sensor_task_builder_front.start(
                 5, "capacitive sensor s1", i2c2_task_client, i2c2_poller_client,
-                sensor_hardware_primary, queues);
+                sensor_hardware_primary, queues, p_buff);
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
         queues.capacitive_sensor_queue_front =
             &capacitive_sensor_task_front.get_queue();
@@ -222,6 +222,18 @@ void sensor_tasks::QueueClient::send_capacitive_sensor_queue_front(
     }
 }
 
+void sensor_tasks::QueueClient::send_capacitive_sensor_queue_rear_isr(
+    const sensors::utils::TaskMessage& m) {
+    std::ignore = capacitive_sensor_queue_rear->try_write_isr(m);
+}
+
+void sensor_tasks::QueueClient::send_capacitive_sensor_queue_front_isr(
+    const sensors::utils::TaskMessage& m) {
+    if (capacitive_sensor_queue_front != nullptr) {
+        std::ignore = capacitive_sensor_queue_front->try_write_isr(m);
+    }
+}
+
 void sensor_tasks::QueueClient::send_pressure_sensor_queue_rear(
     const sensors::utils::TaskMessage& m) {
     pressure_sensor_queue_rear->try_write(m);
@@ -236,6 +248,23 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
     // front queue is not a nullptr.
     if (pressure_sensor_queue_front != nullptr) {
         pressure_sensor_queue_front->try_write(m);
+    }
+}
+
+void sensor_tasks::QueueClient::send_pressure_sensor_queue_rear_isr(
+    const sensors::utils::TaskMessage& m) {
+    std::ignore = pressure_sensor_queue_rear->try_write_isr(m);
+}
+
+void sensor_tasks::QueueClient::send_pressure_sensor_queue_front_isr(
+    const sensors::utils::TaskMessage& m) {
+    // The single channel only has 1 pressure sensor which
+    // is generally referred to as the "rear". In this instance,
+    // the front queue should not be dereferenced and
+    // we should double check this by making sure the
+    // front queue is not a nullptr.
+    if (pressure_sensor_queue_front != nullptr) {
+        std::ignore = pressure_sensor_queue_front->try_write_isr(m);
     }
 }
 

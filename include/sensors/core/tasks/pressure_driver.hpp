@@ -14,11 +14,13 @@
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
 
+/*
 #if defined(USE_SENSOR_MOVE)
 constexpr size_t SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
 #else
 constexpr size_t SENSOR_BUFFER_SIZE = 0;
 #endif
+*/
 
 namespace sensors {
 
@@ -73,7 +75,7 @@ class MMR920 {
     void set_echoing(bool should_echo) {
         echoing = should_echo;
         if (should_echo) {
-            pressure_buffer_index = 0;  // reset buffer index
+            sensor_buffer_index = 0;  // reset buffer index
         }
     }
 
@@ -286,7 +288,7 @@ class MMR920 {
 
     void send_accumulated_sensor_data(uint32_t message_index) {
 #ifdef USE_SENSOR_MOVE
-        for (int i = 0; i < pressure_buffer_index; i++) {
+        for (int i = 0; i < sensor_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -367,9 +369,9 @@ class MMR920 {
 #ifdef USE_SENSOR_MOVE
             // send a response with 9999 to make an overload of the buffer
             // visible
-            if (pressure_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*p_buff).at(pressure_buffer_index) = pressure;
-                pressure_buffer_index++;
+            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
+                (*p_buff).at(sensor_buffer_index) = pressure;
+                sensor_buffer_index++;
             } else {
                 can_client.send_can_message(
                     can::ids::NodeId::host,
@@ -567,7 +569,7 @@ class MMR920 {
         return write(Reg::address, value);
     }
     std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
-    uint16_t pressure_buffer_index = 0;
+    uint16_t sensor_buffer_index = 0;
 };
 
 }  // namespace tasks

@@ -157,8 +157,13 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
 /**
  * The pending move queue
  */
+#ifdef USE_SENSOR_MOVE
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::SensorSyncMove>
+    motor_queue("Motor Queue");
+#else
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
+#endif
 
 static freertos_message_queue::FreeRTOSMessageQueue<
     can::messages::UpdateMotorPositionEstimationRequest>
@@ -199,7 +204,7 @@ static motor_class::Motor z_motor{
 static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::z_tasks::get_queues(),
     gripper_tasks::z_tasks::get_queues(), motor_hardware_iface, stallcheck,
-    update_position_queue, gripper_tasks::get_main_queues()); // use USE_SENSOR_MOVE
+    update_position_queue, gripper_tasks::get_main_queues());
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);

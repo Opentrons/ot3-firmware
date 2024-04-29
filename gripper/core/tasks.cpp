@@ -16,6 +16,7 @@
 
 static auto tasks = gripper_tasks::AllTask{};
 static auto queues = gripper_tasks::QueueClient{can::ids::NodeId::gripper};
+static std::array<float, SENSOR_BUFFER_SIZE> p_buff;
 
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
@@ -96,11 +97,11 @@ auto gripper_tasks::start_tasks(
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
             5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
-            sensor_hardware, queues);
+            sensor_hardware, queues, p_buff);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "cap sensor S0", i2c3_task_client, i2c3_poll_client,
-            sensor_hardware, queues);
+            sensor_hardware, queues, p_buff);
 
     tasks.i2c2_task = &i2c2_task;
     tasks.i2c3_task = &i2c3_task;
@@ -155,12 +156,26 @@ void gripper_tasks::QueueClient::send_capacitive_sensor_queue_rear(
     capacitive_sensor_queue_rear->try_write(m);
 }
 
+void gripper_tasks::QueueClient::send_capacitive_sensor_queue_front_isr(
+    const sensors::utils::TaskMessage& m) {
+    std::ignore = capacitive_sensor_queue_front->try_write_isr(m);
+}
+
+void gripper_tasks::QueueClient::send_capacitive_sensor_queue_rear_isr(
+    const sensors::utils::TaskMessage& m) {
+    std::ignore = capacitive_sensor_queue_rear->try_write_isr(m);
+}
+
 // gripper does not have environment nor pressure sensor
 void gripper_tasks::QueueClient::send_environment_sensor_queue(
     const sensors::utils::TaskMessage&) {}
 void gripper_tasks::QueueClient::send_pressure_sensor_queue_front(
     const sensors::utils::TaskMessage&) {}
 void gripper_tasks::QueueClient::send_pressure_sensor_queue_rear(
+    const sensors::utils::TaskMessage&) {}
+void gripper_tasks::QueueClient::send_pressure_sensor_queue_front_isr(
+    const sensors::utils::TaskMessage&) {}
+void gripper_tasks::QueueClient::send_pressure_sensor_queue_rear_isr(
     const sensors::utils::TaskMessage&) {}
 
 void gripper_tasks::QueueClient::send_tip_notification_queue_rear(
