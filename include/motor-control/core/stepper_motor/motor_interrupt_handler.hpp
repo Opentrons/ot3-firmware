@@ -49,26 +49,46 @@ struct Empty {
 
 template <class SensorClient>
 struct SensorClientHelper {
-    inline static void send_to_pressure_sensor_queue(
+    inline static void send_to_pressure_sensor_queue_rear(
         SensorClient& sensor_client,
         can::messages::BindSensorOutputRequest& m) {
         sensor_client.send_pressure_sensor_queue_rear_isr(m);
     }
-    inline static void send_to_capacitive_sensor_queue(
+    inline static void send_to_pressure_sensor_queue_front(
+        SensorClient& sensor_client,
+        can::messages::BindSensorOutputRequest& m) {
+        sensor_client.send_pressure_sensor_queue_front_isr(m);
+    }
+    inline static void send_to_capacitive_sensor_queue_rear(
         SensorClient& sensor_client,
         can::messages::BindSensorOutputRequest& m) {
         sensor_client.send_capacitive_sensor_queue_rear_isr(m);
+    }
+    inline static void send_to_capacitive_sensor_queue_front(
+        SensorClient& sensor_client,
+        can::messages::BindSensorOutputRequest& m) {
+        sensor_client.send_capacitive_sensor_queue_front_isr(m);
     }
 };
 
 template <>
 struct SensorClientHelper<Empty> {
-    inline static void send_to_pressure_sensor_queue(
+    inline static void send_to_pressure_sensor_queue_rear(
         Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_client;
         std::ignore = m;
     }
-    inline static void send_to_capacitive_sensor_queue(
+    inline static void send_to_pressure_sensor_queue_front(
+        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        std::ignore = sensor_client;
+        std::ignore = m;
+    }
+    inline static void send_to_capacitive_sensor_queue_rear(
+        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+        std::ignore = sensor_client;
+        std::ignore = m;
+    }
+    inline static void send_to_capacitive_sensor_queue_front(
         Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_client;
         std::ignore = m;
