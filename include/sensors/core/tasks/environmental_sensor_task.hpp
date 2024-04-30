@@ -76,7 +76,8 @@ class EnvironmentSensorMessageHandler {
     }
 
     void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
-        LOG("Received request to dump environmental data buffer %d", m.sensor_id);
+        LOG("Received request to dump environmental data buffer %d",
+            m.sensor_id);
         std::ignore = m;
     }
 

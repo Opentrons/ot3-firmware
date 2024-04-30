@@ -44,26 +44,32 @@ using namespace motor_messages;
 
 // take macros up a level to this?
 struct Empty {
-    static Empty& get_default();
+    static auto get_default() -> Empty&;
 };
 
 template <class SensorClient>
 struct SensorClientHelper {
-    inline static void send_to_pressure_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
+    inline static void send_to_pressure_sensor_queue(
+        SensorClient& sensor_client,
+        can::messages::BindSensorOutputRequest& m) {
         sensor_client.send_pressure_sensor_queue_rear_isr(m);
     }
-    inline static void send_to_capacitive_sensor_queue(SensorClient& sensor_client, can::messages::BindSensorOutputRequest& m) {
+    inline static void send_to_capacitive_sensor_queue(
+        SensorClient& sensor_client,
+        can::messages::BindSensorOutputRequest& m) {
         sensor_client.send_capacitive_sensor_queue_rear_isr(m);
     }
 };
 
-template<>
+template <>
 struct SensorClientHelper<Empty> {
-    inline static void send_to_pressure_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+    inline static void send_to_pressure_sensor_queue(
+        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_client;
         std::ignore = m;
     }
-    inline static void send_to_capacitive_sensor_queue(Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
+    inline static void send_to_capacitive_sensor_queue(
+        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
         std::ignore = sensor_client;
         std::ignore = m;
     }
@@ -86,9 +92,9 @@ class MotorInterruptHandler {
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
-        : MotorInterruptHandler(incoming_move_queue, outgoing_queue, 
-            driver_queue, hardware_iface, stall, incoming_update_position_queue, 
-            Empty::get_default()) {}
+        : MotorInterruptHandler(
+              incoming_move_queue, outgoing_queue, driver_queue, hardware_iface,
+              stall, incoming_update_position_queue, Empty::get_default()) {}
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
                           DriverClient& driver_queue,
@@ -416,7 +422,9 @@ class MotorInterruptHandler {
         return tick_count < buffered_move.duration;
     }
 #ifdef USE_SENSOR_MOVE
-    auto send_bind_message(can::ids::SensorType sensor_type, can::ids::SensorId sensor_id, uint8_t binding) -> void {
+    auto send_bind_message(can::ids::SensorType sensor_type,
+                           can::ids::SensorId sensor_id, uint8_t binding)
+        -> void {
         auto msg = can::messages::BindSensorOutputRequest{
             .message_index = buffered_move.message_index,
             .sensor = sensor_type,
@@ -447,10 +455,13 @@ class MotorInterruptHandler {
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
                 auto binding = static_cast<uint8_t>(0x3);  // sync and report
                 if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
-                    send_bind_message(buffered_move.sensor_type, can::ids::SensorId::S0, binding);
-                    send_bind_message(buffered_move.sensor_type, can::ids::SensorId::S1, binding);
+                    send_bind_message(buffered_move.sensor_type,
+                                      can::ids::SensorId::S0, binding);
+                    send_bind_message(buffered_move.sensor_type,
+                                      can::ids::SensorId::S1, binding);
                 } else {
-                    send_bind_message(buffered_move.sensor_type, buffered_move.sensor_id, binding);
+                    send_bind_message(buffered_move.sensor_type,
+                                      buffered_move.sensor_id, binding);
                 }
             }
 #endif
@@ -546,10 +557,13 @@ class MotorInterruptHandler {
             auto binding =
                 static_cast<uint8_t>(can::ids::SensorOutputBinding::sync);
             if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
-                send_bind_message(buffered_move.sensor_type, can::ids::SensorId::S0, binding);
-                send_bind_message(buffered_move.sensor_type, can::ids::SensorId::S1, binding);
+                send_bind_message(buffered_move.sensor_type,
+                                  can::ids::SensorId::S0, binding);
+                send_bind_message(buffered_move.sensor_type,
+                                  can::ids::SensorId::S1, binding);
             } else {
-                send_bind_message(buffered_move.sensor_type, buffered_move.sensor_id, binding);
+                send_bind_message(buffered_move.sensor_type,
+                                  buffered_move.sensor_id, binding);
             }
         }
 #endif
@@ -698,21 +712,27 @@ class MotorInterruptHandler {
 #ifdef USE_SENSOR_MOVE
     void send_to_pressure_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
-        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_rear(sensor_client, m);
+        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_rear(
+            sensor_client, m);
     }
     void send_to_pressure_sensor_queue_front(
         can::messages::BindSensorOutputRequest& m) {
-        // send to both queues, they will handle their own gating based on sensor id
-        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_front(sensor_client, m);
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_front(
+            sensor_client, m);
     }
     void send_to_capacitive_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
-        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_rear(sensor_client, m);
+        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_rear(
+            sensor_client, m);
     }
     void send_to_capacitive_sensor_queue_front(
         can::messages::BindSensorOutputRequest& m) {
-        // send to both queues, they will handle their own gating based on sensor id
-        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_front(sensor_client, m);
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_front(
+            sensor_client, m);
     }
 #endif
     uint64_t tick_count = 0x0;

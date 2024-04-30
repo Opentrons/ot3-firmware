@@ -803,8 +803,8 @@ struct SendAccumulatedSensorDataRequest
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, sensor_type);
         return SendAccumulatedSensorDataRequest{.message_index = msg_ind,
-                                                  .sensor_id = sensor_id,
-                                                  .sensor_type = sensor_type};
+                                                .sensor_id = sensor_id,
+                                                .sensor_type = sensor_type};
     }
 
     auto operator==(const SendAccumulatedSensorDataRequest& other) const

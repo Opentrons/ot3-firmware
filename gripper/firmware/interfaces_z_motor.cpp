@@ -158,7 +158,8 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
  * The pending move queue
  */
 #ifdef USE_SENSOR_MOVE
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::SensorSyncMove>
+static freertos_message_queue::FreeRTOSMessageQueue<
+    motor_messages::SensorSyncMove>
     motor_queue("Motor Queue");
 #else
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>

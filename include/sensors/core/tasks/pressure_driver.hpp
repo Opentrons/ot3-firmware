@@ -13,14 +13,7 @@
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
-
-/*
-#if defined(USE_SENSOR_MOVE)
-constexpr size_t SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
-#else
-constexpr size_t SENSOR_BUFFER_SIZE = 0;
-#endif
-*/
+#include "common/core/sensor_buffer.hpp"
 
 namespace sensors {
 

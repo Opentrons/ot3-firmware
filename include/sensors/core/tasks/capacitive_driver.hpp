@@ -27,12 +27,7 @@
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
-
-#if defined(USE_SENSOR_MOVE)
-constexpr size_t SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
-#else
-constexpr size_t SENSOR_BUFFER_SIZE = 0;
-#endif
+#include "common/core/sensor_buffer.hpp"
 
 namespace sensors {
 
@@ -103,7 +98,7 @@ class FDC1004 {
     void set_echoing(bool should_echo) {
         echoing = should_echo;
         if (should_echo) {
-            sensor_buffer_index = 0; // reset buffer index
+            sensor_buffer_index = 0;  // reset buffer index
         }
     }
 
@@ -404,12 +399,12 @@ class FDC1004 {
     fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
 
-    static constexpr uint16_t DELAY = 20; // can we reduce?
+    static constexpr uint16_t DELAY = 20;  // can we reduce?
     static constexpr uint16_t STOP_DELAY = 0;
     can::ids::SensorId sensor_id = can::ids::SensorId::S0;
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
     fdc1004::MeasurementRate measurement_rate =
-        fdc1004::MeasurementRate::FOUR_HUNDRED_SAMPLES_PER_SECOND;
+        fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND; // make FOUR_HUNDRED_SAMPLES_PER_SECOND?
     bool shared_sensor = false;
 
     float current_offset_pf = 0;
