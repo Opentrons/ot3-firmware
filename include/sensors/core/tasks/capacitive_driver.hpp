@@ -23,11 +23,11 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
-#include "common/core/sensor_buffer.hpp"
 
 namespace sensors {
 
@@ -403,8 +403,9 @@ class FDC1004 {
     static constexpr uint16_t STOP_DELAY = 0;
     can::ids::SensorId sensor_id = can::ids::SensorId::S0;
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
-    fdc1004::MeasurementRate measurement_rate =
-        fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND; // make FOUR_HUNDRED_SAMPLES_PER_SECOND?
+    fdc1004::MeasurementRate measurement_rate = fdc1004::MeasurementRate::
+        ONE_HUNDRED_SAMPLES_PER_SECOND;  // make
+                                         // FOUR_HUNDRED_SAMPLES_PER_SECOND?
     bool shared_sensor = false;
 
     float current_offset_pf = 0;

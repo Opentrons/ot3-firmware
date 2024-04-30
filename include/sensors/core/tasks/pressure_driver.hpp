@@ -8,12 +8,12 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/mmr920.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
-#include "common/core/sensor_buffer.hpp"
 
 namespace sensors {
 

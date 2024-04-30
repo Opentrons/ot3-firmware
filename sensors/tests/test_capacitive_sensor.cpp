@@ -580,8 +580,8 @@ SCENARIO("capacitance driver tests no shared CINs") {
 
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
-    sensors::tasks::FDC1004 callback_host(writer, poller, queue_client,
-                                          response_queue, mock_hw, false, &p_buff);
+    sensors::tasks::FDC1004 callback_host(
+        writer, poller, queue_client, response_queue, mock_hw, false, &p_buff);
 
     can::message_writer_task::TaskMessage empty_msg{};
 
