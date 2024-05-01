@@ -2,6 +2,7 @@ function(target_gripper_core TARGET)
     if(${USE_SENSOR_MOVE})
     target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_compile_definitions(${TARGET} PUBLIC P_BUFF_SIZE=2800)
+    target_compile_definitions(${TARGET} PUBLIC USE_TWO_BUFFERS=true)
     endif()
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_tasks.cpp

@@ -188,7 +188,12 @@ void sensor_tasks::start_tasks(
         auto& capacitive_sensor_task_front =
             capacitive_sensor_task_builder_front.start(
                 5, "capacitive sensor s1", i2c2_task_client, i2c2_poller_client,
-                sensor_hardware_primary, queues, p_buff);
+                sensor_hardware_secondary, queues,
+#ifdef USE_TWO_BUFFERS
+                p_buff_front);
+#else
+                p_buff);
+#endif
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
         queues.capacitive_sensor_queue_front =
             &capacitive_sensor_task_front.get_queue();
