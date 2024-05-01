@@ -42,7 +42,6 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
-// take macros up a level to this?
 struct Empty {
     static auto get_default() -> Empty&;
 };
