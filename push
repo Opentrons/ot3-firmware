@@ -22,7 +22,8 @@ import re
 _DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
 _SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
-_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
+_ROBOT_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
+_DIST_DIR = "dist"
 
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
@@ -51,11 +52,8 @@ def _scp_from_robot(scp_util, host, local, remote, **extras):
         **extras
     )
 
-
-
 def _cmd(cmdlist, **extras):
     _extras = {k: v for k, v in chain(_DEFAULT_EXTRAS.items(), extras.items())}
-    # breakpoint()
     print(' '.join(cmdlist))
     subprocess.run(cmdlist, **_extras).check_returncode()
 
@@ -68,61 +66,55 @@ def _controlled_tempdir():
         shutil.rmtree(td)
 
 def _build_fw(zip_path, apps_path, targets):
-    regex_list = [re.compile(f"{target}" + r"(.*).hex") for target in targets]
-    with ZipFile(zip_path, 'w') as zf:
-        for fname in os.listdir(apps_path):
-            if any([reg.search(fname) for reg in regex_list]):
-                # breakpoint()
+    if targets:
+        regex_list = [re.compile(f"{target}" + r"(.*).hex") for target in targets]
+        with ZipFile(zip_path, 'w') as zf:
+            for fname in os.listdir(apps_path):
+                # only write to zip file to be copied if filename matches target
+                if any([reg.search(fname) for reg in regex_list]):
+                    zf.write(os.path.join(apps_path, fname), fname)
+    else:
+        with ZipFile(zip_path, 'w') as zf:
+            for fname in os.listdir(apps_path):
+                # write all image files to zip file
                 zf.write(os.path.join(apps_path, fname), fname)
-    # breakpoint()
 
-
-def _update_shortsha(json_data, targets):
+def _update_shortsha(scp, host, json_data_path, targets):
     shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
-    with open(json_data, 'r+') as output:
-        manifest = json.load(output)
+    # copy data to local file
+    _scp_from_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
+    with open(json_data_path, 'r+') as output_file:
+        manifest = json.load(output_file)
         for target in targets:
-            if target not in manifest['subsystems']:
-                print(f"target {target} not found, continuing.")
-                continue
             manifest['subsystems'][target]['shortsha'] = shortsha
-        json.dump(manifest, output)
+        output_file.seek(0)
+        json.dump(manifest, output_file)
+    # copy updated subsystem data to the robot
+    _scp_to_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
 
 def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
-    dist_dir = "dist"
-    # apps_path = os.path.join(repo_path, 'dist', 'applications')
-    # breakpoint()
-    if sensors:
-        dist_dir = dist_dir+"-sensor"
-    apps_path = os.path.join(repo_path, dist_dir, 'applications')
+    apps_path = os.path.join(repo_path, _DIST_DIR, 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
         robot_zip_path = '/tmp/fw.zip'
-        local_temp_manifest_path = os.path.join(td, 'temp_manifest.json')
-        breakpoint()
-        _scp_from_robot(scp, host, local_temp_manifest_path, _MANIFEST_FILE_PATH)
-        # modify this
         _build_fw(local_zip_path, apps_path, targets)
         if targets:
-            _update_shortsha(local_temp_manifest_path, targets)
+            local_temp_manifest_path = os.path.join(td, 'temp_manifest.json')
+            _update_shortsha(scp, host, local_temp_manifest_path, targets)
         _scp_to_robot(scp, host, local_zip_path, robot_zip_path)
         _ssh(ssh, host, 'unzip -o {zip_path} -d /usr/lib/firmware/'.format(zip_path=robot_zip_path))
         _ssh(ssh, host, 'rm {zip_path}'.format(zip_path=robot_zip_path))
 
 def _prep_firmware(repo_path, cmake, sensors, targets):
     working_dir = "./build-cross"
-    # make sure -sensors still works
 
     if targets:
         for target in targets:
-            # breakpoint()
             _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
-            # might not need this line becasue --install updates the manifest file
-            # _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
-
     else:
         _cmd([cmake, '--build', f'--preset=firmware-g4', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
-        _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
+
+    _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
 
 
 @contextmanager
