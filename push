@@ -23,8 +23,6 @@ _DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
 _SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
 _ROBOT_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
-_DIST_DIR = "dist"
-
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
         self.util = which_util
@@ -93,7 +91,10 @@ def _update_shortsha(scp, host, json_data_path, targets):
     _scp_to_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
 
 def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
-    apps_path = os.path.join(repo_path, _DIST_DIR, 'applications')
+    dist_dir = "dist"
+    if sensors:
+        dist_dir = dist_dir+"-sensor"
+    apps_path = os.path.join(repo_path, dist_dir, 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
         robot_zip_path = '/tmp/fw.zip'
@@ -108,11 +109,16 @@ def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
 def _prep_firmware(repo_path, cmake, sensors, targets):
     working_dir = "./build-cross"
 
-    if targets:
-        for target in targets:
-            _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
+    if sensors:
+        working_dir = working_dir+"-sensor"
+        _cmd([cmake, '--build', f'--preset=firmware-g4-sensors', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
     else:
-        _cmd([cmake, '--build', f'--preset=firmware-g4', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+        if targets:
+            for target in targets:
+                _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
+        else:
+            _cmd([cmake, '--build', f'--preset=firmware-g4', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+
 
     _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
 
@@ -151,6 +157,10 @@ def _do_push(host, repo_path, build, restart, sensors, targets):
         _restart_robot(host, ssh)
 
 def push(host, repo_path=None, build=True, restart=True, sensors=False, targets=[]):
+    # sensors is logically independent from targets here- if you specify both:
+    #   - all hex files under firmware-g4-sensors will be built and installed, but
+    #   - only the targets selected will actually be copied over to the robot
+
     repo = repo_path or os.dirname(__file__)
     try:
         _do_push(host, repo, build, restart, sensors, targets)
