@@ -16,10 +16,13 @@ from itertools import chain
 from zipfile import ZipFile
 import tempfile
 from contextlib import contextmanager
+import json
+import re
 
 _DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
 _SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
+_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
 
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
@@ -40,9 +43,19 @@ def _scp_to_robot(scp_util, host, local, remote, **extras):
         **extras
     )
 
+def _scp_from_robot(scp_util, host, local, remote, **extras):
+    _cmd(
+        [scp_util]
+        + _SSH_EXTRA_OPTS
+        + ['root@{host}:{remote}'.format(host=host, remote=remote), local],
+        **extras
+    )
+
+
 
 def _cmd(cmdlist, **extras):
     _extras = {k: v for k, v in chain(_DEFAULT_EXTRAS.items(), extras.items())}
+    # breakpoint()
     print(' '.join(cmdlist))
     subprocess.run(cmdlist, **_extras).check_returncode()
 
@@ -54,32 +67,63 @@ def _controlled_tempdir():
     finally:
         shutil.rmtree(td)
 
-def _build_fw(zip_path, apps_path):
+def _build_fw(zip_path, apps_path, targets):
+    regex_list = [re.compile(f"{target}" + r"(.*).hex") for target in targets]
     with ZipFile(zip_path, 'w') as zf:
         for fname in os.listdir(apps_path):
-            zf.write(os.path.join(apps_path, fname), fname)
+            if any([reg.search(fname) for reg in regex_list]):
+                # breakpoint()
+                zf.write(os.path.join(apps_path, fname), fname)
+    # breakpoint()
 
-def _transfer_firmware(host, repo_path, scp, ssh, sensors):
+
+def _update_shortsha(json_data, targets):
+    shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+    with open(json_data, 'r+') as output:
+        manifest = json.load(output)
+        for target in targets:
+            if target not in manifest['subsystems']:
+                print(f"target {target} not found, continuing.")
+                continue
+            manifest['subsystems'][target]['shortsha'] = shortsha
+        json.dump(manifest, output)
+
+def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
     dist_dir = "dist"
+    # apps_path = os.path.join(repo_path, 'dist', 'applications')
+    # breakpoint()
     if sensors:
         dist_dir = dist_dir+"-sensor"
     apps_path = os.path.join(repo_path, dist_dir, 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
         robot_zip_path = '/tmp/fw.zip'
-        _build_fw(local_zip_path, apps_path)
+        local_temp_manifest_path = os.path.join(td, 'temp_manifest.json')
+        breakpoint()
+        _scp_from_robot(scp, host, local_temp_manifest_path, _MANIFEST_FILE_PATH)
+        # modify this
+        _build_fw(local_zip_path, apps_path, targets)
+        if targets:
+            _update_shortsha(local_temp_manifest_path, targets)
         _scp_to_robot(scp, host, local_zip_path, robot_zip_path)
         _ssh(ssh, host, 'unzip -o {zip_path} -d /usr/lib/firmware/'.format(zip_path=robot_zip_path))
         _ssh(ssh, host, 'rm {zip_path}'.format(zip_path=robot_zip_path))
 
-def _prep_firmware(repo_path, cmake, sensors):
-    preset = "firmware-g4"
+def _prep_firmware(repo_path, cmake, sensors, targets):
     working_dir = "./build-cross"
-    if sensors:
-        preset = preset+"-sensors"
-        working_dir = working_dir+"-sensor"
-    _cmd([cmake, '--build', f'--preset={preset}', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
-    _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
+    # make sure -sensors still works
+
+    if targets:
+        for target in targets:
+            # breakpoint()
+            _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
+            # might not need this line becasue --install updates the manifest file
+            # _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
+
+    else:
+        _cmd([cmake, '--build', f'--preset=firmware-g4', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+        _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
+
 
 @contextmanager
 def _prep_robot(host, ssh):
@@ -104,19 +148,20 @@ def _find_utils():
 def _restart_robot(host, ssh):
     _ssh(ssh, host, 'nohup systemctl restart opentrons-robot-server &')
 
-def _do_push(host, repo_path, build, restart, sensors):
+def _do_push(host, repo_path, build, restart, sensors, targets):
+
     ssh, scp, cmake = _find_utils()
     if build:
-        _prep_firmware(repo_path, cmake, sensors)
+        _prep_firmware(repo_path, cmake, sensors, targets)
     with _prep_robot(host, ssh):
-        _transfer_firmware(host, repo_path, scp, ssh, sensors)
+        _transfer_firmware(host, repo_path, scp, ssh, targets, sensors)
     if restart:
         _restart_robot(host, ssh)
 
-def push(host, repo_path=None, build=True, restart=True, sensors=False):
+def push(host, repo_path=None, build=True, restart=True, sensors=False, targets=[]):
     repo = repo_path or os.dirname(__file__)
     try:
-        _do_push(host, repo, build, restart, sensors)
+        _do_push(host, repo, build, restart, sensors, targets)
         return 0
     except subprocess.CalledProcessError as e:
         print(
@@ -133,7 +178,7 @@ def _push_from_argparse(args):
     if args.key:
         _SSH_EXTRA_OPTS.append('-i')
         _SSH_EXTRA_OPTS.append(args.key)
-    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart, args.sensors)
+    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart, args.sensors, args.targets)
 
 def _arg_parser(parent=None):
     parents = []
@@ -168,6 +213,10 @@ def _arg_parser(parent=None):
         '--sensors',
         action='store_true',
         help='Private SSH key to use'
+    )
+    parser.add_argument(
+        '--targets',
+        nargs='+'
     )
     return parser
 
