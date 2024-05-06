@@ -114,6 +114,8 @@ def _prep_firmware(repo_path, cmake, sensors, targets):
     if sensors:
         working_dir = working_dir+"-sensor"
         full_build_preset = full_build_preset+"-sensors"
+        # if sensors is true, disregard targets within the scope of this function
+        targets = None
     if targets:
         for target in targets:
             _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
