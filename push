@@ -39,7 +39,7 @@ def _scp_to_robot(scp_util, host, local, remote, **extras):
     _cmd(
         [scp_util]
         + _SSH_EXTRA_OPTS
-        + [local, 'root@{host}:{remote}'.format(host=host, remote=remote)],
+        + [local, f'root@{host}:{remote}'],
         **extras
     )
 
@@ -47,7 +47,7 @@ def _scp_from_robot(scp_util, host, local, remote, **extras):
     _cmd(
         [scp_util]
         + _SSH_EXTRA_OPTS
-        + ['root@{host}:{remote}'.format(host=host, remote=remote), local],
+        + [f'root@{host}:{remote}', local],
         **extras
     )
 
@@ -66,7 +66,7 @@ def _controlled_tempdir():
 
 def _build_fw(zip_path, apps_path, targets):
     if targets:
-        regex_list = [re.compile(f"{target}" + r"(.*).hex") for target in targets]
+        regex_list = [re.compile(f"{target}" + r"(.*)(.hex|.bin)") for target in targets]
         with ZipFile(zip_path, 'w') as zf:
             for fname in os.listdir(apps_path):
                 # only write to zip file to be copied if filename matches target
@@ -218,7 +218,7 @@ def _arg_parser(parent=None):
     )
     parser.add_argument(
         '--targets',
-        nargs='+'
+        nargs='*'
     )
     return parser
 
