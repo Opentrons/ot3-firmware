@@ -23,6 +23,7 @@ _DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
 _SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
 _ROBOT_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
+
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
         self.util = which_util
@@ -90,7 +91,7 @@ def _update_shortsha(scp, host, json_data_path, targets):
     # copy updated subsystem data to the robot
     _scp_to_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
 
-def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
+def _transfer_firmware(host, repo_path, scp, ssh, sensors, targets):
     dist_dir = "dist"
     if sensors:
         dist_dir = dist_dir+"-sensor"
@@ -108,20 +109,19 @@ def _transfer_firmware(host, repo_path, scp, ssh, targets, sensors):
 
 def _prep_firmware(repo_path, cmake, sensors, targets):
     working_dir = "./build-cross"
+    full_build_preset = "firmware-g4"
 
     if sensors:
         working_dir = working_dir+"-sensor"
-        _cmd([cmake, '--build', f'--preset=firmware-g4-sensors', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+        full_build_preset = full_build_preset+"-sensors"
+    if targets:
+        for target in targets:
+            _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
     else:
-        if targets:
-            for target in targets:
-                _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
-        else:
-            _cmd([cmake, '--build', f'--preset=firmware-g4', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
+        _cmd([cmake, '--build', f'--preset={full_build_preset}', '--target', 'firmware-applications', 'firmware-images'], cwd=repo_path)
 
 
     _cmd([cmake, '--install', f'{working_dir}', '--component', 'Applications'], cwd=repo_path)
-
 
 @contextmanager
 def _prep_robot(host, ssh):
@@ -152,7 +152,7 @@ def _do_push(host, repo_path, build, restart, sensors, targets):
     if build:
         _prep_firmware(repo_path, cmake, sensors, targets)
     with _prep_robot(host, ssh):
-        _transfer_firmware(host, repo_path, scp, ssh, targets, sensors)
+        _transfer_firmware(host, repo_path, scp, ssh, sensors, targets)
     if restart:
         _restart_robot(host, ssh)
 
