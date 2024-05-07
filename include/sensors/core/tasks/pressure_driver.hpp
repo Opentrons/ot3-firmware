@@ -370,13 +370,6 @@ class MMR920 {
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
                 (*p_buff).at(pressure_buffer_index) = pressure;
                 pressure_buffer_index++;
-            } else {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ErrorMessage{
-                        .message_index = 0,
-                        .severity = can::ids::ErrorSeverity::warning,
-                        .error_code = can::ids::ErrorCode::stop_requested});
             }
 #else
             can_client.send_can_message(
