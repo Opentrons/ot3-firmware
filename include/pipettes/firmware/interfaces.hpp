@@ -19,19 +19,19 @@
 namespace interfaces {
 
 #ifdef USE_PRESSURE_MOVE
-template <typename Client, typename DriverClient>
+template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
+    freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware>;
 #else
-template <typename Client, typename DriverClient>
+template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
-    motor_messages::Move, motor_hardware::MotorHardware>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
+    motor_hardware::MotorHardware>;
 #endif
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, Client,
+    freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
 
 template <PipetteType P>
@@ -74,15 +74,11 @@ namespace linear_motor {
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient>;
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient>;
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware pins)
     -> motor_hardware::MotorHardware;
 auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)

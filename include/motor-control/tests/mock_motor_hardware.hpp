@@ -30,7 +30,6 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
-    bool read_tmc_diag0() final { return mock_diag0_value; }
     void set_LED(bool) final {}
     void set_mock_lim_sw(bool value) { mock_lim_sw_value = value; }
     void set_mock_estop_in(bool value) { mock_estop_in_value = value; }
@@ -40,23 +39,12 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
-    auto get_cancel_request() -> motor_hardware::CancelRequest final {
-        motor_hardware::CancelRequest old_request = cancel_request;
-        motor_hardware::CancelRequest exchange_request{};
-        cancel_request = exchange_request;
+    auto has_cancel_request() -> bool final {
+        bool old_request = cancel_request;
+        cancel_request = false;
         return old_request;
     }
-    void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                            can::ids::ErrorCode error_code) final {
-        motor_hardware::CancelRequest update_request{
-            .severity = static_cast<uint8_t>(error_severity),
-            .code = static_cast<uint8_t>(error_code)};
-        cancel_request = update_request;
-    }
-    void clear_cancel_request() final {
-        motor_hardware::CancelRequest clear_request{};
-        cancel_request = clear_request;
-    }
+    void request_cancel() final { cancel_request = true; }
     void sim_set_timer_interrupt_running(bool is_running) {
         mock_timer_interrupt_running = is_running;
     }
@@ -73,12 +61,11 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool mock_lim_sw_value = false;
     bool mock_estop_in_value = false;
     bool mock_sync_value = false;
-    bool mock_diag0_value = false;
     bool mock_sr_value = false;
     bool mock_dir_value = false;
     uint8_t finished_move_id = 0x0;
     int32_t test_pulses = 0x0;
-    motor_hardware::CancelRequest cancel_request = {};
+    bool cancel_request = false;
     bool mock_timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{

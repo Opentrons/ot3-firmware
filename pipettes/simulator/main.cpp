@@ -60,10 +60,12 @@ static auto gear_stall_check = interfaces::gear_motor::GearStallCheck{
 static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware();
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
-    linear_motor_hardware, interrupt_queues, linear_stall_check);
+    linear_motor_hardware, interrupt_queues.plunger_queue, linear_stall_check,
+    interrupt_queues.plunger_update_queue);
 static auto plunger_interrupt_driver =
     interfaces::linear_motor::get_interrupt_driver(
-        linear_motor_hardware, interrupt_queues, plunger_interrupt);
+        linear_motor_hardware, interrupt_queues.plunger_queue,
+        plunger_interrupt, interrupt_queues.plunger_update_queue);
 static auto linear_motion_control =
     interfaces::linear_motor::get_motion_control(linear_motor_hardware,
                                                  interrupt_queues);

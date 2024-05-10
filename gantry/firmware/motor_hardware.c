@@ -23,8 +23,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PC8   ------> Motor Step Pin
         Enable
         PA9   ------> Motor Enable Pin
-        DIAG0
-        PC5   ------> Motor Diag0 Pin
         */
         GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -56,12 +54,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
-
-        // Diag0
-        GPIO_InitStruct.Pin = GPIO_PIN_5;
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
 }
 SPI_HandleTypeDef hspi2 = {
@@ -95,7 +87,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |
                                    GPIO_PIN_15 | GPIO_PIN_1);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9);
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8 | GPIO_PIN_5);
+        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8);
     }
 }
 
@@ -127,7 +119,6 @@ HAL_StatusTypeDef initialize_spi(enum GantryAxisType gantry_type) {
 
 static motor_interrupt_callback timer_callback = NULL;
 static encoder_overflow_callback enc_overflow_callback = NULL;
-static diag0_interrupt_callback* diag0_callback = NULL;
 
 
 /**
@@ -149,9 +140,6 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 // motor timer: 200kHz from
@@ -248,16 +236,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == GPIO_PIN_5) {
-        if (diag0_callback != NULL) {
-            if (*diag0_callback != NULL) {
-                (*diag0_callback)();
-            }
-        }
-    }
-}
-
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim2) {
         /* Peripheral clock enable */
@@ -277,10 +255,9 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-void initialize_timer(motor_interrupt_callback callback, diag0_interrupt_callback* diag0_int_callback, encoder_overflow_callback enc_callback) {
+void initialize_timer(motor_interrupt_callback callback, encoder_overflow_callback enc_callback) {
     timer_callback = callback;
     enc_overflow_callback = enc_callback;
-    diag0_callback = diag0_int_callback;
     MX_GPIO_Init();
     MX_TIM7_Init();
     Encoder_GPIO_Init();
