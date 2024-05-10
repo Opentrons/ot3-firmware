@@ -94,9 +94,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gripper_tasks::z_tasks::get_queues(),
-    gripper_tasks::z_tasks::get_queues(), motor_interface, stallcheck,
-    update_position_queue);
+    motor_queue, gripper_tasks::z_tasks::get_queues(), motor_interface,
+    stallcheck, update_position_queue);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
@@ -136,8 +135,7 @@ static brushed_motor_handler::BrushedMotorInterruptHandler
 static brushed_motor_interrupt_driver::BrushedMotorInterruptDriver G(
     brushed_motor_queue, brushed_motor_interrupt, brushed_motor_hardware_iface);
 
-void z_motor_iface::initialize(diag0_handler* call_diag0_handler) {
-    static_cast<void>(call_diag0_handler);
+void z_motor_iface::initialize() {
     motor_interface.provide_mech_config(z_motor_sys_config);
 };
 

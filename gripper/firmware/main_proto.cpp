@@ -25,8 +25,6 @@
 #include "i2c/firmware/i2c_comms.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 
-static z_motor_iface::diag0_handler call_diag0_handler = nullptr;
-
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 /**
@@ -97,7 +95,7 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    z_motor_iface::initialize(&call_diag0_handler);
+    z_motor_iface::initialize();
     grip_motor_iface::initialize();
 
     i2c_setup(&i2c_handles);
@@ -105,7 +103,7 @@ auto main() -> int {
     i2c_comms3.set_handle(i2c_handles.i2c3);
 
     canbus.start(can_bit_timings);
-    call_diag0_handler = gripper_tasks::start_tasks(
+    gripper_tasks::start_tasks(
         canbus, z_motor_iface::get_z_motor(),
         grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
         z_motor_iface::get_tmc2130_driver_configs(), i2c_comms2, i2c_comms3,

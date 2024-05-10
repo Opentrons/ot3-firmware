@@ -178,20 +178,11 @@ class MotionController {
         return update_queue.try_write(can_msg);
     }
 
-    void stop(
-        can::ids::ErrorSeverity error_severity =
-            can::ids::ErrorSeverity::warning,
-        can::ids::ErrorCode error_code = can::ids::ErrorCode::stop_requested) {
+    void stop() {
         queue.reset();
         if (hardware.is_timer_interrupt_running()) {
-            hardware.set_cancel_request(error_severity, error_code);
+            hardware.request_cancel();
         }
-    }
-
-    void clear_cancel_request() { hardware.clear_cancel_request(); }
-
-    auto is_timer_interrupt_running() -> bool {
-        return hardware.is_timer_interrupt_running();
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
@@ -207,8 +198,6 @@ class MotionController {
     }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
-
-    auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
         hardware.start_timer_interrupt();
@@ -343,30 +332,19 @@ class PipetteMotionController {
         return false;
     }
 
-    void stop(
-        can::ids::ErrorSeverity error_severity =
-            can::ids::ErrorSeverity::warning,
-        can::ids::ErrorCode error_code = can::ids::ErrorCode::stop_requested) {
+    void stop() {
         queue.reset();
         // if the timer interrupt is running, cancel it. if it isn't running,
         // don't submit a cancel because then the cancel won't be read until
         // the timer starts the next time.
         if (hardware.is_timer_interrupt_running()) {
-            hardware.set_cancel_request(error_severity, error_code);
+            hardware.request_cancel();
         }
-    }
-
-    void clear_cancel_request() { hardware.clear_cancel_request(); }
-
-    auto is_timer_interrupt_running() -> bool {
-        return hardware.is_timer_interrupt_running();
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
-
-    auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
         hardware.start_timer_interrupt();

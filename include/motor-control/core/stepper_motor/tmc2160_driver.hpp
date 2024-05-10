@@ -53,11 +53,10 @@ class TMC2160 {
     auto operator=(const TMC2160&& c) = delete;
     ~TMC2160() = default;
 
-    auto read(Registers addr, uint32_t command_data, uint32_t message_index,
-              uint8_t tags = 0) -> void {
+    auto read(Registers addr, uint32_t command_data, uint32_t message_index)
+        -> void {
         auto converted_addr = static_cast<uint8_t>(addr);
-        uint32_t token = spi::utils::build_token(converted_addr, tags);
-        _spi_manager.read(token, command_data, _task_queue, _cs_intf,
+        _spi_manager.read(converted_addr, command_data, _task_queue, _cs_intf,
                           message_index);
     }
 
@@ -104,9 +103,6 @@ class TMC2160 {
             return false;
         }
         if (!set_glob_scaler(_registers.glob_scale)) {
-            return false;
-        }
-        if (!set_drv_conf(_registers.drvconf)) {
             return false;
         }
         _initialized = true;
@@ -271,22 +267,6 @@ class TMC2160 {
         reg.padding_4 = 0;
         if (set_register(reg)) {
             _registers.coolconf = reg;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @brief Update DRV_CONF register
-     * @param reg New configuration register to set
-     * @param policy Instance of abstraction policy to use
-     * @return True if new register was set succesfully, false otherwise
-     */
-    auto set_drv_conf(DriveConf reg) -> bool {
-        reg.bit_padding_1 = 0;
-        reg.bit_padding_2 = 0;
-        if (set_register(reg)) {
-            _registers.drvconf = reg;
             return true;
         }
         return false;

@@ -14,12 +14,11 @@ extern TIM_HandleTypeDef htim2;
 
 typedef void (*motor_interrupt_callback)();
 typedef void (*encoder_overflow_callback)(int32_t);
-typedef void (*diag0_interrupt_callback)();
 
 HAL_StatusTypeDef initialize_spi(enum GantryAxisType);
 void gantry_driver_CLK_init(enum GantryAxisType);
 
-void initialize_timer(motor_interrupt_callback callback, diag0_interrupt_callback* diag0_int_callback, encoder_overflow_callback enc_callback);
+void initialize_timer(motor_interrupt_callback callback, encoder_overflow_callback enc_callback);
 
 #ifdef __cplusplus
 }  // extern "C"

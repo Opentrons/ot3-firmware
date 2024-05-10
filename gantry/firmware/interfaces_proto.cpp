@@ -86,16 +86,10 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
-    .diag0 = {
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_5,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -131,21 +125,15 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOB,
             .pin = GPIO_PIN_5,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
-    .diag0 = {
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_5,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 1},
                   .ihold_irun = {.hold_current = 0x2,
                                  .run_current = 0x18,
                                  .hold_current_delay = 0x7},
@@ -168,7 +156,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
     }};
 
 static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 1},
                   .ihold_irun = {.hold_current = 0x2,
                                  .run_current = 0x18,
                                  .hold_current_delay = 0x7},
@@ -244,8 +232,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(),
-    motor_hardware_iface, stallcheck, update_position_queue);
+    motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
+    update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
@@ -281,14 +269,13 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-void interfaces::initialize(diag0_handler* call_diag0_handler) {
+void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi(get_axis_type()) != HAL_OK) {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler, call_diag0_handler,
-                     enc_overflow_callback);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

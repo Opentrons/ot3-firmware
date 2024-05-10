@@ -3,7 +3,6 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/tests/mock_motor_driver_client.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
@@ -16,13 +15,11 @@ struct MotorContainer {
         can::messages::UpdateMotorPositionEstimationRequest>
         update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
-    test_mocks::MockMotorDriverClient driver{};
     stall_check::StallCheck st{1, 1, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient,
-                          test_mocks::MockMotorDriverClient,
                           motor_messages::Move, test_mocks::MockMotorHardware>
-        handler{queue, reporter, driver, hw, st, update_position_queue};
+        handler{queue, reporter, hw, st, update_position_queue};
 };
 
 SCENARIO("a move is cancelled due to a stop request") {
@@ -44,9 +41,7 @@ SCENARIO("a move is cancelled due to a stop request") {
             test_objs.handler.run_interrupt();
             test_objs.handler.run_interrupt();
             CHECK(test_objs.hw.steps_taken() == 1);
-            test_objs.hw.set_cancel_request(
-                can::ids::ErrorSeverity::warning,
-                can::ids::ErrorCode::stop_requested);
+            test_objs.hw.request_cancel();
             test_objs.handler.run_interrupt();
             THEN("An error and increase error count is sent") {
                 REQUIRE(test_objs.reporter.messages.size() == 2);

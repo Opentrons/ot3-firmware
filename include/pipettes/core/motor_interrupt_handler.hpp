@@ -6,14 +6,13 @@
 namespace pipettes {
 using namespace motor_messages;
 template <template <class> class QueueImpl, class StatusClient,
-          class DriverClient, typename MotorMoveMessage, typename MotorHardware,
-          class SensorClient>
+          typename MotorMoveMessage, typename MotorHardware, class SensorClient>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class PipetteMotorInterruptHandler
     : public motor_handler::MotorInterruptHandler<
           freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-          DriverClient, MotorMoveMessage, MotorHardware> {
+          MotorMoveMessage, MotorHardware> {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
     using UpdatePositionQueue =
@@ -21,15 +20,14 @@ class PipetteMotorInterruptHandler
     PipetteMotorInterruptHandler() = delete;
     PipetteMotorInterruptHandler(
         MoveQueue& incoming_move_queue, StatusClient& outgoing_queue,
-        DriverClient& driver_queue, MotorHardware& hardware_iface,
-        stall_check::StallCheck& stall,
+        MotorHardware& hardware_iface, stall_check::StallCheck& stall,
         UpdatePositionQueue& incoming_update_position_queue,
         SensorClient& sensor_queue_client)
         : motor_handler::MotorInterruptHandler<
               freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-              DriverClient, MotorMoveMessage, MotorHardware>(
-              incoming_move_queue, outgoing_queue, driver_queue, hardware_iface,
-              stall, incoming_update_position_queue),
+              MotorMoveMessage, MotorHardware>(
+              incoming_move_queue, outgoing_queue, hardware_iface, stall,
+              incoming_update_position_queue),
           sensor_client(sensor_queue_client) {}
 
     ~PipetteMotorInterruptHandler() = default;

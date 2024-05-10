@@ -46,13 +46,13 @@ class Writer {
      * @return A success boolean
      */
     template <OriginatingResponseQueue RQType>
-    auto read(uint32_t token, uint32_t command_data, RQType& response_queue,
-              utils::ChipSelectInterface cs_intf, uint32_t message_index)
-        -> bool {
-        auto txBuffer = build_message(utils::reg_from_token<uint8_t>(token),
-                                      spi::hardware::Mode::READ, command_data);
+    auto read(uint8_t register_addr, uint32_t command_data,
+              RQType& response_queue, utils::ChipSelectInterface cs_intf,
+              uint32_t message_index) -> bool {
+        auto txBuffer = build_message(register_addr, spi::hardware::Mode::READ,
+                                      command_data);
         TransactionIdentifier _transaction_id{
-            .token = token,
+            .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
             .requires_response = false,
             .message_index = message_index};
@@ -83,7 +83,7 @@ class Writer {
         auto txBuffer = build_message(register_addr, spi::hardware::Mode::WRITE,
                                       command_data);
         TransactionIdentifier _transaction_id{
-            .token = utils::build_token(register_addr),
+            .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::WRITE),
             .requires_response = true};
         Transact message{
