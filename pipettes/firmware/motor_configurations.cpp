@@ -207,11 +207,6 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .port = GPIOB,
                      .pin = GPIO_PIN_9,
                      .active_setting = GPIO_PIN_RESET},
-                .diag0 =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_6,
-                     .active_setting = GPIO_PIN_RESET},
             };
         case TMC2160PipetteAxis::left_gear_motor:
             return motor_hardware::HardwareConfig{
@@ -241,11 +236,6 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
                      .pin = GPIO_PIN_9,
-                     .active_setting = GPIO_PIN_RESET},
-                .diag0 =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_6,
                      .active_setting = GPIO_PIN_RESET},
             };
         case TMC2160PipetteAxis::linear_motor:
