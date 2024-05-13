@@ -200,8 +200,8 @@ class MotionController {
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
     void enable_motor() {
-        hardware.start_timer_interrupt();
         hardware.activate_motor();
+        hardware.start_timer_interrupt();
         enabled = true;
     }
 
