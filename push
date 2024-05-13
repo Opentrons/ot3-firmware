@@ -38,6 +38,10 @@ TARGETS = [
     "rear-panel",
     "bootloader",
 ]
+_MULTI_SUBSYSTEM_TARGETS = {
+    "pipettes": ["pipettes-single", "pipettes-multi", "pipettes-96"],
+    "gantry": ["gantry-x", "gantry-y"]
+}
 
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
@@ -93,13 +97,26 @@ def _build_fw(zip_path, apps_path, targets):
                 # write all image files to zip file
                 zf.write(os.path.join(apps_path, fname), fname)
 
+
+def _subsystems_from_targets(targets):
+    # assuming all targets are valid at this point, convert
+    # presets that encompass multiple subsystems to their
+    # respective subsystems
+    for t in targets:
+        if t in _MULTI_SUBSYSTEM_TARGETS:
+            t_index = targets.index(t)
+            # replace the target with multiple subsystems
+            targets[t_index:t_index+1] = tuple(_MULTI_SUBSYSTEM_TARGETS[t])
+    return targets
+
+
 def _update_shortsha(scp, host, json_data_path, targets):
     shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
     # copy data to local file
     _scp_from_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
     with open(json_data_path, 'r+') as output_file:
         manifest = json.load(output_file)
-        for target in targets:
+        for target in _subsystems_from_targets(targets):
             manifest['subsystems'][target]['shortsha'] = shortsha
         output_file.seek(0)
         json.dump(manifest, output_file)
