@@ -23,6 +23,21 @@ _DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
 _SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
 _ROBOT_MANIFEST_FILE_PATH = "/usr/lib/firmware/opentrons-firmware.json"
+TARGETS = [
+    "pipettes",
+    "pipettes-rev1",
+    "pipettes-single",
+    "pipettes-multi",
+    "pipettes-96",
+    "gripper",
+    "hepa-uv",
+    "gantry",
+    "gantry-x",
+    "gantry-y",
+    "head",
+    "rear-panel",
+    "bootloader",
+]
 
 class CantFindUtilityException(RuntimeError):
     def __init__(self, which_util):
@@ -145,12 +160,21 @@ def _find_utils():
         raise CantFindUtilityException('cmake')
     return ssh, scp, cmake
 
+def _check_targets(targets):
+    for t in targets:
+        if t not in TARGETS:
+            print(f"preset {t} is not in target options, ignoring")
+            targets.remove(t)
+    return targets
+
 def _restart_robot(host, ssh):
     _ssh(ssh, host, 'nohup systemctl restart opentrons-robot-server &')
 
 def _do_push(host, repo_path, build, restart, sensors, targets):
 
     ssh, scp, cmake = _find_utils()
+    if targets:
+        targets = _check_targets(targets)
     if build:
         _prep_firmware(repo_path, cmake, sensors, targets)
     with _prep_robot(host, ssh):
