@@ -69,14 +69,19 @@ class FDC1004 {
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
     auto set_sensor_id(can::ids::SensorId _id) -> void {
-        if (using_both_sensors && sensor_id != _id) {
-            if (_id == can::ids::SensorId::S1) {
-                measure_mode = fdc1004::MeasureConfigMode::TWO;
-            } else {
-                measure_mode = fdc1004::MeasureConfigMode::ONE;
-            }
+        if (sensor_id != _id) {
+            // we should always update the sensor id
             sensor_id = _id;
-            update_capacitance_configuration();
+            if (shared_sensor) {
+                // if we're sharing the sensor, then we need to update
+                // the measure mode
+                if (_id == can::ids::SensorId::S1) {
+                    measure_mode = fdc1004::MeasureConfigMode::TWO;
+                } else {
+                    measure_mode = fdc1004::MeasureConfigMode::ONE;
+                }
+                update_capacitance_configuration();
+            }
         }
     }
 
