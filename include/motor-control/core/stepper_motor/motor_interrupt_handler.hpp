@@ -573,8 +573,8 @@ class MotorInterruptHandler {
         build_and_send_ack(ack_msg_id);
 #ifdef USE_SENSOR_MOVE
         if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            auto binding =
-                static_cast<uint8_t>(can::ids::SensorOutputBinding::sync); // make none?!
+            auto binding = static_cast<uint8_t>(
+                can::ids::SensorOutputBinding::sync);  // make none?!
             if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                 send_bind_message(buffered_move.sensor_type,
                                   can::ids::SensorId::S0, binding);
