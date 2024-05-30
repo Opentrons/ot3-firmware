@@ -131,7 +131,7 @@ class CapacitiveMessageHandler {
 
     void visit(can::messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor",
-            m.threshold, m.sensor);
+            m.threshold, m.sensor); 
         if (m.mode == can::ids::SensorThresholdMode::absolute) {
             driver.set_threshold(
                 fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode,
