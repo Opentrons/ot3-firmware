@@ -133,7 +133,7 @@ uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t cle
 }
 
 void motor_hardware_delay(uint32_t delay) {
-    HAL_Delay(delay);
+    vTaskDelay(delay);
 }
 
 

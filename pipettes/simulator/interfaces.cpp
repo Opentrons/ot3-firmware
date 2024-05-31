@@ -45,27 +45,11 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 }
 
 auto linear_motor::get_interrupt(
-    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-    LowThroughputInterruptQueues& queues, stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient> {
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
+    stall_check::StallCheck& stall, UpdatePositionQueue& update_queue)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(),
-        linear_motor_tasks::tmc2130_driver::get_queues(), hw, stall,
-        queues.plunger_update_queue);
-}
-
-auto linear_motor::get_interrupt(
-    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-    HighThroughputInterruptQueues& queues, stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient> {
-    return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(),
-        linear_motor_tasks::tmc2160_driver::get_queues(), hw, stall,
-        queues.plunger_update_queue);
+        queue, linear_motor_tasks::get_queues(), hw, stall, update_queue);
 }
 
 auto linear_motor::get_interrupt_driver(
@@ -76,14 +60,11 @@ auto linear_motor::get_interrupt_driver(
         handler)
 #ifdef USE_SENSOR_MOVE
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient,
-        motor_messages::SensorSyncMove,
+        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
 #else
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
 #endif
     return motor_interrupt_driver::MotorInterruptDriver(
@@ -99,13 +80,12 @@ auto linear_motor::get_interrupt_driver(
 #ifdef USE_SENSOR_MOVE
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient,
         motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
 #else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::Move,
+        motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
 #endif
     return motor_interrupt_driver::MotorInterruptDriver(
@@ -152,12 +132,10 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
     return gear_motor::GearInterruptHandlers{
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
-            gear_motor_tasks::get_left_gear_queues(), hw.left, stall.left,
-            queues.left_update_queue),
+            hw.left, stall.left, queues.left_update_queue),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
-            gear_motor_tasks::get_right_gear_queues(), hw.right, stall.right,
-            queues.right_update_queue),
+            hw.right, stall.right, queues.right_update_queue),
     };
 }
 

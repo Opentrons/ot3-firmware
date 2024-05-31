@@ -86,16 +86,10 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
-    .diag0 = {
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_5,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -131,21 +125,15 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
-    .diag0 = {
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_5,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
-    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 0},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -171,7 +159,6 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
-                  .drvconf = {.ot_select = 0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {
@@ -185,7 +172,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
     }};
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
-    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 0},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -211,7 +198,6 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
-                  .drvconf = {.ot_select = 0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {
@@ -271,8 +257,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(),
-    motor_hardware_iface, stallcheck, update_position_queue);
+    motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
+    update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
@@ -309,14 +295,13 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-void interfaces::initialize(diag0_handler* call_diag0_handler) {
+void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi(get_axis_type()) != HAL_OK) {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler, call_diag0_handler,
-                     enc_overflow_callback);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

@@ -365,13 +365,6 @@ class MMR920 {
             if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
                 (*p_buff).at(sensor_buffer_index) = pressure;
                 sensor_buffer_index++;
-            } else {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ErrorMessage{
-                        .message_index = 0,
-                        .severity = can::ids::ErrorSeverity::warning,
-                        .error_code = can::ids::ErrorCode::stop_requested});
             }
 #else
             can_client.send_can_message(
@@ -518,9 +511,13 @@ class MMR920 {
      * exceed the threshold for the entirety of this period.
      */
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
-
+#ifdef USE_PRESSURE_MOVE
     mmr920::MeasurementRate measurement_mode_rate =
         mmr920::MeasurementRate::MEASURE_1;
+#else
+    mmr920::MeasurementRate measurement_mode_rate =
+        mmr920::MeasurementRate::MEASURE_4;
+#endif
 
     bool _initialized = false;
     bool echoing = false;

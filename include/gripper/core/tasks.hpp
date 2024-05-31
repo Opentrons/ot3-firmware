@@ -7,7 +7,6 @@
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/update_data_rev_task.hpp"
-#include "gripper/core/interfaces.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
@@ -37,7 +36,7 @@ namespace gripper_tasks {
 /**
  * Start gripper tasks.
  */
-auto start_tasks(can::bus::CanBus& can_bus,
+void start_tasks(can::bus::CanBus& can_bus,
                  motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                  brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
                  spi::hardware::SpiDeviceBase& spi_device,
@@ -46,8 +45,7 @@ auto start_tasks(can::bus::CanBus& can_bus,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
                  motor_hardware_task::MotorHardwareTask& zmh_tsk,
-                 motor_hardware_task::MotorHardwareTask& gmh_tsk)
-    -> z_motor_iface::diag0_handler;
+                 motor_hardware_task::MotorHardwareTask& gmh_tsk);
 
 /**
  * Access to all the message queues in the system.
@@ -186,15 +184,13 @@ struct AllTask {
 
 namespace z_tasks {
 
-auto start_task(
+void start_task(
     motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs, AllTask& tasks,
     gripper_tasks::QueueClient& main_queues,
     eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
-        tail_accessor) -> z_motor_iface::diag0_handler;
-
-void call_run_diag0_interrupt();
+        tail_accessor);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -203,8 +199,6 @@ struct QueueClient : can::message_writer::MessageWriter {
         const motion_controller_task::TaskMessage& m);
 
     void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
-
-    void send_motor_driver_queue_isr(const tmc2130::tasks::TaskMessage& m);
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
