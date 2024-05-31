@@ -53,11 +53,9 @@ auto linear_motor::get_interrupt(
 }
 
 auto linear_motor::get_interrupt_driver(
-    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-    LowThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
-                              linear_motor_tasks::tmc2130_driver::QueueClient>&
-        handler)
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler,
+    UpdatePositionQueue& update_queue)
 #ifdef USE_SENSOR_MOVE
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
@@ -67,29 +65,8 @@ auto linear_motor::get_interrupt_driver(
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
 #endif
-    return motor_interrupt_driver::MotorInterruptDriver(
-        queues.plunger_queue, handler, hw, queues.plunger_update_queue);
-}
-
-auto linear_motor::get_interrupt_driver(
-    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-    HighThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
-                              linear_motor_tasks::tmc2160_driver::QueueClient>&
-        handler)
-#ifdef USE_SENSOR_MOVE
-    -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient,
-        motor_messages::SensorSyncMove,
-        sim_motor_hardware_iface::SimMotorHardwareIface> {
-#else
-    -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient,
-        motor_messages::Move,
-        sim_motor_hardware_iface::SimMotorHardwareIface> {
-#endif
-    return motor_interrupt_driver::MotorInterruptDriver(
-        queues.plunger_queue, handler, hw, queues.plunger_update_queue);
+    return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw,
+                                                        update_queue);
 }
 
 auto linear_motor::get_motor_hardware()
