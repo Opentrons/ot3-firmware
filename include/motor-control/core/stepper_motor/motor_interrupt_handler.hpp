@@ -110,8 +110,8 @@ class MotorInterruptHandler {
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
         : MotorInterruptHandler(
-              incoming_move_queue, outgoing_queue, hardware_iface,
-              stall, incoming_update_position_queue, Empty::get_default()) {}
+              incoming_move_queue, outgoing_queue, hardware_iface, stall,
+              incoming_update_position_queue, Empty::get_default()) {}
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
                           MotorHardware& hardware_iface,

@@ -59,11 +59,9 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient> {
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(),
-        hw, stall,
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
         queues.plunger_update_queue, sensor_client);
 }
 
@@ -71,11 +69,9 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
-    -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient> {
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(),
-        hw, stall,
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
         queues.plunger_update_queue, sensor_client);
 }
 
