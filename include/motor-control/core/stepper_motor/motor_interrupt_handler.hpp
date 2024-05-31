@@ -9,7 +9,6 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
 namespace motor_handler {
 
@@ -95,7 +94,7 @@ struct SensorClientHelper<Empty> {
 };
 
 template <template <class> class QueueImpl, class StatusClient,
-          class DriverClient, typename MotorMoveMessage, typename MotorHardware,
+          typename MotorMoveMessage, typename MotorHardware,
           class SensorClient = Empty>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
@@ -111,11 +110,10 @@ class MotorInterruptHandler {
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
         : MotorInterruptHandler(
-              incoming_move_queue, outgoing_queue, driver_queue, hardware_iface,
+              incoming_move_queue, outgoing_queue, hardware_iface,
               stall, incoming_update_position_queue, Empty::get_default()) {}
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
-                          DriverClient& driver_queue,
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue,

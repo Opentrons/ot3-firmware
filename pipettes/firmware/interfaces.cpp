@@ -60,11 +60,10 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
     -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient> {
+        linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
-        linear_motor_tasks::tmc2130_driver::get_queues(), hw, stall,
+        hw, stall,
         queues.plunger_update_queue, sensor_client);
 }
 
@@ -73,11 +72,10 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  stall_check::StallCheck& stall,
                                  sensor_tasks::QueueClient& sensor_client)
     -> MotorInterruptHandlerType<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient> {
+        linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
-        linear_motor_tasks::tmc2160_driver::get_queues(), hw, stall,
+        hw, stall,
         queues.plunger_update_queue, sensor_client);
 }
 
