@@ -11,6 +11,7 @@ struct GpioDrivePins {
     gpio::PinConfig uv_push_button;
     gpio::PinConfig hepa_on_off;
     gpio::PinConfig uv_on_off;
+    gpio::PinConfig safety_relay_active;
 };
 
 }  // namespace gpio_drive_hardware

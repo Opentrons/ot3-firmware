@@ -10,6 +10,7 @@
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/uv_control_hardware.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
+#include "ot_utils/freertos/freertos_sleep.hpp"
 
 namespace uv_task {
 
@@ -38,6 +39,7 @@ class UVMessageHandler {
         uv_push_button = gpio::is_set(drive_pins.uv_push_button);
         door_closed = gpio::is_set(drive_pins.door_open);
         reed_switch_set = gpio::is_set(drive_pins.reed_switch);
+        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
         // turn off UV Ballast
         gpio::reset(drive_pins.uv_on_off);
     }
@@ -76,6 +78,9 @@ class UVMessageHandler {
             reed_switch_set = gpio::is_set(drive_pins.reed_switch);
         }
 
+        // Always update safety relay state
+        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
+
         // Drive the UV light
         set_uv_light_state(uv_push_button, uv_off_timeout_s);
     }
@@ -95,7 +100,8 @@ class UVMessageHandler {
             .timeout_s = uv_off_timeout_s,
             .uv_light_on = uv_light_on,
             .remaining_time_s = (_timer.get_remaining_time() / 1000),
-            .uv_current_ma = uv_current_ma};
+            .uv_current_ma = uv_current_ma,
+            .safety_relay_active = safety_relay_active};
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
@@ -153,8 +159,32 @@ class UVMessageHandler {
             if (_timer.is_running()) _timer.stop();
         }
 
-        // Update the voltage usage of the uv light
+        // wait 10ms for safety relay, then update the states
+        ot_utils::freertos_sleep::sleep(10);
+        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
         uv_current_ma = uv_hardware.get_uv_light_current();
+        if (!safety_relay_active) {
+            // we tried to set the uv light, but the relay is not active
+            if (_timer.is_running()) {
+                gpio::reset(drive_pins.uv_on_off);
+                _timer.stop();
+                led_control_client.send_led_control_message(
+                    led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0,
+                                                             50, 0));
+            }
+            // send error
+            auto msg = can::messages::ErrorMessage{
+                .message_index = 0,
+                .severity = can::ids::ErrorSeverity::warning,
+                .error_code = can::ids::ErrorCode::safety_relay_inactive,
+            };
+            can_client.send_can_message(can::ids::NodeId::host, msg);
+
+            uv_push_button = false;
+            uv_light_on = false;
+            uv_current_ma = 0;
+            return;
+        }
 
         // TODO: send state change CAN message to host
     }
@@ -162,6 +192,7 @@ class UVMessageHandler {
     // state tracking variables
     bool door_closed = false;
     bool reed_switch_set = false;
+    bool safety_relay_active = false;
     bool uv_push_button = false;
     bool uv_light_on = false;
     uint32_t uv_off_timeout_s = DELAY_S;

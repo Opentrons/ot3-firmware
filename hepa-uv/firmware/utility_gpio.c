@@ -94,10 +94,10 @@ void uv_push_button_input_gpio_init(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Configure GPIO pin UV_NO_MCU : PC2 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = UV_NO_MCU_PIN;
+    GPIO_InitStruct.Pin = nUV_PRESSED_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(UV_NO_MCU_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(nUV_PRESSED_PORT, &GPIO_InitStruct);
 }
 
 /**
@@ -135,6 +135,22 @@ void uv_on_off_output_init() {
 }
 
 /**
+ * @brief nSAFETY_ACTIVE_MCU GPIO Initialization Function
+ * @param None
+ * @retval None
+*/
+void safety_relay_active_input_init() {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /*Configure GPIO pin nSAFETY_ACTIVE_MCU: PB6 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = nSAFETY_ACTIVE_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(nSAFETY_ACTIVE_MCU_PORT, &GPIO_InitStruct);
+}
+
+/**
  * @brief NVIC EXTI interrupt priority Initialization
  * @param None
  * @retval None
@@ -168,4 +184,5 @@ void utility_gpio_init(void) {
     hepa_on_off_output_init();
     uv_push_button_input_gpio_init();
     uv_on_off_output_init();
+    safety_relay_active_input_init();
 }

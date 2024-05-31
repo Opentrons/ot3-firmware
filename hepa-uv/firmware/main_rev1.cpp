@@ -114,8 +114,8 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .uv_push_button =
         gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = UV_NO_MCU_PORT,
-            .pin = UV_NO_MCU_PIN,
+            .port = nUV_PRESSED_PORT,
+            .pin = nUV_PRESSED_PIN,
         },
     .hepa_on_off =
         gpio::PinConfig{
@@ -127,7 +127,13 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = UV_ON_OFF_MCU_PORT,
         .pin = UV_ON_OFF_MCU_PIN,
-        .active_setting = UV_ON_OFF_AS}};
+        .active_setting = UV_ON_OFF_AS},
+    .safety_relay_active = gpio::PinConfig{
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = nSAFETY_ACTIVE_MCU_PORT,
+        .pin = nSAFETY_ACTIVE_MCU_PIN,
+        .active_setting = nSAFETY_ACTIVE_AS},
+    };
 
 static auto& hepauv_queues = hepauv_tasks::get_main_queues();
 
@@ -140,7 +146,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case DOOR_OPEN_MCU_PIN:
         case REED_SW_MCU_PIN:
         case HEPA_NO_MCU_PIN:
-        case UV_NO_MCU_PIN:
+        case nUV_PRESSED_PIN:
             if (hepauv_queues.hepa_queue != nullptr) {
                 static_cast<void>(hepauv_queues.hepa_queue->try_write_isr(
                     GPIOInterruptChanged{.pin = GPIO_Pin}));
