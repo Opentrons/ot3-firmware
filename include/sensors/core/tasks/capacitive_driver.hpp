@@ -403,8 +403,8 @@ class FDC1004 {
     static constexpr uint16_t STOP_DELAY = 0;
     can::ids::SensorId sensor_id = can::ids::SensorId::S0;
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
-    fdc1004::MeasurementRate measurement_rate = fdc1004::MeasurementRate::
-        ONE_HUNDRED_SAMPLES_PER_SECOND;
+    fdc1004::MeasurementRate measurement_rate =
+        fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND;
     bool shared_sensor = false;
 
     float current_offset_pf = 0;
