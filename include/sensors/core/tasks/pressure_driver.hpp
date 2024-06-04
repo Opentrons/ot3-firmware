@@ -361,9 +361,9 @@ class MMR920 {
         if (echo_this_time) {
             auto response_pressure = pressure - current_pressure_baseline_pa;
 #ifdef USE_SENSOR_MOVE
-            if (pressure_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*p_buff).at(pressure_buffer_index) = response_pressure;
-                pressure_buffer_index++;
+            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
+                (*p_buff).at(sensor_buffer_index) = response_pressure;
+                sensor_buffer_index++;
             }
 #else
             can_client.send_can_message(
