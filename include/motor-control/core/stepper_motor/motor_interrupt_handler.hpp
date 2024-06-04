@@ -9,7 +9,14 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
+#ifdef USE_SENSOR_MOVE
+#ifdef PIPETTE_TYPE_DEFINE
+#include "pipettes/core/sensor_tasks.hpp"
+#else
+#include "gripper/core/tasks.hpp"
+#endif  // PIPETTE_TYPE_DEFINE
+#endif  // USE_SENSOR_MOVE
 namespace motor_handler {
 
 using namespace motor_messages;
@@ -41,61 +48,8 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
-struct Empty {
-    static auto get_default() -> Empty&;
-};
-
-template <class SensorClient>
-struct SensorClientHelper {
-    inline static void send_to_pressure_sensor_queue_rear(
-        SensorClient& sensor_client,
-        can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_pressure_sensor_queue_rear_isr(m);
-    }
-    inline static void send_to_pressure_sensor_queue_front(
-        SensorClient& sensor_client,
-        can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_pressure_sensor_queue_front_isr(m);
-    }
-    inline static void send_to_capacitive_sensor_queue_rear(
-        SensorClient& sensor_client,
-        can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_capacitive_sensor_queue_rear_isr(m);
-    }
-    inline static void send_to_capacitive_sensor_queue_front(
-        SensorClient& sensor_client,
-        can::messages::BindSensorOutputRequest& m) {
-        sensor_client.send_capacitive_sensor_queue_front_isr(m);
-    }
-};
-
-template <>
-struct SensorClientHelper<Empty> {
-    inline static void send_to_pressure_sensor_queue_rear(
-        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_client;
-        std::ignore = m;
-    }
-    inline static void send_to_pressure_sensor_queue_front(
-        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_client;
-        std::ignore = m;
-    }
-    inline static void send_to_capacitive_sensor_queue_rear(
-        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_client;
-        std::ignore = m;
-    }
-    inline static void send_to_capacitive_sensor_queue_front(
-        Empty& sensor_client, can::messages::BindSensorOutputRequest& m) {
-        std::ignore = sensor_client;
-        std::ignore = m;
-    }
-};
-
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, typename MotorHardware,
-          class SensorClient = Empty>
+          typename MotorMoveMessage, typename MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
@@ -109,21 +63,11 @@ class MotorInterruptHandler {
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
-        : MotorInterruptHandler(
-              incoming_move_queue, outgoing_queue, hardware_iface, stall,
-              incoming_update_position_queue, Empty::get_default()) {}
-    MotorInterruptHandler(MoveQueue& incoming_move_queue,
-                          StatusClient& outgoing_queue,
-                          MotorHardware& hardware_iface,
-                          stall_check::StallCheck& stall,
-                          UpdatePositionQueue& incoming_update_position_queue,
-                          SensorClient& sensor_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
           stall_checker{stall},
-          update_position_queue(incoming_update_position_queue),
-          sensor_client(sensor_queue) {
+          update_position_queue(incoming_update_position_queue) {
         hardware.unstep();
     }
     ~MotorInterruptHandler() = default;
@@ -718,27 +662,23 @@ class MotorInterruptHandler {
 #ifdef USE_SENSOR_MOVE
     void send_to_pressure_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
-        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_rear(
-            sensor_client, m);
+        sensor_tasks::get_queues().send_pressure_sensor_queue_rear_isr(m);
     }
     void send_to_pressure_sensor_queue_front(
         can::messages::BindSensorOutputRequest& m) {
         // send to both queues, they will handle their own gating based on
         // sensor id
-        SensorClientHelper<SensorClient>::send_to_pressure_sensor_queue_front(
-            sensor_client, m);
+        sensor_tasks::get_queues().send_pressure_sensor_queue_front_isr(m);
     }
     void send_to_capacitive_sensor_queue_rear(
         can::messages::BindSensorOutputRequest& m) {
-        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_rear(
-            sensor_client, m);
+        sensor_tasks::get_queues().send_capacitive_sensor_queue_rear_isr(m);
     }
     void send_to_capacitive_sensor_queue_front(
         can::messages::BindSensorOutputRequest& m) {
         // send to both queues, they will handle their own gating based on
         // sensor id
-        SensorClientHelper<SensorClient>::send_to_capacitive_sensor_queue_front(
-            sensor_client, m);
+        sensor_tasks::get_queues().send_pressure_sensor_queue_front_isr(m);
     }
 #endif
     uint64_t tick_count = 0x0;
@@ -751,7 +691,6 @@ class MotorInterruptHandler {
     MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
-    SensorClient& sensor_client;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
     bool clear_queue_until_empty = false;
     bool stall_handled = false;

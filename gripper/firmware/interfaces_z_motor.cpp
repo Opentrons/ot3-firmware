@@ -197,7 +197,7 @@ static motor_class::Motor z_motor{
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::z_tasks::get_queues(), motor_hardware_iface,
-    stallcheck, update_position_queue, gripper_tasks::get_main_queues());
+    stallcheck, update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);

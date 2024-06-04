@@ -271,3 +271,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 }  // namespace g_tasks
 
 }  // namespace gripper_tasks
+
+namespace sensor_tasks {
+[[nodiscard]] auto get_queues() -> gripper_tasks::QueueClient&;
+}  // namespace sensor_tasks

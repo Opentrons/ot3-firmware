@@ -1,9 +1,8 @@
-add_library(motor-utils STATIC 
+add_library(motor-utils STATIC
     motor_hardware_interface.cpp
     stall_check.cpp
-    types.cpp    
-    utils.cpp
-    motor_interrupt_handler.cpp)
+    types.cpp
+    utils.cpp)
 
 set_target_properties(motor-utils
     PROPERTIES CXX_STANDARD 20
@@ -23,7 +22,7 @@ target_compile_options(motor-utils
     $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
     )
 
-target_include_directories(motor-utils PUBLIC 
+target_include_directories(motor-utils PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/../../include)
 
 add_coverage(motor-utils)

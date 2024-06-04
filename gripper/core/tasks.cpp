@@ -199,3 +199,7 @@ auto gripper_tasks::get_all_tasks() -> AllTask& { return tasks; }
  * @return
  */
 auto gripper_tasks::get_main_queues() -> QueueClient& { return queues; }
+
+auto sensor_tasks::get_queues() -> gripper_tasks::QueueClient& {
+    return queues;
+}
