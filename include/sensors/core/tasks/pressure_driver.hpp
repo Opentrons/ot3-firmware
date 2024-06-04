@@ -364,8 +364,8 @@ class MMR920 {
         }
 
         if (echo_this_time) {
-            auto response_pressure =
-                std::fabs(pressure) - std::fabs(current_pressure_baseline_pa);
+            auto response_pressure = (pressure < 0 ? -1 : 1) * (
+                std::fabs(pressure) - std::fabs(current_pressure_baseline_pa));
 #ifdef USE_PRESSURE_MOVE
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
                 (*p_buff).at(pressure_buffer_index) = response_pressure;
