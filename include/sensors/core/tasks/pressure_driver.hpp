@@ -355,7 +355,7 @@ class MMR920 {
             }
         }
         if (bind_sync) {
-            if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
+            if (std::fabs(pressure - current_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
             } else {
@@ -364,11 +364,10 @@ class MMR920 {
         }
 
         if (echo_this_time) {
+            auto response_pressure = pressure - current_pressure_baseline_pa;
 #ifdef USE_PRESSURE_MOVE
-            // send a response with 9999 to make an overload of the buffer
-            // visible
             if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
-                (*p_buff).at(pressure_buffer_index) = pressure;
+                (*p_buff).at(pressure_buffer_index) = response_pressure;
                 pressure_buffer_index++;
             }
 #else
@@ -378,7 +377,8 @@ class MMR920 {
                     .message_index = m.message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(pressure)});
+                    .sensor_data =
+                        mmr920::reading_to_fixed_point(response_pressure)});
 #endif
         }
     }
