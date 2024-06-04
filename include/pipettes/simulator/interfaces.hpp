@@ -75,8 +75,7 @@ auto get_interrupt_driver(
     LowThroughputInterruptQueues& queues,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 
 auto get_interrupt_driver(
