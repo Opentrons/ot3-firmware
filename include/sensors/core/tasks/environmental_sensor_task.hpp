@@ -75,8 +75,9 @@ class EnvironmentSensorMessageHandler {
         driver.trigger_on_demand();
     }
 
-    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
-        LOG("Received request to dump pressure data buffer %d", m.sensor_id);
+    void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
+        LOG("Received request to dump environmental data buffer %d",
+            m.sensor_id);
         std::ignore = m;
     }
 

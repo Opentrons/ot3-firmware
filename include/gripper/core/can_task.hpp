@@ -19,12 +19,22 @@ using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
+#ifdef USE_SENSOR_MOVE
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<z_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest, can::messages::StopRequest,
+    can::messages::AddSensorMoveRequest>;
+#else
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<z_tasks::QueueClient>,
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest, can::messages::StopRequest>;
+#endif
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::MotionHandler<z_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
@@ -65,7 +75,7 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
     can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
-    can::messages::SendAccumulatedPressureDataRequest,
+    can::messages::SendAccumulatedSensorDataRequest,
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,

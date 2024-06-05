@@ -30,6 +30,8 @@ auto get_message_i2c(Queue& q) -> Message {
 auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
 
+static std::array<float, SENSOR_BUFFER_SIZE> p_buff;
+
 SCENARIO("read capacitance sensor values without shared CINs") {
     test_mocks::MockSensorHardware mock_hw{};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
@@ -53,7 +55,7 @@ SCENARIO("read capacitance sensor values without shared CINs") {
     poller.set_queue(&poller_queue);
 
     auto sensor_not_shared = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, false};
+        writer, poller, mock_hw, queue_client, response_queue, false, &p_buff};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a initialize sensor request") {
@@ -381,7 +383,7 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
     poller.set_queue(&poller_queue);
 
     auto sensor_shared = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, true};
+        writer, poller, mock_hw, queue_client, response_queue, true, &p_buff};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a initialize sensor request") {
@@ -578,8 +580,8 @@ SCENARIO("capacitance driver tests no shared CINs") {
 
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
-    sensors::tasks::FDC1004 callback_host(writer, poller, queue_client,
-                                          response_queue, mock_hw, false);
+    sensors::tasks::FDC1004 callback_host(
+        writer, poller, queue_client, response_queue, mock_hw, false, &p_buff);
 
     can::message_writer_task::TaskMessage empty_msg{};
 
@@ -769,7 +771,7 @@ SCENARIO("threshold configuration") {
     poller.set_queue(&poller_queue);
 
     auto sensor = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, false};
+        writer, poller, mock_hw, queue_client, response_queue, false, &p_buff};
 
     GIVEN("A request to set an autothreshold") {
         int NUM_READS = 10;

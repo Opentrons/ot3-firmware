@@ -8,6 +8,7 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/pipette_type.h"
+#include "pipettes/core/sensor_tasks.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -18,7 +19,7 @@
 
 namespace interfaces {
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,

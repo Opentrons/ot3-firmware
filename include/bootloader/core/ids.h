@@ -114,7 +114,7 @@ typedef enum {
     can_messageid_peripheral_status_request = 0x8c,
     can_messageid_peripheral_status_response = 0x8d,
     can_messageid_baseline_sensor_response = 0x8e,
-    can_messageid_send_accumulated_pressure_data = 0x8f,
+    can_messageid_send_accumulated_sensor_data = 0x8f,
     can_messageid_set_hepa_fan_state_request = 0x90,
     can_messageid_get_hepa_fan_state_request = 0x91,
     can_messageid_get_hepa_fan_state_response = 0x92,

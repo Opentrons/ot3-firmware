@@ -38,7 +38,7 @@ auto get_message(Queue& q) -> Message {
 
 constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
-static std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> p_buff;
+static std::array<float, SENSOR_BUFFER_SIZE> p_buff;
 
 SCENARIO("Testing the pressure sensor driver") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};

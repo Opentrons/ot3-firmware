@@ -24,6 +24,7 @@ jobs:
           pipettes-single,
           pipettes-multi,
           pipettes-96,
+          gripper,
         ]
       fail-fast: false
     name: Build ${{ matrix.target }}
@@ -89,6 +90,7 @@ jobs:
       matrix:
         target: [
           pipettes,
+          gripper,
         ]
     steps:
       - name: Checkout ot3-firmware repo

@@ -46,9 +46,16 @@ class SensorHandler {
                       can::ids::SensorId(m.sensor_id), m);
     }
 
-    void visit(const can::messages::SendAccumulatedPressureDataRequest &m) {
-        send_to_queue(can::ids::SensorType::pressure,
-                      can::ids::SensorId(m.sensor_id), m);
+    void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
+        if (can::ids::SensorType(m.sensor_type) ==
+            can::ids::SensorType::pressure) {
+            send_to_queue(can::ids::SensorType::pressure,
+                          can::ids::SensorId(m.sensor_id), m);
+        } else if (can::ids::SensorType(m.sensor_type) ==
+                   can::ids::SensorType::capacitive) {
+            send_to_queue(can::ids::SensorType::capacitive,
+                          can::ids::SensorId(m.sensor_id), m);
+        }
     }
 
     void visit(const can::messages::BindSensorOutputRequest &m) {
