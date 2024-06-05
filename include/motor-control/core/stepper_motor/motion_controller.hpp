@@ -25,7 +25,7 @@ template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
     using GenericQueue =
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
         freertos_message_queue::FreeRTOSMessageQueue<SensorSyncMove>;
 #else
         freertos_message_queue::FreeRTOSMessageQueue<Move>;
@@ -63,7 +63,7 @@ class MotionController {
         -> const lms::LinearMotionSystemConfig<MEConfig>& {
         return linear_motion_sys_config;
     }
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
     void move(const can::messages::AddSensorMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
@@ -79,7 +79,8 @@ class MotionController {
             can_msg.request_stop_condition,
             0,
             hardware.get_usage_eeprom_config().get_distance_key(),
-            can_msg.sensor_id};
+            can_msg.sensor_id,
+            can_msg.sensor_type};
         if (!enabled) {
             enable_motor();
         }
@@ -100,7 +101,8 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
-            .sensor_id = can::ids::SensorId::UNUSED};
+            .sensor_id = can::ids::SensorId::UNUSED,
+            .sensor_type = can::ids::SensorType::UNUSED};
         if (!enabled) {
             enable_motor();
         }
@@ -120,7 +122,8 @@ class MotionController {
             .stop_condition =
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
-            .sensor_id = can::ids::SensorId::UNUSED};
+            .sensor_id = can::ids::SensorId::UNUSED,
+            .sensor_type = can::ids::SensorType::UNUSED};
         if (!enabled) {
             enable_motor();
         }
@@ -318,7 +321,8 @@ class PipetteMotionController {
             hardware.get_step_tracker(),
             can_msg.action,
             gear_motor_id,
-            can::ids::SensorId::UNUSED};
+            can::ids::SensorId::UNUSED,
+            can::ids::SensorType::UNUSED};
 
         if (!enabled) {
             enable_motor();

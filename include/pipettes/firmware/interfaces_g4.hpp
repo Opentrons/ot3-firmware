@@ -8,8 +8,8 @@
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
-#include "pipettes/core/motor_interrupt_handler.hpp"
 #include "pipettes/core/pipette_type.h"
+#include "pipettes/core/sensor_tasks.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -28,25 +28,16 @@
 
 namespace interfaces {
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::SensorSyncMove, motor_hardware::MotorHardware>;
-template <typename Client>
-using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client,
-    motor_messages::SensorSyncMove, motor_hardware::MotorHardware,
-    sensor_tasks::QueueClient>;
 #else
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
     motor_hardware::MotorHardware>;
-template <typename Client>
-using PipetteMotorInterruptHandlerType = pipettes::PipetteMotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware, sensor_tasks::QueueClient>;
 #endif
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
@@ -92,14 +83,12 @@ namespace linear_motor {
 
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall,
-                   sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+                   stall_check::StallCheck& stall)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
-                   stall_check::StallCheck& stall,
-                   sensor_tasks::QueueClient& sensor_client)
-    -> PipetteMotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+                   stall_check::StallCheck& stall)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware;
 auto get_motion_control(motor_hardware::MotorHardware& hw,

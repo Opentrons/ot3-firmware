@@ -39,7 +39,7 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         linear_motor_tasks::QueueClient>,
@@ -92,7 +92,7 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<sensor_tasks::QueueClient>,
     can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
-    can::messages::SendAccumulatedPressureDataRequest,
+    can::messages::SendAccumulatedSensorDataRequest,
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,

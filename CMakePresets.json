@@ -42,7 +42,7 @@
       "installDir": "${sourceDir}/dist-sensor",
       "binaryDir": "${sourceDir}/build-cross-sensor",
       "cacheVariables": {
-        "USE_PRESSURE_MOVE": true
+        "USE_SENSOR_MOVE": true
       },
       "inherits": "cross"
     },

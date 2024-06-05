@@ -20,7 +20,7 @@ namespace utils {
 
 using CanMessageTuple =
     std::tuple<can::messages::ReadFromSensorRequest,
-               can::messages::SendAccumulatedPressureDataRequest,
+               can::messages::SendAccumulatedSensorDataRequest,
                can::messages::WriteToSensorRequest,
                can::messages::BaselineSensorRequest,
                can::messages::SetSensorThresholdRequest,

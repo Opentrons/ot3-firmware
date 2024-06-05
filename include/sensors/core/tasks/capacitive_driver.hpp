@@ -23,6 +23,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
@@ -40,13 +41,15 @@ class FDC1004 {
   public:
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
-            sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor)
+            sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor,
+            std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
-          shared_sensor(shared_sensor) {}
+          shared_sensor(shared_sensor),
+          p_buff(p_buff) {}
 
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
@@ -92,7 +95,12 @@ class FDC1004 {
 
     [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
 
-    void set_echoing(bool should_echo) { echoing = should_echo; }
+    void set_echoing(bool should_echo) {
+        echoing = should_echo;
+        if (should_echo) {
+            sensor_buffer_index = 0;  // reset buffer index
+        }
+    }
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
@@ -205,6 +213,29 @@ class FDC1004 {
             own_queue, transaction_id);
     }
 
+    void send_accumulated_sensor_data(uint32_t message_index) {
+#ifdef USE_SENSOR_MOVE
+        for (int i = 0; i < sensor_buffer_index; i++) {
+            // send over buffer adn then clear buffer values
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = message_index,
+                    .sensor = can::ids::SensorType::capacitive,
+                    .sensor_id = sensor_id,
+                    .sensor_data =
+                        convert_to_fixed_point((*p_buff).at(i), S15Q16_RADIX)});
+            if (i % 10 == 0) {
+                // slow it down so the can buffer doesn't choke
+                vTaskDelay(50);
+            }
+            (*p_buff).at(i) = 0;
+        }
+#else
+        std::ignore = message_index;
+#endif
+    }
+
     void handle_fdc_response(i2c::messages::TransactionResponse &m) {
         uint16_t reg_int = 0;
         static_cast<void>(bit_utils::bytes_to_int(
@@ -271,6 +302,14 @@ class FDC1004 {
         }
 
         if (echoing) {
+#ifdef USE_SENSOR_MOVE
+            // send a response with 9999 to make an overload of the buffer
+            // visible
+            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
+                (*p_buff).at(sensor_buffer_index) = capacitance;
+                sensor_buffer_index++;
+            }
+#else
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -279,6 +318,7 @@ class FDC1004 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         convert_to_fixed_point(capacitance, S15Q16_RADIX)});
+#endif
         }
     }
 
@@ -497,6 +537,8 @@ class FDC1004 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         return RG(*reinterpret_cast<Reg *>(&ret.value()));
     }
+    std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
+    uint16_t sensor_buffer_index = 0;
 
 };  // end of FDC1004 class
 
