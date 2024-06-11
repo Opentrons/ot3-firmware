@@ -38,7 +38,7 @@ class MMR920 {
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
            const sensors::mmr920::SensorVersion version,
-           std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
+           std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -46,7 +46,7 @@ class MMR920 {
           hardware(hardware),
           sensor_id(id),
           sensor_version(version),
-          sensor_buffer(sensor_buffer) {}
+          p_buff(p_buff) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -290,12 +290,12 @@ class MMR920 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920::reading_to_fixed_point((*sensor_buffer).at(i))});
+                        mmr920::reading_to_fixed_point((*p_buff).at(i))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
                 vTaskDelay(50);
             }
-            (*sensor_buffer).at(i) = 0;
+            (*p_buff).at(i) = 0;
         }
 #else
         std::ignore = message_index;
@@ -362,7 +362,7 @@ class MMR920 {
             auto response_pressure = pressure - current_pressure_baseline_pa;
 #ifdef USE_SENSOR_MOVE
             if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*sensor_buffer).at(sensor_buffer_index) = response_pressure;
+                (*p_buff).at(sensor_buffer_index) = response_pressure;
                 sensor_buffer_index++;
             }
 #else
@@ -558,7 +558,7 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
-    std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
+    std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
     uint16_t sensor_buffer_index = 0;
 };
 

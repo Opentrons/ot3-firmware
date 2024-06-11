@@ -42,14 +42,14 @@ class FDC1004 {
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
             sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor,
-            std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
+            std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
           shared_sensor(shared_sensor),
-          sensor_buffer(sensor_buffer) {}
+          p_buff(p_buff) {}
 
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
@@ -224,12 +224,12 @@ class FDC1004 {
                     .sensor = can::ids::SensorType::capacitive,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        convert_to_fixed_point((*sensor_buffer).at(i), S15Q16_RADIX)});
+                        convert_to_fixed_point((*p_buff).at(i), S15Q16_RADIX)});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
                 vTaskDelay(50);
             }
-            (*sensor_buffer).at(i) = 0;
+            (*p_buff).at(i) = 0;
         }
 #else
         std::ignore = message_index;
@@ -306,7 +306,7 @@ class FDC1004 {
             // send a response with 9999 to make an overload of the buffer
             // visible
             if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*sensor_buffer).at(sensor_buffer_index) = capacitance;
+                (*p_buff).at(sensor_buffer_index) = capacitance;
                 sensor_buffer_index++;
             }
 #else
@@ -537,7 +537,7 @@ class FDC1004 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         return RG(*reinterpret_cast<Reg *>(&ret.value()));
     }
-    std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
+    std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
     uint16_t sensor_buffer_index = 0;
 
 };  // end of FDC1004 class
