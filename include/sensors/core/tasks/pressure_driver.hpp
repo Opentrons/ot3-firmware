@@ -289,7 +289,7 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        for (int i = 0; i < SENSOR_BUFFER_SIZE; i++) {
+        for (size_t i = 0; i < SENSOR_BUFFER_SIZE; i++) {
             // send over buffer and then clear buffer values
             int current_index = (i + sensor_buffer_index) % SENSOR_BUFFER_SIZE;
 
