@@ -289,10 +289,9 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-#ifdef USE_SENSOR_MOVE
         for (int i = 0; i < SENSOR_BUFFER_SIZE; i++) {
-            // send over buffer adn then clear buffer values
-            current_index = (i + sensor_buffer_index) % SENSOR_BUFFER_SIZE;
+            // send over buffer and then clear buffer values
+            int current_index = (i + sensor_buffer_index) % SENSOR_BUFFER_SIZE;
 
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -308,9 +307,6 @@ class MMR920 {
             }
             (*sensor_buffer).at(current_index) = 0;
         }
-#else
-        std::ignore = message_index;
-#endif
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
