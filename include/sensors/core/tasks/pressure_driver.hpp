@@ -228,6 +228,15 @@ class MMR920 {
         return true;
     }
 
+    auto sensor_buffer_log(float data) -> void {
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+        }
+
+        (*sensor_buffer).at(sensor_buffer_index) = response_pressure;
+        sensor_buffer_index++;
+    }
+
     auto save_temperature(int32_t data) -> bool {
         _registers.temperature_result.reading = data;
         LOG("Updated temperature reading is %u",
@@ -281,8 +290,10 @@ class MMR920 {
 
     void send_accumulated_sensor_data(uint32_t message_index) {
 #ifdef USE_SENSOR_MOVE
-        for (int i = 0; i < sensor_buffer_index; i++) {
+        for (int i = 0; i < SENSOR_BUFFER_SIZE; i++) {
             // send over buffer adn then clear buffer values
+            current_index = (i + sensor_buffer_index) % SENSOR_BUFFER_SIZE;
+
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -290,12 +301,12 @@ class MMR920 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920::reading_to_fixed_point((*sensor_buffer).at(i))});
+                        mmr920::reading_to_fixed_point((*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
                 vTaskDelay(50);
             }
-            (*sensor_buffer).at(i) = 0;
+            (*sensor_buffer).at(current_index) = 0;
         }
 #else
         std::ignore = message_index;
@@ -323,6 +334,7 @@ class MMR920 {
             _registers.pressure_result.reading, sensor_version);
 
         if (max_pressure_sync) {
+            sensor_buffer_log(pressure);
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
                 mmr920::get_max_pressure_reading(sensor_version);
