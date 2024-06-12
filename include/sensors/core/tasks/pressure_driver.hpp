@@ -233,7 +233,7 @@ class MMR920 {
             sensor_buffer_index = 0;
         }
 
-        (*sensor_buffer).at(sensor_buffer_index) = response_pressure;
+        (*sensor_buffer).at(sensor_buffer_index) = data;
         sensor_buffer_index++;
     }
 
@@ -300,8 +300,8 @@ class MMR920 {
                     .message_index = message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
-                    .sensor_data =
-                        mmr920::reading_to_fixed_point((*sensor_buffer).at(current_index))});
+                    .sensor_data = mmr920::reading_to_fixed_point(
+                        (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
                 vTaskDelay(50);

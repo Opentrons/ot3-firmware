@@ -55,7 +55,8 @@ SCENARIO("read capacitance sensor values without shared CINs") {
     poller.set_queue(&poller_queue);
 
     auto sensor_not_shared = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, false, &sensor_buffer};
+        writer,         poller, mock_hw,       queue_client,
+        response_queue, false,  &sensor_buffer};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a initialize sensor request") {
@@ -383,7 +384,8 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
     poller.set_queue(&poller_queue);
 
     auto sensor_shared = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, true, &sensor_buffer};
+        writer,         poller, mock_hw,       queue_client,
+        response_queue, true,   &sensor_buffer};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a initialize sensor request") {
@@ -580,8 +582,9 @@ SCENARIO("capacitance driver tests no shared CINs") {
 
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
-    sensors::tasks::FDC1004 callback_host(
-        writer, poller, queue_client, response_queue, mock_hw, false, &sensor_buffer);
+    sensors::tasks::FDC1004 callback_host(writer, poller, queue_client,
+                                          response_queue, mock_hw, false,
+                                          &sensor_buffer);
 
     can::message_writer_task::TaskMessage empty_msg{};
 
@@ -771,7 +774,8 @@ SCENARIO("threshold configuration") {
     poller.set_queue(&poller_queue);
 
     auto sensor = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue, false, &sensor_buffer};
+        writer,         poller, mock_hw,       queue_client,
+        response_queue, false,  &sensor_buffer};
 
     GIVEN("A request to set an autothreshold") {
         int NUM_READS = 10;

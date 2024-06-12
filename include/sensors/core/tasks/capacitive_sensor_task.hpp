@@ -24,7 +24,7 @@ class CapacitiveMessageHandler {
         sensors::hardware::SensorHardwareBase &hardware, CanClient &can_client,
         OwnQueue &own_queue, bool shared_task,
         std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
-        : driver{i2c_writer, i2c_poller,  can_client, own_queue,
+        : driver{i2c_writer, i2c_poller,  can_client,   own_queue,
                  hardware,   shared_task, sensor_buffer} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
@@ -219,7 +219,7 @@ class CapacitiveSensorTask {
         // multiple channels. We will thus rely on the sensor id in this case
         // to determine which CIN configuration the sensor should be in.
         auto handler = CapacitiveMessageHandler{
-            *writer,     *poller,     *hardware, *can_client,
+            *writer,     *poller,     *hardware,    *can_client,
             get_queue(), shared_task, sensor_buffer};
         handler.initialize();
         utils::TaskMessage message{};
