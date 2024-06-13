@@ -233,7 +233,7 @@ class MMR920 {
             sensor_buffer_index = 0;
         }
 
-        (*sensor_buffer).at(sensor_buffer_index) = data;
+        sensor_buffer->at(sensor_buffer_index) = data;
         sensor_buffer_index++;
     }
 
@@ -330,7 +330,6 @@ class MMR920 {
             _registers.pressure_result.reading, sensor_version);
 
         if (max_pressure_sync) {
-            sensor_buffer_log(pressure);
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
                 mmr920::get_max_pressure_reading(sensor_version);
@@ -368,12 +367,8 @@ class MMR920 {
 
         if (echo_this_time) {
             auto response_pressure = pressure - current_pressure_baseline_pa;
-#ifdef USE_SENSOR_MOVE
-            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*sensor_buffer).at(sensor_buffer_index) = response_pressure;
-                sensor_buffer_index++;
-            }
-#else
+            // do we want pressure or response pressure
+            sensor_buffer_log(pressure);
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -382,7 +377,6 @@ class MMR920 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         mmr920::reading_to_fixed_point(response_pressure)});
-#endif
         }
     }
 

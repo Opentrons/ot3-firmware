@@ -1,3 +1,5 @@
+#define SENSOR_BUFF_SIZE = 500
+
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
