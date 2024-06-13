@@ -289,12 +289,10 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        if (SENSOR_BUFFER_SIZE == 0) {
-            return;
-        }
-        for (size_t i = 0; i < SENSOR_BUFFER_SIZE; i++) {
+        for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
             // send over buffer and then clear buffer values
-            int current_index = (i + sensor_buffer_index) % SENSOR_BUFFER_SIZE;
+            // NOLINTNEXTLINE(div-by-zero)
+            int current_index = (i + sensor_buffer_index) % static_cast<int>(SENSOR_BUFFER_SIZE);
 
             can_client.send_can_message(
                 can::ids::NodeId::host,
