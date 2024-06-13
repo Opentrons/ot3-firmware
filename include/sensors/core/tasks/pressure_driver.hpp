@@ -2,6 +2,18 @@
 
 #include <cmath>
 
+// Not my favorite way to check this, but if we don't have access
+// to vTaskDelay during host compilation so just dummy the function
+template <typename T>
+requires std::is_integral_v<T>
+static void _hardware_delay(T ticks) {
+#ifndef INC_TASK_H
+    std::ignore = ticks;
+#else
+    vTaskDelay(ticks);
+#endif
+}
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -292,7 +304,8 @@ class MMR920 {
         for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
             // send over buffer and then clear buffer values
             // NOLINTNEXTLINE(div-by-zero)
-            int current_index = (i + sensor_buffer_index) % static_cast<int>(SENSOR_BUFFER_SIZE);
+            int current_index = (i + sensor_buffer_index) %
+                                static_cast<int>(SENSOR_BUFFER_SIZE);
 
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -304,7 +317,7 @@ class MMR920 {
                         (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vTaskDelay(50);
+                _hardware_delay(50);
             }
             (*sensor_buffer).at(current_index) = 0;
         }
