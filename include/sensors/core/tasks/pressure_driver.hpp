@@ -6,6 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/sensor_buffer.hpp"
@@ -38,7 +39,7 @@ class MMR920 {
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
            const sensors::mmr920::SensorVersion version,
-           std::array<float, SENSOR_BUFFER_SIZE> *p_buff)
+           std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -46,7 +47,7 @@ class MMR920 {
           hardware(hardware),
           sensor_id(id),
           sensor_version(version),
-          p_buff(p_buff) {}
+          sensor_buffer(sensor_buffer) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -228,6 +229,15 @@ class MMR920 {
         return true;
     }
 
+    auto sensor_buffer_log(float data) -> void {
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+        }
+
+        sensor_buffer->at(sensor_buffer_index) = data;
+        sensor_buffer_index++;
+    }
+
     auto save_temperature(int32_t data) -> bool {
         _registers.temperature_result.reading = data;
         LOG("Updated temperature reading is %u",
@@ -280,26 +290,26 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-#ifdef USE_SENSOR_MOVE
-        for (int i = 0; i < sensor_buffer_index; i++) {
-            // send over buffer adn then clear buffer values
+        for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
+            // send over buffer and then clear buffer values
+            // NOLINTNEXTLINE(div-by-zero)
+            int current_index = (i + sensor_buffer_index) %
+                                static_cast<int>(SENSOR_BUFFER_SIZE);
+
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
                     .message_index = message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
-                    .sensor_data =
-                        mmr920::reading_to_fixed_point((*p_buff).at(i))});
+                    .sensor_data = mmr920::reading_to_fixed_point(
+                        (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vTaskDelay(50);
+                vtask_hardware_delay(50);
             }
-            (*p_buff).at(i) = 0;
+            (*sensor_buffer).at(current_index) = 0;
         }
-#else
-        std::ignore = message_index;
-#endif
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
@@ -360,12 +370,8 @@ class MMR920 {
 
         if (echo_this_time) {
             auto response_pressure = pressure - current_pressure_baseline_pa;
-#ifdef USE_SENSOR_MOVE
-            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*p_buff).at(sensor_buffer_index) = response_pressure;
-                sensor_buffer_index++;
-            }
-#else
+            // do we want pressure or response pressure
+            sensor_buffer_log(pressure);
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -374,7 +380,6 @@ class MMR920 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         mmr920::reading_to_fixed_point(response_pressure)});
-#endif
         }
     }
 
@@ -558,7 +563,7 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
-    std::array<float, SENSOR_BUFFER_SIZE> *p_buff;
+    std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
     uint16_t sensor_buffer_index = 0;
 };
 

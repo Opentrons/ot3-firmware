@@ -16,9 +16,9 @@
 
 static auto tasks = gripper_tasks::AllTask{};
 static auto queues = gripper_tasks::QueueClient{can::ids::NodeId::gripper};
-static std::array<float, SENSOR_BUFFER_SIZE> p_buff;
+static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer;
 #ifdef USE_TWO_BUFFERS
-static std::array<float, SENSOR_BUFFER_SIZE> p_buff_front;
+static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer_front;
 #endif
 
 static auto eeprom_task_builder =
@@ -101,14 +101,14 @@ void gripper_tasks::start_tasks(
             5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
             sensor_hardware, queues,
 #ifdef USE_TWO_BUFFERS
-            p_buff_front);
+            sensor_buffer_front);
 #else
-            p_buff);
+            sensor_buffer);
 #endif
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "cap sensor S0", i2c3_task_client, i2c3_poll_client,
-            sensor_hardware, queues, p_buff);
+            sensor_hardware, queues, sensor_buffer);
 
     tasks.i2c2_task = &i2c2_task;
     tasks.i2c3_task = &i2c3_task;
