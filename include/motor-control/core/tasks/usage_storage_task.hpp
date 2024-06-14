@@ -7,6 +7,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "eeprom/core/dev_data.hpp"
 #include "motor-control/core/tasks/messages.hpp"
@@ -14,18 +15,6 @@
 namespace usage_storage_task {
 
 using namespace usage_messages;
-
-// Not my favorite way to check this, but if we don't have access
-// to vTaskDelay during host compilation so just dummy the function
-template <typename T>
-requires std::is_integral_v<T>
-static void _hardware_delay(T ticks) {
-#ifndef INC_TASK_H
-    std::ignore = ticks;
-#else
-    vTaskDelay(ticks);
-#endif
-}
 
 using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 
@@ -237,7 +226,7 @@ class UsageStorageTask {
             } else {
                 // wait for the handler to be ready before sending the next
                 // message
-                _hardware_delay(10);
+                vtask_hardware_delay(10);
             }
         }
     }
