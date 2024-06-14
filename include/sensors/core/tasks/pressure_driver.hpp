@@ -2,22 +2,11 @@
 
 #include <cmath>
 
-// Not my favorite way to check this, but if we don't have access
-// to vTaskDelay during host compilation so just dummy the function
-template <typename T>
-requires std::is_integral_v<T>
-static void _hardware_delay(T ticks) {
-#ifndef INC_TASK_H
-    std::ignore = ticks;
-#else
-    vTaskDelay(ticks);
-#endif
-}
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/sensor_buffer.hpp"
@@ -317,7 +306,7 @@ class MMR920 {
                         (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                _hardware_delay(50);
+                vtask_hardware_delay(50);
             }
             (*sensor_buffer).at(current_index) = 0;
         }
