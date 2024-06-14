@@ -43,9 +43,7 @@ class UVMessageHandler {
         uv_push_button = gpio::is_set(drive_pins.uv_push_button);
         door_closed = gpio::is_set(drive_pins.door_open);
         reed_switch_set = gpio::is_set(drive_pins.reed_switch);
-        if (drive_pins.safety_relay_active.has_value())
-            safety_relay_active =
-                gpio::is_set(drive_pins.safety_relay_active.value());
+        update_safety_relay_state();
         // turn off UV Ballast
         gpio::reset(drive_pins.uv_on_off);
     }
@@ -72,6 +70,13 @@ class UVMessageHandler {
         set_uv_light_state(uv_push_button, uv_off_timeout_s);
     }
 
+    // Helper to update safety relay state
+    void update_safety_relay_state() {
+        if (drive_pins.safety_relay_active.has_value())
+            safety_relay_active =
+                gpio::is_set(drive_pins.safety_relay_active.value());
+    }
+
     void visit(const std::monostate &) {}
 
     // Handle GPIO EXTI Interrupts here
@@ -88,9 +93,7 @@ class UVMessageHandler {
         // update states
         door_closed = gpio::is_set(drive_pins.door_open);
         reed_switch_set = gpio::is_set(drive_pins.reed_switch);
-        if (drive_pins.safety_relay_active.has_value())
-            safety_relay_active =
-                gpio::is_set(drive_pins.safety_relay_active.value());
+        update_safety_relay_state();
         if (m.pin == drive_pins.uv_push_button.pin)
             uv_push_button = !uv_push_button;
     }
@@ -104,6 +107,7 @@ class UVMessageHandler {
     }
 
     void visit(const can::messages::GetHepaUVStateRequest &m) {
+        update_safety_relay_state();
         uv_current_ma = uv_hardware.get_uv_light_current();
         auto resp = can::messages::GetHepaUVStateResponse{
             .message_index = m.message_index,
@@ -172,10 +176,8 @@ class UVMessageHandler {
         // wait 10ms for safety relay, then update the states
         ot_utils::freertos_sleep::sleep(100);
         uv_current_ma = uv_hardware.get_uv_light_current();
-        if (drive_pins.safety_relay_active.has_value())
-            safety_relay_active =
-                gpio::is_set(drive_pins.safety_relay_active.value());
-        if (!safety_relay_active) {
+        update_safety_relay_state();
+        if (uv_light_on && !safety_relay_active) {
             // we tried to set the uv light, but the relay is not active
             if (_timer.is_running()) {
                 gpio::reset(drive_pins.uv_on_off);
