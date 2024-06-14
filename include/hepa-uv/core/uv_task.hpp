@@ -9,14 +9,15 @@
 #include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "hepa-uv/firmware/uv_control_hardware.hpp"
-#include "ot_utils/freertos/freertos_timer.hpp"
 #include "ot_utils/freertos/freertos_sleep.hpp"
+#include "ot_utils/freertos/freertos_timer.hpp"
 
 namespace uv_task {
 
 // How long to keep the UV light on in seconds.
 static constexpr uint32_t DELAY_S = 60 * 15;      // 15 minutes
 static constexpr uint32_t MAX_DELAY_S = 60 * 60;  // 1hr max timeout
+static constexpr uint32_t DEBOUNCE_MS = 250;      // button debounce
 
 using TaskMessage = uv_task_messages::TaskMessage;
 
@@ -34,12 +35,17 @@ class UVMessageHandler {
           can_client{can_client},
           _timer(
               "UVTask", [ThisPtr = this] { ThisPtr->timer_callback(); },
-              DELAY_S * 1000) {
+              DELAY_S * 1000),
+          debounce_timer(
+              "UVTaskDebounce", [ThisPtr = this] { ThisPtr->debounce_cb(); },
+              DEBOUNCE_MS) {
         // get current state
         uv_push_button = gpio::is_set(drive_pins.uv_push_button);
         door_closed = gpio::is_set(drive_pins.door_open);
         reed_switch_set = gpio::is_set(drive_pins.reed_switch);
-        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
+        if (drive_pins.safety_relay_active.has_value())
+            safety_relay_active =
+                gpio::is_set(drive_pins.safety_relay_active.value());
         // turn off UV Ballast
         gpio::reset(drive_pins.uv_on_off);
     }
@@ -60,6 +66,12 @@ class UVMessageHandler {
         uv_push_button = false;
     }
 
+    // callback to debounce the irq signals
+    void debounce_cb() {
+        debounce_timer.stop();
+        set_uv_light_state(uv_push_button, uv_off_timeout_s);
+    }
+
     void visit(const std::monostate &) {}
 
     // Handle GPIO EXTI Interrupts here
@@ -69,20 +81,18 @@ class UVMessageHandler {
             return;
         }
 
+        // debounce
+        if (debounce_timer.is_running()) return;
+        debounce_timer.start();
+
         // update states
-        if (m.pin == drive_pins.uv_push_button.pin) {
+        door_closed = gpio::is_set(drive_pins.door_open);
+        reed_switch_set = gpio::is_set(drive_pins.reed_switch);
+        if (drive_pins.safety_relay_active.has_value())
+            safety_relay_active =
+                gpio::is_set(drive_pins.safety_relay_active.value());
+        if (m.pin == drive_pins.uv_push_button.pin)
             uv_push_button = !uv_push_button;
-        } else if (m.pin == drive_pins.door_open.pin) {
-            door_closed = gpio::is_set(drive_pins.door_open);
-        } else if (m.pin == drive_pins.reed_switch.pin) {
-            reed_switch_set = gpio::is_set(drive_pins.reed_switch);
-        }
-
-        // Always update safety relay state
-        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
-
-        // Drive the UV light
-        set_uv_light_state(uv_push_button, uv_off_timeout_s);
     }
 
     void visit(const can::messages::SetHepaUVStateRequest &m) {
@@ -160,9 +170,11 @@ class UVMessageHandler {
         }
 
         // wait 10ms for safety relay, then update the states
-        ot_utils::freertos_sleep::sleep(10);
-        safety_relay_active = gpio::is_set(drive_pins.safety_relay_active);
+        ot_utils::freertos_sleep::sleep(100);
         uv_current_ma = uv_hardware.get_uv_light_current();
+        if (drive_pins.safety_relay_active.has_value())
+            safety_relay_active =
+                gpio::is_set(drive_pins.safety_relay_active.value());
         if (!safety_relay_active) {
             // we tried to set the uv light, but the relay is not active
             if (_timer.is_running()) {
@@ -203,6 +215,7 @@ class UVMessageHandler {
     LEDControlClient &led_control_client;
     CanClient &can_client;
     ot_utils::freertos_timer::FreeRTOSTimer _timer;
+    ot_utils::freertos_timer::FreeRTOSTimer debounce_timer;
 };
 
 /**

@@ -1,4 +1,5 @@
 #include <array>
+#include <optional>
 
 // clang-format off
 #include "FreeRTOS.h"
@@ -92,6 +93,17 @@ class EEPromHardwareInterface
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
 
+#if PCB_PRIMARY_REVISION == 'a' || PCB_PRIMARY_REVISION == 'b'
+static constexpr std::optional<gpio::PinConfig> safety_relay_active =
+    std::nullopt;
+#else
+static std::optional<gpio::PinConfig> safety_relay_active =
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = nSAFETY_ACTIVE_MCU_PORT,
+                    .pin = nSAFETY_ACTIVE_MCU_PIN,
+                    .active_setting = nSAFETY_ACTIVE_AS};
+#endif
+
 static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .door_open =
         gpio::PinConfig{
@@ -123,17 +135,14 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
             .port = HEPA_ON_OFF_PORT,
             .pin = HEPA_ON_OFF_PIN,
             .active_setting = HEPA_ON_OFF_AS},
-    .uv_on_off = gpio::PinConfig{
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = UV_ON_OFF_MCU_PORT,
-        .pin = UV_ON_OFF_MCU_PIN,
-        .active_setting = UV_ON_OFF_AS},
-    .safety_relay_active = gpio::PinConfig{
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = nSAFETY_ACTIVE_MCU_PORT,
-        .pin = nSAFETY_ACTIVE_MCU_PIN,
-        .active_setting = nSAFETY_ACTIVE_AS},
-    };
+    .uv_on_off =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = UV_ON_OFF_MCU_PORT,
+            .pin = UV_ON_OFF_MCU_PIN,
+            .active_setting = UV_ON_OFF_AS},
+    .safety_relay_active = safety_relay_active,
+};
 
 static auto& hepauv_queues = hepauv_tasks::get_main_queues();
 

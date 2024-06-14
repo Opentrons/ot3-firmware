@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "common/firmware/gpio.hpp"
 
 namespace gpio_drive_hardware {
@@ -11,7 +13,7 @@ struct GpioDrivePins {
     gpio::PinConfig uv_push_button;
     gpio::PinConfig hepa_on_off;
     gpio::PinConfig uv_on_off;
-    gpio::PinConfig safety_relay_active;
+    std::optional<gpio::PinConfig> safety_relay_active = std::nullopt;
 };
 
 }  // namespace gpio_drive_hardware

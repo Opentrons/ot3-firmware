@@ -142,10 +142,10 @@ void uv_on_off_output_init() {
 void safety_relay_active_input_init() {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /*Configure GPIO pin nSAFETY_ACTIVE_MCU: PB6 */
+    /*Configure GPIO pin nSAFETY_ACTIVE_MCU: PB5 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = nSAFETY_ACTIVE_MCU_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(nSAFETY_ACTIVE_MCU_PORT, &GPIO_InitStruct);
 }
