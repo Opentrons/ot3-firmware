@@ -6,7 +6,7 @@
 
 namespace gpio_drive_hardware {
 
-// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
+// NOLINTBEGIN
 struct GpioDrivePins {
     gpio::PinConfig door_open;
     gpio::PinConfig reed_switch;
@@ -16,6 +16,6 @@ struct GpioDrivePins {
     gpio::PinConfig uv_on_off;
     std::optional<gpio::PinConfig> safety_relay_active = std::nullopt;
 };
-// NOLINTEND(cppcoreguidelines-pro-type-member-init)
+// NOLINTEND
 
 }  // namespace gpio_drive_hardware
