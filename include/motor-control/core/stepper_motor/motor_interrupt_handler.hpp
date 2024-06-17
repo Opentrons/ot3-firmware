@@ -408,7 +408,11 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
 #ifdef USE_SENSOR_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-                auto binding = static_cast<uint8_t>(0x3);  // sync and report
+                auto binding =
+                    static_cast<uint8_t>(can::ids::SensorOutputBinding::sync) |
+                    static_cast<uint8_t>(
+                        can::ids::SensorOutputBinding::report);  // sync and
+                                                                 // report
                 if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                     send_bind_message(buffered_move.sensor_type,
                                       can::ids::SensorId::S0, binding);
