@@ -356,7 +356,12 @@ class MMR920 {
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::over_pressure});
-            } else {
+            } else if (!bind_sync) {
+                // if we're not using bind sync turn off the sync line
+                // we don't do this during bind sync because if it's triggering
+                // the sync line on purpose this causes bouncing on the line
+                // that turns off the sync and then immediately turns it back on
+                // and this can cause disrupt the behavior
                 hardware.reset_sync();
             }
         }
@@ -380,6 +385,12 @@ class MMR920 {
                 current_pressure_baseline_pa =
                     std::accumulate(std::begin(*p_buff), std::end(*p_buff), 0) /
                     10;
+                for (auto i = sensor_buffer_index - 10; i < sensor_buffer_index;
+                     i++) {
+                    p_buff->at(sensor_buffer_index) =
+                        p_buff->at(sensor_buffer_index) -
+                        current_pressure_baseline_pa;
+                }
             }
 
             can_client.send_can_message(
