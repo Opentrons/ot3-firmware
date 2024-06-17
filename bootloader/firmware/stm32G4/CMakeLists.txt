@@ -170,8 +170,8 @@ endmacro()
 foreach_revision(
     PROJECT_NAME bootloader-hepa-uv
     CALL_FOREACH_REV hepauv_bootloader_loop
-    REVISIONS a1 b1
-    SOURCES hepauv_sources hepauv_sources
+    REVISIONS a1 b1 c1
+    SOURCES hepauv_sources hepauv_sources hepauv_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )

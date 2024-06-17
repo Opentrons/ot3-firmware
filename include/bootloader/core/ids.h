@@ -165,6 +165,7 @@ typedef enum {
     can_errorcode_over_pressure = 0xd,
     can_errorcode_door_open = 0xe,
     can_errorcode_reed_open = 0xf,
+    can_errorcode_safety_relay_inactive = 0x11,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
