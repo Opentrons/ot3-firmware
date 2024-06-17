@@ -6,6 +6,7 @@
 
 namespace gpio_drive_hardware {
 
+// NOLINT[cppcoreguidelines-pro-type-member-init]
 struct GpioDrivePins {
     gpio::PinConfig door_open;
     gpio::PinConfig reed_switch;
