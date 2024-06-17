@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <numeric>
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
@@ -372,6 +373,13 @@ class MMR920 {
             auto response_pressure = pressure - current_pressure_baseline_pa;
             // do we want pressure or response pressure
             sensor_buffer_log(pressure);
+
+            if (sensor_buffer_index == 10) {
+                current_pressure_baseline_pa =
+                    std::accumulate(std::begin(*p_buff), std::end(*p_buff), 0) /
+                    10;
+            }
+
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
