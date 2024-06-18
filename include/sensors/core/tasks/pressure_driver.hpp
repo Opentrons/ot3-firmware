@@ -383,7 +383,7 @@ class MMR920 {
 
             if (sensor_buffer_index == 10) {
                 current_pressure_baseline_pa =
-                    std::accumulate(std::begin(*p_buff), std::end(*p_buff), 0) /
+                    std::accumulate(p_buff->begin(), p_buff->begin()+10, 0) /
                     10;
                 for (auto i = sensor_buffer_index - 10; i < sensor_buffer_index;
                      i++) {
