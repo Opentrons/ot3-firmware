@@ -70,6 +70,8 @@ class MMR920 {
         echoing = should_echo;
         if (should_echo) {
             sensor_buffer_index = 0;  // reset buffer index
+            pressure_transations = 0;
+            buffer_full = false;
         }
     }
 
@@ -290,25 +292,48 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
-            // send over buffer and then clear buffer values
-            // NOLINTNEXTLINE(div-by-zero)
-            int current_index = (i + sensor_buffer_index) %
-                                static_cast<int>(SENSOR_BUFFER_SIZE);
+        if (buffer_full) {
+            for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
+                // send over buffer and then clear buffer values
+                // NOLINTNEXTLINE(div-by-zero)
+                int current_index = (i + sensor_buffer_index) %
+                                    static_cast<int>(SENSOR_BUFFER_SIZE);
 
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(
-                        (*sensor_buffer).at(current_index))});
-            if (i % 10 == 0) {
-                // slow it down so the can buffer doesn't choke
-                vtask_hardware_delay(50);
+                can_client.send_can_message(
+                        can::ids::NodeId::host,
+                        can::messages::ReadFromSensorResponse{
+                                .message_index = message_index,
+                                .sensor = can::ids::SensorType::pressure,
+                                .sensor_id = sensor_id,
+                                .sensor_data = mmr920::reading_to_fixed_point(
+                                        (*sensor_buffer).at(current_index))});
+                if (i % 10 == 0) {
+                    // slow it down so the can buffer doesn't choke
+                    vtask_hardware_delay(50);
+                }
+                (*sensor_buffer).at(current_index) = 0;
             }
-            (*sensor_buffer).at(current_index) = 0;
+        }
+        // I think counting the transactions here might
+        // be preferable to having to ignore a bunch
+        // of 0's at the end in Python, because we might end up accidentally
+        // ignoring valid data that way
+        else {
+            for (int = 0; i < pressure_transations; i++) {
+                can_client.send_can_message(
+                        can::ids::NodeId::host,
+                        can::messages::ReadFromSensorResponse{
+                                .message_index = message_index,
+                                .sensor = can::ids::SensorType::pressure,
+                                .sensor_id = sensor_id,
+                                .sensor_data = mmr920::reading_to_fixed_point(
+                                        (*sensor_buffer).at(i))});
+                if (i % 10 == 0) {
+                    // slow it down so the can buffer doesn't choke
+                    vtask_hardware_delay(50);
+                }
+            }
+            (*sensor_buffer).at(i) = 0;
         }
     }
 
@@ -371,6 +396,9 @@ class MMR920 {
         if (echo_this_time) {
             auto response_pressure = pressure - current_pressure_baseline_pa;
             // do we want pressure or response pressure
+            if (pressure_transations < 500) { pressure_transactions++; }
+            else {buffer_full = true;}
+
             sensor_buffer_log(pressure);
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -528,10 +556,12 @@ class MMR920 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_pressure_sync = false;
+    bool buffer_full = false;
 
     float pressure_running_total = 0;
     float temperature_running_total = 0;
     uint16_t total_baseline_reads = 1;
+    uint16_t pressure_transations = 0;
 
     float current_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
