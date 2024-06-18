@@ -378,8 +378,8 @@ class MMR920 {
 
         if (echo_this_time) {
             auto response_pressure = pressure - current_pressure_baseline_pa;
-            // do we want pressure or response pressure
-            sensor_buffer_log(pressure);
+
+            sensor_buffer_log(response_pressure);
 
             if (sensor_buffer_index == 10) {
                 current_pressure_baseline_pa =
