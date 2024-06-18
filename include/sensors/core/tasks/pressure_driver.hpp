@@ -71,7 +71,6 @@ class MMR920 {
         if (should_echo) {
             sensor_buffer_index = 0;  // reset buffer index
             pressure_transations = 0;
-            buffer_full = false;
         }
     }
 
@@ -292,7 +291,7 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        if (buffer_full) {
+        if (pressure_transations >= 500) {
             for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
                 // send over buffer and then clear buffer values
                 // NOLINTNEXTLINE(div-by-zero)
@@ -397,7 +396,6 @@ class MMR920 {
             auto response_pressure = pressure - current_pressure_baseline_pa;
             // do we want pressure or response pressure
             if (pressure_transations < 500) { pressure_transactions++; }
-            else {buffer_full = true;}
 
             sensor_buffer_log(pressure);
             can_client.send_can_message(
@@ -556,7 +554,6 @@ class MMR920 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_pressure_sync = false;
-    bool buffer_full = false;
 
     float pressure_running_total = 0;
     float temperature_running_total = 0;
