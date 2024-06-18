@@ -382,9 +382,11 @@ class MMR920 {
             sensor_buffer_log(response_pressure);
 
             if (sensor_buffer_index == 10) {
+                // we always start a read at sensor_buffer_index = 0 so we don't need to
+                // account for it being a circular buffer here
                 current_pressure_baseline_pa =
                     std::accumulate(p_buff->begin(), p_buff->begin()+10, 0) /
-                    10;
+                    10 + current_pressure_baseline_pa;
                 for (auto i = sensor_buffer_index - 10; i < sensor_buffer_index;
                      i++) {
                     p_buff->at(sensor_buffer_index) =
@@ -392,16 +394,6 @@ class MMR920 {
                         current_pressure_baseline_pa;
                 }
             }
-
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data =
-                        mmr920::reading_to_fixed_point(response_pressure)});
-        }
     }
 
     auto handle_ongoing_temperature_response(
