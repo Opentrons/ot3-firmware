@@ -81,7 +81,6 @@ class PressureMessageHandler {
 
     void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
         LOG("Received request to dump pressure data buffer");
-
         driver.send_accumulated_sensor_data(m.message_index);
     }
 

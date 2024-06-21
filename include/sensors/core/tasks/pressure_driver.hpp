@@ -71,7 +71,7 @@ class MMR920 {
         echoing = should_echo;
         if (should_echo) {
             sensor_buffer_index = 0;  // reset buffer index
-            crossed_buffer_index=false;
+            crossed_buffer_index = false;
             sensor_buffer->fill(0.0);
         }
     }
@@ -237,7 +237,7 @@ class MMR920 {
         sensor_buffer_index++;
         if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
             sensor_buffer_index = 0;
-            crossed_buffer_index=true;
+            crossed_buffer_index = true;
         }
     }
 
@@ -301,14 +301,13 @@ class MMR920 {
         }
 
         can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::Acknowledgment{
-                    .message_index = count});
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = count});
         for (int i = 0; i < count; i++) {
             // send over buffer and then clear buffer values
             // NOLINTNEXTLINE(div-by-zero)
-            int current_index = (i + start) %
-                                static_cast<int>(SENSOR_BUFFER_SIZE);
+            int current_index =
+                (i + start) % static_cast<int>(SENSOR_BUFFER_SIZE);
 
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -324,9 +323,8 @@ class MMR920 {
             }
         }
         can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::Acknowledgment{
-                    .message_index = message_index});
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = message_index});
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
@@ -397,10 +395,11 @@ class MMR920 {
             sensor_buffer_log(response_pressure);
 
             if (sensor_buffer_index == 10 && !crossed_buffer_index) {
-
                 current_pressure_baseline_pa =
-                    std::accumulate(sensor_buffer->begin(), sensor_buffer->begin()+10, 0) /
-                    10 + current_pressure_baseline_pa;
+                    std::accumulate(sensor_buffer->begin(),
+                                    sensor_buffer->begin() + 10, 0) /
+                        10 +
+                    current_pressure_baseline_pa;
                 for (auto i = sensor_buffer_index - 10; i < sensor_buffer_index;
                      i++) {
                     sensor_buffer->at(sensor_buffer_index) =
@@ -546,7 +545,7 @@ class MMR920 {
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
 #ifdef USE_PRESSURE_MOVE
     mmr920::MeasurementRate measurement_mode_rate =
-        mmr920::MeasurementRate::MEASURE_1;
+        mmr920::MeasurementRate::MEASURE_2;
 #else
     mmr920::MeasurementRate measurement_mode_rate =
         mmr920::MeasurementRate::MEASURE_4;
