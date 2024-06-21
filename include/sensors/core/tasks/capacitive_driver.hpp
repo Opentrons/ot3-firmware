@@ -217,6 +217,10 @@ class FDC1004 {
             }
             (*sensor_buffer).at(i) = 0;
         }
+        can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::Acknowledgment{
+                    .message_index = message_index});
 #else
         std::ignore = message_index;
 #endif

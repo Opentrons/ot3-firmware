@@ -311,6 +311,10 @@ class MMR920 {
             }
             (*sensor_buffer).at(current_index) = 0;
         }
+        can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::Acknowledgment{
+                    .message_index = message_index});
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
