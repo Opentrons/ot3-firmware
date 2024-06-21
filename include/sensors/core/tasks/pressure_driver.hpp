@@ -71,6 +71,8 @@ class MMR920 {
         echoing = should_echo;
         if (should_echo) {
             sensor_buffer_index = 0;  // reset buffer index
+            crossed_buffer_index=false;
+            sensor_buffer->fill(0.0);
         }
     }
 
@@ -231,12 +233,12 @@ class MMR920 {
     }
 
     auto sensor_buffer_log(float data) -> void {
-        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
-            sensor_buffer_index = 0;
-        }
-
         sensor_buffer->at(sensor_buffer_index) = data;
         sensor_buffer_index++;
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+            crossed_buffer_index=true;
+        }
     }
 
     auto save_temperature(int32_t data) -> bool {
@@ -291,10 +293,21 @@ class MMR920 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        for (int i = 0; i < static_cast<int>(SENSOR_BUFFER_SIZE); i++) {
+        auto start = 0;
+        auto count = sensor_buffer_index;
+        if (crossed_buffer_index == true) {
+            start = sensor_buffer_index;
+            count = SENSOR_BUFFER_SIZE;
+        }
+
+        can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::Acknowledgment{
+                    .message_index = count});
+        for (int i = 0; i < count; i++) {
             // send over buffer and then clear buffer values
             // NOLINTNEXTLINE(div-by-zero)
-            int current_index = (i + sensor_buffer_index) %
+            int current_index = (i + start) %
                                 static_cast<int>(SENSOR_BUFFER_SIZE);
 
             can_client.send_can_message(
@@ -309,7 +322,6 @@ class MMR920 {
                 // slow it down so the can buffer doesn't choke
                 vtask_hardware_delay(50);
             }
-            (*sensor_buffer).at(current_index) = 0;
         }
         can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -385,9 +397,8 @@ class MMR920 {
 
             sensor_buffer_log(response_pressure);
 
-            if (sensor_buffer_index == 10) {
-                // we always start a read at sensor_buffer_index = 0 so we don't need to
-                // account for it being a circular buffer here
+            if (sensor_buffer_index == 10 && !crossed_buffer_index) {
+
                 current_pressure_baseline_pa =
                     std::accumulate(sensor_buffer->begin(), sensor_buffer->begin()+10, 0) /
                     10 + current_pressure_baseline_pa;
@@ -583,6 +594,7 @@ class MMR920 {
     }
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
     uint16_t sensor_buffer_index = 0;
+    bool crossed_buffer_index = false;
 };
 
 }  // namespace tasks
