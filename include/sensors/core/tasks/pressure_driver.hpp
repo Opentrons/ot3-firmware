@@ -320,7 +320,7 @@ class MMR920 {
                         (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vtask_hardware_delay(50);
+                vtask_hardware_delay(20);
             }
         }
         can_client.send_can_message(
