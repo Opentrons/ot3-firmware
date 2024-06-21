@@ -386,7 +386,6 @@ class MMR920 {
                 threshold_pascals) {
                 hardware.set_sync();
                 // force this to stay set long enough to debounce on other nodes
-                vTaskDelay(10);
             } else {
                 hardware.reset_sync();
             }
