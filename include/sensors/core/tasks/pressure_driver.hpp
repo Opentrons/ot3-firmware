@@ -31,6 +31,8 @@ using namespace can::ids;
  * @tparam CanClient
  */
 
+constexpr auto AUTO_BASELINE_SAMPLES = 10;
+
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class MMR920 {
@@ -73,6 +75,7 @@ class MMR920 {
             sensor_buffer_index = 0;  // reset buffer index
             crossed_buffer_index = false;
             sensor_buffer->fill(0.0);
+            current_moving_pressure_baseline_pa = 0.0;
         }
     }
 
@@ -380,7 +383,8 @@ class MMR920 {
             }
         }
         if (bind_sync) {
-            if (std::fabs(pressure - current_pressure_baseline_pa) >
+            if (std::fabs(pressure - current_pressure_baseline_pa -
+                          current_moving_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
                 // force this to stay set long enough to debounce on other nodes
@@ -390,21 +394,34 @@ class MMR920 {
         }
 
         if (echo_this_time) {
-            auto response_pressure = pressure - current_pressure_baseline_pa;
+            auto response_pressure = pressure - current_pressure_baseline_pa -
+                                     current_moving_pressure_baseline_pa;
 
             sensor_buffer_log(response_pressure);
 
-            if (sensor_buffer_index == 10 && !crossed_buffer_index) {
-                current_pressure_baseline_pa =
-                    std::accumulate(sensor_buffer->begin(),
-                                    sensor_buffer->begin() + 10, 0) /
-                        10 +
-                    current_pressure_baseline_pa;
-                for (auto i = sensor_buffer_index - 10; i < sensor_buffer_index;
-                     i++) {
+            if (sensor_buffer_index == AUTO_BASELINE_SAMPLES &&
+                !crossed_buffer_index) {
+                // this is the auto-base lining during a move.  It requires that
+                // a BaselineSensorRequest is sent prior to a move using the
+                // auto baseline. it works by taking the first
+                // AUTO_BASELINE_SAMPLES taken during the move (when index < 10
+                // and we haven't crossed the circular buffer barrier yet) it
+                // then takes the average of those samples to create a new
+                // baseline factor
+                current_moving_pressure_baseline_pa =
+                    std::accumulate(
+                        sensor_buffer->begin(),
+                        sensor_buffer->begin() + AUTO_BASELINE_SAMPLES, 0) /
+                    AUTO_BASELINE_SAMPLES;
+                for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
+                     i < sensor_buffer_index; i++) {
+                    // apply the moving baseline to older samples to so that
+                    // data is in the same format as later samples, don't apply
+                    // the current_pressure_baseline_pa since it has already
+                    // been applied
                     sensor_buffer->at(sensor_buffer_index) =
                         sensor_buffer->at(sensor_buffer_index) -
-                        current_pressure_baseline_pa;
+                        current_moving_pressure_baseline_pa;
                 }
             }
         }
@@ -561,6 +578,7 @@ class MMR920 {
     uint16_t total_baseline_reads = 1;
 
     float current_pressure_baseline_pa = 0;
+    float current_moving_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
 
     size_t max_pressure_consecutive_readings = 0;
