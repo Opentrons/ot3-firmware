@@ -318,7 +318,7 @@ class MMR920 {
         // of 0's at the end in Python, because we might end up accidentally
         // ignoring valid data that way
         else {
-            for (int = 0; i < pressure_transations; i++) {
+            for (int i = 0; i < pressure_transations; i++) {
                 can_client.send_can_message(
                         can::ids::NodeId::host,
                         can::messages::ReadFromSensorResponse{
