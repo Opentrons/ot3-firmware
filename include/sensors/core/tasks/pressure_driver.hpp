@@ -558,7 +558,7 @@ class MMR920 {
     float pressure_running_total = 0;
     float temperature_running_total = 0;
     uint16_t total_baseline_reads = 1;
-    uint16_t pressure_transations = 0;
+    uint16_t pressure_transactions = 0;
 
     float current_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
