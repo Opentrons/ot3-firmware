@@ -383,12 +383,12 @@ class MMR920 {
                 hardware.reset_sync();
             }
         }
-        if (bind_sync) {
+        if (bind_sync &&
+            (sensor_buffer_index > AUTO_BASELINE_END || crossed_buffer_index)) {
             if (std::fabs(pressure - current_pressure_baseline_pa -
                           current_moving_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
-                // force this to stay set long enough to debounce on other nodes
             } else {
                 hardware.reset_sync();
             }
