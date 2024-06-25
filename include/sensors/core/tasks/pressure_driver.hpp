@@ -76,8 +76,14 @@ class MMR920 {
             sensor_buffer_index = 0;  // reset buffer index
             crossed_buffer_index = false;
             sensor_buffer->fill(0.0);
-            current_moving_pressure_baseline_pa = 0.0;
         }
+    }
+
+    void set_auto_baseline_report(bool should_auto) {
+        enable_auto_baseline = should_auto;
+        // Always set this to 0, we want to clear it if disabled and
+        // reset if if we haven't baselined yet
+        current_moving_pressure_baseline_pa = 0.0;
     }
 
     void set_bind_sync(bool should_bind) {
@@ -400,7 +406,8 @@ class MMR920 {
 
             sensor_buffer_log(response_pressure);
 
-            if (sensor_buffer_index == AUTO_BASELINE_END &&
+            if (enable_auto_baseline &&
+                sensor_buffer_index == AUTO_BASELINE_END &&
                 !crossed_buffer_index) {
                 // this is the auto-base lining during a move.  It requires that
                 // a BaselineSensorRequest is sent prior to a move using the
@@ -414,12 +421,12 @@ class MMR920 {
                         sensor_buffer->begin() + AUTO_BASELINE_START,
                         sensor_buffer->begin() + AUTO_BASELINE_END, 0) /
                     (AUTO_BASELINE_END - AUTO_BASELINE_START);
-                 for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
+                for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
                      i < sensor_buffer_index; i++) {
-                // apply the moving baseline to older samples to so that
-                // data is in the same format as later samples, don't apply
-                // the current_pressure_baseline_pa since it has already
-                // been applied
+                    // apply the moving baseline to older samples to so that
+                    // data is in the same format as later samples, don't apply
+                    // the current_pressure_baseline_pa since it has already
+                    // been applied
                     sensor_buffer->at(sensor_buffer_index) =
                         sensor_buffer->at(sensor_buffer_index) -
                         current_moving_pressure_baseline_pa;
@@ -566,6 +573,7 @@ class MMR920 {
 
     bool _initialized = false;
     bool echoing = false;
+    bool enable_auto_baseline = false;
     bool bind_sync = false;
     bool max_pressure_sync = false;
 

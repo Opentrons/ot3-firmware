@@ -411,8 +411,9 @@ class MotorInterruptHandler {
                 auto binding =
                     static_cast<uint8_t>(can::ids::SensorOutputBinding::sync) |
                     static_cast<uint8_t>(
-                        can::ids::SensorOutputBinding::report);  // sync and
-                                                                 // report
+                        can::ids::SensorOutputBinding::report) |
+                    static_cast<uint8_t>(
+                        can::ids::SensorOutputBinding::auto_baseline_report);
                 if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                     send_bind_message(buffered_move.sensor_type,
                                       can::ids::SensorId::S0, binding);
