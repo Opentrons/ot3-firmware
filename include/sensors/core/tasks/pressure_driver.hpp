@@ -389,22 +389,47 @@ class MMR920 {
                 hardware.reset_sync();
             }
         }
-        if (bind_sync &&
-            (sensor_buffer_index > AUTO_BASELINE_END || crossed_buffer_index)) {
-            if (std::fabs(pressure - current_pressure_baseline_pa -
-                          current_moving_pressure_baseline_pa) >
-                threshold_pascals) {
-                hardware.set_sync();
+        if (bind_sync) {
+            if (enable_auto_baseline) {
+                if ((sensor_buffer_index > AUTO_BASELINE_END ||
+                     crossed_buffer_index)) {
+                    if (std::fabs(pressure - current_pressure_baseline_pa -
+                                  current_moving_pressure_baseline_pa) >
+                        threshold_pascals) {
+                        hardware.set_sync();
+                    } else {
+                        hardware.reset_sync();
+                    }
+                }
             } else {
-                hardware.reset_sync();
+                if (std::fabs(pressure - current_pressure_baseline_pa) >
+                    threshold_pascals) {
+                    hardware.set_sync();
+                } else {
+                    hardware.reset_sync();
+                }
             }
         }
 
         if (echo_this_time) {
-            auto response_pressure = pressure - current_pressure_baseline_pa -
-                                     current_moving_pressure_baseline_pa;
+            auto response_pressure = pressure - current_pressure_baseline_pa;
+            if (enable_auto_baseline) {
+                // apply moving baseline if using
+                response_pressure -= current_moving_pressure_baseline_pa;
+            }
 
             sensor_buffer_log(response_pressure);
+            if (!enable_auto_baseline) {
+                // This preserves the old way of echoing continuous polls
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ReadFromSensorResponse{
+                        .message_index = 0,
+                        .sensor = can::ids::SensorType::pressure,
+                        .sensor_id = sensor_id,
+                        .sensor_data =
+                            mmr920::reading_to_fixed_point(response_pressure)});
+            }
 
             if (enable_auto_baseline &&
                 sensor_buffer_index == AUTO_BASELINE_END &&
