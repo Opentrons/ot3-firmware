@@ -41,14 +41,14 @@ class FDC1004 {
   public:
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
-            sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor,
+            sensors::hardware::SensorHardwareBase &hardware, bool using_both_sensors,
             std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
-          shared_sensor(shared_sensor),
+          using_both_sensors(using_both_sensors),
           sensor_buffer(sensor_buffer) {}
 
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
@@ -82,7 +82,7 @@ class FDC1004 {
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
     auto set_sensor_id(can::ids::SensorId _id) -> void {
-        if (shared_sensor && sensor_id != _id) {
+        if (using_both_sensors && sensor_id != _id) {
             if (_id == can::ids::SensorId::S1) {
                 measure_mode = fdc1004::MeasureConfigMode::TWO;
             } else {
@@ -398,7 +398,7 @@ class FDC1004 {
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
     fdc1004::MeasurementRate measurement_rate =
         fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND;
-    bool shared_sensor = false;
+    bool using_both_sensors = false;
 
     float current_offset_pf = 0;
     float zero_threshold_pf = 30;
