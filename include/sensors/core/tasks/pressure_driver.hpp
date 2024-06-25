@@ -560,13 +560,8 @@ class MMR920 {
      * exceed the threshold for the entirety of this period.
      */
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
-#ifdef USE_PRESSURE_MOVE
-    mmr920::MeasurementRate measurement_mode_rate =
-        mmr920::MeasurementRate::MEASURE_2;
-#else
     mmr920::MeasurementRate measurement_mode_rate =
         mmr920::MeasurementRate::MEASURE_4;
-#endif
 
     bool _initialized = false;
     bool echoing = false;
