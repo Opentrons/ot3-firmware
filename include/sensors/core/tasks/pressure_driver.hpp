@@ -305,7 +305,7 @@ class MMR920 {
     void send_accumulated_sensor_data(uint32_t message_index) {
         auto start = 0;
         auto count = sensor_buffer_index;
-        if (crossed_buffer_index == true) {
+        if (crossed_buffer_index) {
             start = sensor_buffer_index;
             count = SENSOR_BUFFER_SIZE;
         }
@@ -420,7 +420,7 @@ class MMR920 {
                     std::accumulate(
                         sensor_buffer->begin() + AUTO_BASELINE_START,
                         sensor_buffer->begin() + AUTO_BASELINE_END, 0) /
-                    (AUTO_BASELINE_END - AUTO_BASELINE_START);
+                    float(AUTO_BASELINE_END - AUTO_BASELINE_START);
                 for (auto i = sensor_buffer_index - AUTO_BASELINE_END;
                      i < sensor_buffer_index; i++) {
                     // apply the moving baseline to older samples to so that
