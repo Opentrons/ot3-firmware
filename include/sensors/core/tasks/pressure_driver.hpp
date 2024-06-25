@@ -31,7 +31,8 @@ using namespace can::ids;
  * @tparam CanClient
  */
 
-constexpr auto AUTO_BASELINE_SAMPLES = 10;
+constexpr auto AUTO_BASELINE_START = 10;
+constexpr auto AUTO_BASELINE_END = 20;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
@@ -399,26 +400,26 @@ class MMR920 {
 
             sensor_buffer_log(response_pressure);
 
-            if (sensor_buffer_index == AUTO_BASELINE_SAMPLES &&
+            if (sensor_buffer_index == AUTO_BASELINE_END &&
                 !crossed_buffer_index) {
                 // this is the auto-base lining during a move.  It requires that
                 // a BaselineSensorRequest is sent prior to a move using the
-                // auto baseline. it works by taking the first
-                // AUTO_BASELINE_SAMPLES taken during the move (when index < 10
+                // auto baseline. it works by taking several samples
+                // at the beginning of the move but after noise has stopped.
                 // and we haven't crossed the circular buffer barrier yet) it
                 // then takes the average of those samples to create a new
                 // baseline factor
                 current_moving_pressure_baseline_pa =
                     std::accumulate(
-                        sensor_buffer->begin(),
-                        sensor_buffer->begin() + AUTO_BASELINE_SAMPLES, 0) /
-                    AUTO_BASELINE_SAMPLES;
-                for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
+                        sensor_buffer->begin() + AUTO_BASELINE_START,
+                        sensor_buffer->begin() + AUTO_BASELINE_END, 0) /
+                    (AUTO_BASELINE_END - AUTO_BASELINE_START);
+                 for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
                      i < sensor_buffer_index; i++) {
-                    // apply the moving baseline to older samples to so that
-                    // data is in the same format as later samples, don't apply
-                    // the current_pressure_baseline_pa since it has already
-                    // been applied
+                // apply the moving baseline to older samples to so that
+                // data is in the same format as later samples, don't apply
+                // the current_pressure_baseline_pa since it has already
+                // been applied
                     sensor_buffer->at(sensor_buffer_index) =
                         sensor_buffer->at(sensor_buffer_index) -
                         current_moving_pressure_baseline_pa;
