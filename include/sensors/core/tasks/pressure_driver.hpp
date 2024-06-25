@@ -421,7 +421,7 @@ class MMR920 {
                         sensor_buffer->begin() + AUTO_BASELINE_START,
                         sensor_buffer->begin() + AUTO_BASELINE_END, 0) /
                     (AUTO_BASELINE_END - AUTO_BASELINE_START);
-                for (auto i = sensor_buffer_index - AUTO_BASELINE_SAMPLES;
+                for (auto i = sensor_buffer_index - AUTO_BASELINE_END;
                      i < sensor_buffer_index; i++) {
                     // apply the moving baseline to older samples to so that
                     // data is in the same format as later samples, don't apply
