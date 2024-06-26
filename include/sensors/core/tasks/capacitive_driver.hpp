@@ -41,7 +41,8 @@ class FDC1004 {
   public:
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
-            sensors::hardware::SensorHardwareBase &hardware, bool using_both_sensors,
+            sensors::hardware::SensorHardwareBase &hardware,
+            bool using_both_sensors,
             std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
