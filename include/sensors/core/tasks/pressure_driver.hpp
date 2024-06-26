@@ -88,12 +88,13 @@ class MMR920 {
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
-        hardware.reset_sync();
+        hardware.set_sync_required(sensor_id, should_bind);
+        hardware.reset_sync(sensor_id);
     }
 
     void set_max_bind_sync(bool should_bind) {
         max_pressure_sync = should_bind;
-        hardware.reset_sync();
+        hardware.reset_sync(sensor_id);
     }
 
     auto get_threshold() -> int32_t { return threshold_pascals; }
@@ -368,16 +369,16 @@ class MMR920 {
                 (std::fabs(pressure - current_pressure_baseline_pa -
                            current_moving_pressure_baseline_pa) >
                  threshold_pascals)) {
-                hardware.set_sync();
+                hardware.set_sync(sensor_id);
             } else {
-                hardware.reset_sync();
+                hardware.reset_sync(sensor_id);
             }
         } else {
             if (std::fabs(pressure - current_pressure_baseline_pa) >
                 threshold_pascals) {
-                hardware.set_sync();
+                hardware.set_sync(sensor_id);
             } else {
-                hardware.reset_sync();
+                hardware.reset_sync(sensor_id);
             }
         }
     }
@@ -418,6 +419,7 @@ class MMR920 {
                 max_pressure_consecutive_readings = 0;
             }
             if (over_threshold) {
+                // Use the set_sync that always sets the sync line here
                 hardware.set_sync();
                 can_client.send_can_message(
                     can::ids::NodeId::host,
@@ -431,7 +433,7 @@ class MMR920 {
                 // the sync line on purpose this causes bouncing on the line
                 // that turns off the sync and then immediately turns it back on
                 // and this can cause disrupt the behavior
-                hardware.reset_sync();
+                hardware.reset_sync(sensor_id);
             }
         }
         if (bind_sync) {

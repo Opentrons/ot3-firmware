@@ -3,6 +3,7 @@
 #include <functional>
 #include <optional>
 
+#include "can/core/ids.hpp"
 #include "common/firmware/gpio.hpp"
 
 namespace sensors {
@@ -28,6 +29,10 @@ class SensorHardwareBase {
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
     virtual auto check_tip_presence() -> bool = 0;
+    virtual auto set_sync(can::ids::SensorId sensor) -> void = 0;
+    virtual auto reset_sync(can::ids::SensorId sensor) -> void = 0;
+    virtual auto set_sync_required(can::ids::SensorId sensor, bool required) -> void = 0;
+    virtual auto reset_sync_required(can::ids::SensorId sensor, bool required) -> void = 0;
 };
 
 struct SensorHardwareContainer {
