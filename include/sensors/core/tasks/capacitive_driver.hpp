@@ -2,25 +2,11 @@
 
 #include <array>
 
-#ifdef ENABLE_CROSS_ONLY_HEADERS
-// TODO(fps 7/12/2023): This is super hacky and I hate throwing #ifdefs
-// in our nicely host-independent code but for now we really just need
-// the vTaskDelay function and hopefully sometime in the near future I
-// can refactor this file with a nice templated sleep function.
-#include "FreeRTOS.h"
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HACKY_TASK_SLEEP(___timeout___) vTaskDelay(___timeout___)
-
-#else
-
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HACKY_TASK_SLEEP(___timeout___) (void)(___timeout___)
-#endif
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/sensor_buffer.hpp"
@@ -64,11 +50,11 @@ class FDC1004 {
             // holding off for this PR.
 
             // Initial delay to avoid I2C bus traffic.
-            HACKY_TASK_SLEEP(100);
+            vtask_hardware_delay(100);
             update_capacitance_configuration();
             // Second delay to ensure IC is ready to start
             // readings (and also to avoid I2C bus traffic).
-            HACKY_TASK_SLEEP(100);
+            vtask_hardware_delay(100);
             set_sample_rate();
             _initialized = true;
         }
@@ -232,6 +218,9 @@ class FDC1004 {
             }
             (*sensor_buffer).at(i) = 0;
         }
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = message_index});
 #else
         std::ignore = message_index;
 #endif

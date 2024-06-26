@@ -408,7 +408,12 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
 #ifdef USE_SENSOR_MOVE
             if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-                auto binding = static_cast<uint8_t>(0x3);  // sync and report
+                auto binding =
+                    static_cast<uint8_t>(can::ids::SensorOutputBinding::sync) |
+                    static_cast<uint8_t>(
+                        can::ids::SensorOutputBinding::report) |
+                    static_cast<uint8_t>(
+                        can::ids::SensorOutputBinding::auto_baseline_report);
                 if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
                     send_bind_message(buffered_move.sensor_type,
                                       can::ids::SensorId::S0, binding);
@@ -502,21 +507,6 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         stall_handled = false;
         build_and_send_ack(ack_msg_id);
-#ifdef USE_SENSOR_MOVE
-        if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
-            auto binding = static_cast<uint8_t>(
-                can::ids::SensorOutputBinding::sync);  // make none?!
-            if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
-                send_bind_message(buffered_move.sensor_type,
-                                  can::ids::SensorId::S0, binding);
-                send_bind_message(buffered_move.sensor_type,
-                                  can::ids::SensorId::S1, binding);
-            } else {
-                send_bind_message(buffered_move.sensor_type,
-                                  buffered_move.sensor_id, binding);
-            }
-        }
-#endif
         set_buffered_move(MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
         // last known location
