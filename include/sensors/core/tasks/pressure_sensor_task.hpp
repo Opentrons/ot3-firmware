@@ -81,7 +81,6 @@ class PressureMessageHandler {
 
     void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
         LOG("Received request to dump pressure data buffer");
-
         driver.send_accumulated_sensor_data(m.message_index);
     }
 
@@ -137,6 +136,10 @@ class PressureMessageHandler {
         driver.set_max_bind_sync(
             m.binding & static_cast<uint8_t>(
                             can::ids::SensorOutputBinding::max_threshold_sync));
+        driver.set_auto_baseline_report(
+            m.binding &
+            static_cast<uint8_t>(
+                can::ids::SensorOutputBinding::auto_baseline_report));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto tags_as_int = utils::byte_from_tags(tags);
