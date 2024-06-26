@@ -167,6 +167,7 @@ enum class ErrorCode {
     over_pressure = 0xd,
     door_open = 0xe,
     reed_open = 0xf,
+    safety_relay_inactive = 0x11,
 };
 
 /** Error Severity levels. */

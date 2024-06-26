@@ -44,7 +44,6 @@ set(HEPAUV_SRCS_A1
 )
 set(HEPAUV_SRCS_B1 ${HEPAUV_SRCS_A1})
 set(HEPAUV_SRCS_C1 ${HEPAUV_SRCS_B1})
-set(HEPAUV_SRCS_C2 ${HEPAUV_SRCS_C1})
 
 macro(hepa_uv_loop)
     set(_driver_suffix ${PROJECT_NAME}_${REVISION})
@@ -84,12 +83,12 @@ endmacro()
 
 foreach_revision(
     PROJECT_NAME hepa-uv
-    REVISIONS a1 b1
-    SOURCES HEPAUV_SRCS_A1 HEPAUV_SRCS_B1
+    REVISIONS a1 b1 c1
+    SOURCES HEPAUV_SRCS_A1 HEPAUV_SRCS_B1 HEPAUV_SRCS_C1
     CALL_FOREACH_REV hepa_uv_loop)
 
 alias_for_revision(PROJECT_NAME hepa-uv REVISION a1 REVISION_ALIAS proto)
-alias_for_revision(PROJECT_NAME hepa-uv REVISION b1 REVISION_ALIAS rev1)
+alias_for_revision(PROJECT_NAME hepa-uv REVISION c1 REVISION_ALIAS rev1)
 
 add_clang_tidy_target(
     TARGET_NAME hepa-uv-lint
