@@ -55,14 +55,14 @@ class SensorHardwareBase {
     virtual auto reset_sync() -> void = 0;
     virtual auto check_tip_presence() -> bool = 0;
 
-    auto mask_satisfied() -> bool {
+    [[nodiscard]] auto mask_satisfied() const -> bool {
         if (set_sync_required_mask !=
             static_cast<uint8_t>(SensorIdBitMask::UNUSED)) {
             // if anything is "required" only sync when they are all triggered
             return (sync_state_mask & set_sync_required_mask) ==
                    set_sync_required_mask;
         }
-        return sync_state_mask & set_sync_enabled_mask;
+        return (sync_state_mask & set_sync_enabled_mask) != 0;
     }
 
     auto set_sync(can::ids::SensorId sensor) -> void {
