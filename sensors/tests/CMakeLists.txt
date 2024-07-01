@@ -13,6 +13,7 @@ add_executable(
         test_pressure_sensor.cpp
         test_pressure_driver.cpp
         test_capacitive_sensor_utils.cpp
+        test_sensor_hardware.cpp
 )
 
 target_include_directories(sensors PUBLIC ${CMAKE_SOURCE_DIR}/include)
