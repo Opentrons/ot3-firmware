@@ -56,35 +56,32 @@ class SensorHardwareBase {
     virtual auto check_tip_presence() -> bool = 0;
 
     auto mask_satisfied() -> bool {
-        if (set_sync_required_mask != static_cast<uint8_t>(SensorIdBitMask::UNUSED)) {
+        if (set_sync_required_mask !=
+            static_cast<uint8_t>(SensorIdBitMask::UNUSED)) {
             // if anything is "required" only sync when they are all triggered
-            return  (sync_state_mask & set_sync_required_mask) == set_sync_required_mask;
+            return (sync_state_mask & set_sync_required_mask) ==
+                   set_sync_required_mask;
         }
         return sync_state_mask & set_sync_enabled_mask;
     }
 
     auto set_sync(can::ids::SensorId sensor) -> void {
-        printf("Set sync sensor called\n");
         // force the bit for this sensor to 1
         sync_state_mask |= get_mask_from_id(sensor);
         if (mask_satisfied()) {
-            printf("satisfied calling sync\n");
             set_sync();
         }
     }
 
     auto reset_sync(can::ids::SensorId sensor) -> void {
         // force the bit for this sensor to 0
-        printf("reset sync sensor called\n");
         sync_state_mask &= 0xFF ^ get_mask_from_id(sensor);
         if (!mask_satisfied()) {
-            printf("No longer satisfied calling reset\n");
             reset_sync();
         }
     }
 
     auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
-        printf("Set sync required called %d\n", enabled);
         uint8_t applied_mask = get_mask_from_id(sensor);
         if (!enabled) {
             // force enabled bit to 0
@@ -117,6 +114,7 @@ class SensorHardwareBase {
             reset_sync();
         }
     }
+
   private:
     uint8_t set_sync_required_mask = 0x00;
     uint8_t set_sync_enabled_mask = 0x00;

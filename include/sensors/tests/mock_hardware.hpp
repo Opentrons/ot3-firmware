@@ -25,11 +25,14 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         sensors::hardware::SensorHardwareBase::reset_sync(sensor);
     }
     auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
-        sensors::hardware::SensorHardwareBase::set_sync_enabled(sensor, enabled);
+        sensors::hardware::SensorHardwareBase::set_sync_enabled(sensor,
+                                                                enabled);
     }
     auto set_sync_required(can::ids::SensorId sensor, bool required) -> void {
-        sensors::hardware::SensorHardwareBase::set_sync_required(sensor, required);
+        sensors::hardware::SensorHardwareBase::set_sync_required(sensor,
+                                                                 required);
     }
+
   private:
     bool sync_state = false;
     uint32_t sync_set_calls = 0;

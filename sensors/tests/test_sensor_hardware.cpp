@@ -1,9 +1,9 @@
 #include <concepts>
 
-#include "catch2/catch.hpp"
 #include "can/core/messages.hpp"
-#include "sensors/tests/mock_hardware.hpp"
+#include "catch2/catch.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 
 constexpr auto sensor_id_primary = can::ids::SensorId::S0;
 constexpr auto sensor_id_secondary = can::ids::SensorId::S1;
@@ -79,7 +79,6 @@ SCENARIO("Multiple Sensors connected") {
             mock_hw.set_sync_enabled(sensor_id_secondary, false);
             REQUIRE(mock_hw.get_sync_state_mock() == false);
         }
-
     }
     GIVEN("Two sensors required") {
         mock_hw.set_sync_required(sensor_id_primary, true);

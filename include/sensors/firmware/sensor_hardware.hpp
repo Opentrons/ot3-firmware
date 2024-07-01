@@ -7,7 +7,6 @@
 namespace sensors {
 namespace hardware {
 
-
 class SensorHardware : public SensorHardwareBase {
   public:
     SensorHardware(sensors::hardware::SensorHardwareConfiguration hardware)
