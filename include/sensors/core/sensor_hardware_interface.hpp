@@ -16,6 +16,31 @@ struct SensorHardwareConfiguration {
     std::optional<gpio::PinConfig> tip_sense = std::nullopt;
 };
 
+enum class SensorIdBitMask : uint8_t {
+    S0 = 0x01,
+    S1 = 0x02,
+    UNUSED = 0x00,
+    BOTH = 0x03,
+};
+
+static auto get_mask_from_id(can::ids::SensorId sensor) -> uint8_t {
+    auto mask_enum = SensorIdBitMask::UNUSED;
+    switch (sensor) {
+        case can::ids::SensorId::BOTH:
+            mask_enum = SensorIdBitMask::BOTH;
+            break;
+        case can::ids::SensorId::S0:
+            mask_enum = SensorIdBitMask::S0;
+            break;
+        case can::ids::SensorId::S1:
+            mask_enum = SensorIdBitMask::S1;
+            break;
+        case can::ids::SensorId::UNUSED:
+        default:
+            mask_enum = SensorIdBitMask::UNUSED;
+    }
+    return static_cast<uint8_t>(mask_enum);
+}
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
   public:
@@ -29,10 +54,73 @@ class SensorHardwareBase {
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
     virtual auto check_tip_presence() -> bool = 0;
-    virtual auto set_sync(can::ids::SensorId sensor) -> void = 0;
-    virtual auto reset_sync(can::ids::SensorId sensor) -> void = 0;
-    virtual auto set_sync_required(can::ids::SensorId sensor, bool required) -> void = 0;
-    virtual auto reset_sync_required(can::ids::SensorId sensor, bool required) -> void = 0;
+
+    auto mask_satisfied() -> bool {
+        if (set_sync_required_mask != static_cast<uint8_t>(SensorIdBitMask::UNUSED)) {
+            // if anything is "required" only sync when they are all triggered
+            return  (sync_state_mask & set_sync_required_mask) == set_sync_required_mask;
+        }
+        return sync_state_mask & set_sync_enabled_mask;
+    }
+
+    auto set_sync(can::ids::SensorId sensor) -> void {
+        printf("Set sync sensor called\n");
+        // force the bit for this sensor to 1
+        sync_state_mask |= get_mask_from_id(sensor);
+        if (mask_satisfied()) {
+            printf("satisfied calling sync\n");
+            set_sync();
+        }
+    }
+
+    auto reset_sync(can::ids::SensorId sensor) -> void {
+        // force the bit for this sensor to 0
+        printf("reset sync sensor called\n");
+        sync_state_mask &= 0xFF ^ get_mask_from_id(sensor);
+        if (!mask_satisfied()) {
+            printf("No longer satisfied calling reset\n");
+            reset_sync();
+        }
+    }
+
+    auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
+        printf("Set sync required called %d\n", enabled);
+        uint8_t applied_mask = get_mask_from_id(sensor);
+        if (!enabled) {
+            // force enabled bit to 0
+            set_sync_enabled_mask &= 0xFF ^ applied_mask;
+        } else {
+            // force enabled bit to 1
+            set_sync_enabled_mask |= applied_mask;
+        }
+        // update sync state now that requirements are different
+        if (mask_satisfied()) {
+            set_sync();
+        } else {
+            reset_sync();
+        }
+    }
+
+    auto set_sync_required(can::ids::SensorId sensor, bool required) -> void {
+        uint8_t applied_mask = get_mask_from_id(sensor);
+        if (!required) {
+            // force required bit to 0
+            set_sync_required_mask &= 0xFF ^ applied_mask;
+        } else {
+            // force required bit to 1
+            set_sync_required_mask |= applied_mask;
+        }
+        // update sync state now that requirements are different
+        if (mask_satisfied()) {
+            set_sync();
+        } else {
+            reset_sync();
+        }
+    }
+  private:
+    uint8_t set_sync_required_mask = 0x00;
+    uint8_t set_sync_enabled_mask = 0x00;
+    uint8_t sync_state_mask = 0x00;
 };
 
 struct SensorHardwareContainer {
