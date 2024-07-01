@@ -91,6 +91,7 @@ struct SensorSyncMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint16_t usage_key;
     can::ids::SensorId sensor_id;
     can::ids::SensorType sensor_type;
+    uint8_t binding_flags;
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
                    AckMessageId _id) -> Ack {
@@ -121,6 +122,7 @@ struct GearMotorMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
     can::ids::GearMotorId gear_motor_id;
     can::ids::SensorId sensor_id;
     can::ids::SensorType sensor_type;
+    uint8_t binding_flags;
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
                    AckMessageId _id) -> GearMotorAck {
         return GearMotorAck{message_index, group_id,

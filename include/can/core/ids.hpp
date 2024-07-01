@@ -214,7 +214,8 @@ enum class SensorOutputBinding {
     sync = 0x1,
     report = 0x2,
     max_threshold_sync = 0x4,
-    auto_baseline_report = 0x8,
+    auto_baseline_report = 0x08,
+    multi_sensor_sync = 0x10,
 };
 
 /** How a sensor's threshold should be interpreted. */
