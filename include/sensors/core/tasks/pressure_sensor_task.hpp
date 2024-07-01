@@ -130,6 +130,9 @@ class PressureMessageHandler {
         driver.set_echoing(
             m.binding &
             static_cast<uint8_t>(can::ids::SensorOutputBinding::report));
+        driver.set_multi_sensor_sync(
+            m.binding &
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::multi_sensor_sync));
         driver.set_bind_sync(
             m.binding &
             static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));

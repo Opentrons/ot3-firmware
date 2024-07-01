@@ -91,8 +91,10 @@ class FDC1004 {
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
-        hardware.set_sync_required(sensor_id);
-        hardware.reset_sync(sensor_id);
+        hardware.set_sync_enabled(sensor_id, should_bind);
+    }
+    void set_multi_sensor_sync(bool should_bind) {
+        hardware.set_sync_required(sensor_id, should_bind);
     }
 
     void set_max_bind_sync(bool should_bind) {
@@ -279,6 +281,7 @@ class FDC1004 {
 
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
+                // Use the set_sync that always sets the sync line here
                 hardware.set_sync();
             } else {
                 hardware.reset_sync(sensor_id);

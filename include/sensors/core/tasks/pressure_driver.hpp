@@ -88,8 +88,11 @@ class MMR920 {
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
+        hardware.set_sync_enabled(sensor_id, should_bind);
+    }
+
+    void set_multi_sensor_sync(bool should_bind) {
         hardware.set_sync_required(sensor_id, should_bind);
-        hardware.reset_sync(sensor_id);
     }
 
     void set_max_bind_sync(bool should_bind) {
