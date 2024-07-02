@@ -6,13 +6,8 @@
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 
 namespace interfaces {
-#ifdef USE_SENSOR_MOVE
-using MoveQueue = freertos_message_queue::FreeRTOSMessageQueue<
-    motor_messages::SensorSyncMove>;
-#else
 using MoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
-#endif
 using GearMoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::GearMotorMove>;
 using MotionControlType =

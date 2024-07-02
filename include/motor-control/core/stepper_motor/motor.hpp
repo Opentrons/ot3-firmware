@@ -18,11 +18,7 @@ using namespace freertos_message_queue;
 
 template <lms::MotorMechanicalConfig MEConfig>
 struct Motor {
-#ifdef USE_SENSOR_MOVE
-    using GenericQueue = FreeRTOSMessageQueue<SensorSyncMove>;
-#else
     using GenericQueue = FreeRTOSMessageQueue<Move>;
-#endif
     using UpdatePositionQueue = FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
 
