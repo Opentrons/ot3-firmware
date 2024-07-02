@@ -1,7 +1,4 @@
 function(target_gripper_core TARGET)
-    if(${USE_SENSOR_MOVE})
-    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
-    endif()
     target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=500)
     target_compile_definitions(${TARGET} PUBLIC USE_TWO_BUFFERS=true)
     target_sources(${TARGET} PUBLIC
