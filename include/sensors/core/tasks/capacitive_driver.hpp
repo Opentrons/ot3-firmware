@@ -225,6 +225,15 @@ class FDC1004 {
             can::messages::Acknowledgment{.message_index = message_index});
     }
 
+    auto sensor_buffer_log(float data) -> void {
+        sensor_buffer->at(sensor_buffer_index) = data;
+        sensor_buffer_index++;
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+            crossed_buffer_index = true;
+        }
+    }
+
     void handle_fdc_response(i2c::messages::TransactionResponse &m) {
         uint16_t reg_int = 0;
         static_cast<void>(bit_utils::bytes_to_int(
@@ -301,15 +310,6 @@ class FDC1004 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         convert_to_fixed_point(capacitance, S15Q16_RADIX)});
-        }
-    }
-
-    auto sensor_buffer_log(float data) -> void {
-        sensor_buffer->at(sensor_buffer_index) = data;
-        sensor_buffer_index++;
-        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
-            sensor_buffer_index = 0;
-            crossed_buffer_index = true;
         }
     }
 
