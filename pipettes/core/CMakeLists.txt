@@ -1,4 +1,5 @@
 function(target_pipettes_core_common TARGET REVISION)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/configs.cpp
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/peripheral_tasks.cpp
@@ -12,6 +13,7 @@ function(target_pipettes_core_common TARGET REVISION)
 endfunction()
 
 function(target_pipettes_core_single TARGET REVISION)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_pipettes_core_common(${TARGET} ${REVISION})
     target_compile_definitions(${TARGET} PUBLIC PIPETTE_TYPE_DEFINE=SINGLE_CHANNEL)
     target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=500)
@@ -20,6 +22,7 @@ function(target_pipettes_core_single TARGET REVISION)
 endfunction()
 
 function(target_pipettes_core_multi TARGET REVISION)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_pipettes_core_common(${TARGET} ${REVISION})
     target_compile_definitions(${TARGET} PUBLIC PIPETTE_TYPE_DEFINE=EIGHT_CHANNEL)
     target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=500)
@@ -29,6 +32,7 @@ function(target_pipettes_core_multi TARGET REVISION)
 endfunction()
 
 function(target_pipettes_core_96 TARGET REVISION)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_pipettes_core_common(${TARGET} ${REVISION})
     target_compile_definitions(${TARGET} PUBLIC PIPETTE_TYPE_DEFINE=NINETY_SIX_CHANNEL)
     target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=500)
@@ -38,6 +42,7 @@ function(target_pipettes_core_96 TARGET REVISION)
 endfunction()
 
 function(target_pipettes_core_384 TARGET REVISION)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
     target_pipettes_core_common(${TARGET} ${REVISION})
     target_compile_definitions(${TARGET} PUBLIC PIPETTE_TYPE_DEFINE=THREE_EIGHTY_FOUR_CHANNEL)
     target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=500)

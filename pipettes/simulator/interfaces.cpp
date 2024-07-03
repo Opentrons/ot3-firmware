@@ -66,9 +66,15 @@ auto linear_motor::get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     LowThroughputInterruptQueues& queues,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
+#ifdef USE_SENSOR_MOVE
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+#else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
+#endif
     return motor_interrupt_driver::MotorInterruptDriver(
         queues.plunger_queue, handler, hw, queues.plunger_update_queue);
 }
@@ -77,9 +83,15 @@ auto linear_motor::get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     HighThroughputInterruptQueues& queues,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
+#ifdef USE_SENSOR_MOVE
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+#else
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
+#endif
     return motor_interrupt_driver::MotorInterruptDriver(
         queues.plunger_queue, handler, hw, queues.plunger_update_queue);
 }

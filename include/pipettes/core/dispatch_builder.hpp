@@ -39,6 +39,16 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
+#ifdef USE_SENSOR_MOVE
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<
+        linear_motor_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest, can::messages::StopRequest,
+    can::messages::AddSensorMoveRequest>;
+#else
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         linear_motor_tasks::QueueClient>,
@@ -46,6 +56,7 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest, can::messages::StopRequest>;
+#endif
 
 using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_move_group_handler::GearMoveGroupHandler<

@@ -11,10 +11,18 @@ using namespace can::messages;
 template <move_group_task::TaskClient Client>
 class MoveGroupHandler {
   public:
+#ifdef USE_SENSOR_MOVE
+    using MessageType =
+        std::variant<std::monostate, AddLinearMoveRequest,
+                     ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
+                     GetMoveGroupRequest, HomeRequest, StopRequest,
+                     AddSensorMoveRequest>;
+#else
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest,
                      ClearAllMoveGroupsRequest, ExecuteMoveGroupRequest,
                      GetMoveGroupRequest, HomeRequest, StopRequest>;
+#endif
 
     MoveGroupHandler(Client &task_client) : task_client{task_client} {}
     MoveGroupHandler(const MoveGroupHandler &) = delete;

@@ -10,10 +10,13 @@
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
+#ifdef USE_SENSOR_MOVE
 #ifdef PIPETTE_TYPE_DEFINE
+#include "pipettes/core/sensor_tasks.hpp"
 #else
 #include "gripper/core/tasks.hpp"
 #endif  // PIPETTE_TYPE_DEFINE
+#endif  // USE_SENSOR_MOVE
 namespace motor_handler {
 
 using namespace motor_messages;
@@ -373,12 +376,52 @@ class MotorInterruptHandler {
          */
         return tick_count < buffered_move.duration;
     }
+#ifdef USE_SENSOR_MOVE
+    auto send_bind_message(can::ids::SensorType sensor_type,
+                           can::ids::SensorId sensor_id, uint8_t binding)
+        -> void {
+        auto msg = can::messages::BindSensorOutputRequest{
+            .message_index = buffered_move.message_index,
+            .sensor = sensor_type,
+            .sensor_id = sensor_id,
+            .binding = binding};
+        if (sensor_type == can::ids::SensorType::pressure) {
+            if (sensor_id == can::ids::SensorId::S0) {
+                send_to_pressure_sensor_queue_rear(msg);
+            } else {
+                send_to_pressure_sensor_queue_front(msg);
+            }
+        } else if (sensor_type == can::ids::SensorType::capacitive) {
+            if (sensor_id == can::ids::SensorId::S0) {
+                send_to_capacitive_sensor_queue_rear(msg);
+            } else {
+                send_to_capacitive_sensor_queue_front(msg);
+            }
+        }
+    }
+#endif
     void update_move() {
         _has_active_move = move_queue.try_read_isr(&buffered_move);
         if (_has_active_move) {
             hardware.enable_encoder();
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
+#ifdef USE_SENSOR_MOVE
+            if (buffered_move.sensor_id != can::ids::SensorId::UNUSED) {
+                if (buffered_move.sensor_id == can::ids::SensorId::BOTH) {
+                    send_bind_message(buffered_move.sensor_type,
+                                      can::ids::SensorId::S0,
+                                      buffered_move.binding_flags);
+                    send_bind_message(buffered_move.sensor_type,
+                                      can::ids::SensorId::S1,
+                                      buffered_move.binding_flags);
+                } else {
+                    send_bind_message(buffered_move.sensor_type,
+                                      buffered_move.sensor_id,
+                                      buffered_move.binding_flags);
+                }
+            }
+#endif
         }
         if (set_direction_pin()) {
             hardware.positive_direction();
@@ -603,6 +646,28 @@ class MotorInterruptHandler {
         hardware.set_step_tracker(
             static_cast<uint32_t>(position_tracker >> 31));
     }
+#ifdef USE_SENSOR_MOVE
+    void send_to_pressure_sensor_queue_rear(
+        can::messages::BindSensorOutputRequest& m) {
+        sensor_tasks::get_queues().send_pressure_sensor_queue_rear_isr(m);
+    }
+    void send_to_pressure_sensor_queue_front(
+        can::messages::BindSensorOutputRequest& m) {
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        sensor_tasks::get_queues().send_pressure_sensor_queue_front_isr(m);
+    }
+    void send_to_capacitive_sensor_queue_rear(
+        can::messages::BindSensorOutputRequest& m) {
+        sensor_tasks::get_queues().send_capacitive_sensor_queue_rear_isr(m);
+    }
+    void send_to_capacitive_sensor_queue_front(
+        can::messages::BindSensorOutputRequest& m) {
+        // send to both queues, they will handle their own gating based on
+        // sensor id
+        sensor_tasks::get_queues().send_pressure_sensor_queue_front_isr(m);
+    }
+#endif
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
