@@ -204,7 +204,6 @@ class FDC1004 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-#ifdef USE_SENSOR_MOVE
         for (int i = 0; i < sensor_buffer_index; i++) {
             // send over buffer adn then clear buffer values
             can_client.send_can_message(
@@ -217,16 +216,22 @@ class FDC1004 {
                         (*sensor_buffer).at(i), S15Q16_RADIX)});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vTaskDelay(50);
+                vtask_hardware_delay(50);
             }
             (*sensor_buffer).at(i) = 0;
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = message_index});
-#else
-        std::ignore = message_index;
-#endif
+    }
+
+    auto sensor_buffer_log(float data) -> void {
+        sensor_buffer->at(sensor_buffer_index) = data;
+        sensor_buffer_index++;
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+            crossed_buffer_index = true;
+        }
     }
 
     void handle_fdc_response(i2c::messages::TransactionResponse &m) {
@@ -296,14 +301,7 @@ class FDC1004 {
         }
 
         if (echoing) {
-#ifdef USE_SENSOR_MOVE
-            // send a response with 9999 to make an overload of the buffer
-            // visible
-            if (sensor_buffer_index < SENSOR_BUFFER_SIZE) {
-                (*sensor_buffer).at(sensor_buffer_index) = capacitance;
-                sensor_buffer_index++;
-            }
-#else
+            sensor_buffer_log(capacitance);
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -312,7 +310,6 @@ class FDC1004 {
                     .sensor_id = sensor_id,
                     .sensor_data =
                         convert_to_fixed_point(capacitance, S15Q16_RADIX)});
-#endif
         }
     }
 
@@ -533,6 +530,7 @@ class FDC1004 {
     }
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
     uint16_t sensor_buffer_index = 0;
+    bool crossed_buffer_index = false;
 
 };  // end of FDC1004 class
 

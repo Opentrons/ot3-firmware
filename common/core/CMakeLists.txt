@@ -54,11 +54,7 @@ function(add_revision)
   message(STATUS "add_revision has target ${_ar_TARGET} and revision ${_ar_REVISION}")
   string(SUBSTRING ${_ar_REVISION} 0 1 PRIMARY_REVISION)
   string(SUBSTRING ${_ar_REVISION} 1 1 SECONDARY_REVISION)
-  if (${USE_SENSOR_MOVE})
-  set(TERTIARY_FLAG "'1'")
-  else()
   set(TERTIARY_FLAG "0x00")
-  endif()
 
 
   configure_file(${CMAKE_SOURCE_DIR}/common/core/revision.c.in ${CMAKE_CURRENT_BINARY_DIR}/${_ar_TARGET}_revision.c)

@@ -1,7 +1,5 @@
 function(target_pipettes_core_common TARGET REVISION)
-    if(${USE_SENSOR_MOVE})
     target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
-    endif()
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/configs.cpp
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/peripheral_tasks.cpp
