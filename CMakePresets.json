@@ -36,17 +36,6 @@
       "inherits": "cross-no-directory-reqs"
     },
     {
-      "name": "cross-sensor-buffer",
-      "displayName": "STM32 G4 OT-3 cross-compilation with sensor data buffers",
-      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
-      "installDir": "${sourceDir}/dist-sensor",
-      "binaryDir": "${sourceDir}/build-cross-sensor",
-      "cacheVariables": {
-        "USE_SENSOR_MOVE": true
-      },
-      "inherits": "cross"
-    },
-    {
       "name": "host",
       "displayName": "STM32 OT-3 host compilation for tests",
       "description": "Build libraries and test executables for OT-3 systems that use STM32",
@@ -93,17 +82,6 @@
       "displayName": "All G4 Firmwares",
       "description": "Environment to build all g4 firmware - see firmware-l5",
       "configurePreset": "cross",
-      "jobs": 4,
-      "targets": [
-        "firmware-applications",
-        "firmware-images"
-      ]
-    },
-    {
-      "name": "firmware-g4-sensors",
-      "displayName": "All G4 Firmwares With Sensor Data Buffers",
-      "description": "Environment to build all g4 firmware - see firmware-l5",
-      "configurePreset": "cross-sensor-buffer",
       "jobs": 4,
       "targets": [
         "firmware-applications",
