@@ -216,7 +216,7 @@ class FDC1004 {
                         (*sensor_buffer).at(i), S15Q16_RADIX)});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vTaskDelay(50);
+                vtask_hardware_delay(50);
             }
             (*sensor_buffer).at(i) = 0;
         }
