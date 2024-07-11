@@ -1779,7 +1779,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
             .request_stop_condition = request_stop_condition,
             .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
             .sensor_type = static_cast<can::ids::SensorType>(sensor_type),
-            .binding_flags=binding_flags,
+            .binding_flags = binding_flags,
         };
     }
 
