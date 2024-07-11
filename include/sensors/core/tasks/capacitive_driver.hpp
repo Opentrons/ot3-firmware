@@ -336,7 +336,8 @@ class FDC1004 {
                 can::messages::BaselineSensorResponse{
                     .message_index = m.message_index,
                     .sensor = can::ids::SensorType::capacitive,
-                    .offset_average = capacitance});
+                    .offset_average =
+                        convert_to_fixed_point(capacitance, S15Q16_RADIX)});
             set_threshold(capacitance + next_autothreshold_pf,
                           can::ids::SensorThresholdMode::auto_baseline,
                           m.message_index);
