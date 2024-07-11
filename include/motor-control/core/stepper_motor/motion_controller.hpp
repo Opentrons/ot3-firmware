@@ -80,7 +80,8 @@ class MotionController {
             0,
             hardware.get_usage_eeprom_config().get_distance_key(),
             can_msg.sensor_id,
-            can_msg.sensor_type};
+            can_msg.sensor_type,
+            can_msg.binding_flags};
         if (!enabled) {
             enable_motor();
         }
@@ -102,7 +103,8 @@ class MotionController {
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
             .sensor_id = can::ids::SensorId::UNUSED,
-            .sensor_type = can::ids::SensorType::UNUSED};
+            .sensor_type = can::ids::SensorType::UNUSED,
+            .binding_flags = 0};
         if (!enabled) {
             enable_motor();
         }
@@ -123,7 +125,8 @@ class MotionController {
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key(),
             .sensor_id = can::ids::SensorId::UNUSED,
-            .sensor_type = can::ids::SensorType::UNUSED};
+            .sensor_type = can::ids::SensorType::UNUSED,
+            .binding_flags = 0};
         if (!enabled) {
             enable_motor();
         }
