@@ -331,6 +331,12 @@ class FDC1004 {
             measurement, number_of_reads, current_offset_pf);
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::IS_THRESHOLD_SENSE)) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::BaselineSensorResponse{
+                    .message_index = m.message_index,
+                    .sensor = can::ids::SensorType::capacitive,
+                    .offset_average = capacitance});
             set_threshold(capacitance + next_autothreshold_pf,
                           can::ids::SensorThresholdMode::auto_baseline,
                           m.message_index);
