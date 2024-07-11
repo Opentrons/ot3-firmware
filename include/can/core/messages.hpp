@@ -1744,6 +1744,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
     uint8_t request_stop_condition;
     can::ids::SensorId sensor_id{};
     can::ids::SensorType sensor_type{};
+    uint8_t binding_flags;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> AddSensorMoveRequest {
@@ -1756,6 +1757,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
         uint32_t msg_ind = 0;
         uint8_t sensor_id = 0;
         uint8_t sensor_type = 0;
+        uint8_t binding_flags = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
         body = bit_utils::bytes_to_int(body, limit, group_id);
@@ -1766,6 +1768,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
         body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, sensor_type);
+        body = bit_utils::bytes_to_int(body, limit, binding_flags);
         return AddSensorMoveRequest{
             .message_index = msg_ind,
             .group_id = group_id,
@@ -1776,6 +1779,7 @@ struct AddSensorMoveRequest : BaseMessage<MessageId::add_sensor_move_request> {
             .request_stop_condition = request_stop_condition,
             .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
             .sensor_type = static_cast<can::ids::SensorType>(sensor_type),
+            .binding_flags = binding_flags,
         };
     }
 
