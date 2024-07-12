@@ -359,9 +359,8 @@ class MMR920 {
             // data is in the same format as later samples, don't apply
             // the current_pressure_baseline_pa since it has already
             // been applied
-            sensor_buffer->at(sensor_buffer_index) =
-                sensor_buffer->at(sensor_buffer_index) -
-                current_moving_pressure_baseline_pa;
+            sensor_buffer->at(i) =
+                sensor_buffer->at(i) - current_moving_pressure_baseline_pa;
         }
     }
 
