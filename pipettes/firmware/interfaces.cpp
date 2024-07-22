@@ -58,7 +58,9 @@ void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient> {
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient> {
     return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
         linear_motor_tasks::tmc2130_driver::get_queues(), hw, stall,
@@ -68,7 +70,9 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient> {
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient> {
     return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(),
         linear_motor_tasks::tmc2160_driver::get_queues(), hw, stall,

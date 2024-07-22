@@ -85,11 +85,14 @@ auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     LowThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>& handler) ->
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
+                              linear_motor_tasks::tmc2130_driver::QueueClient>&
+        handler) ->
 #ifdef USE_SENSOR_MOVE
     motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::SensorSyncMove,
+        linear_motor_tasks::tmc2130_driver::QueueClient,
+        motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #else
     motor_interrupt_driver::MotorInterruptDriver<
@@ -101,11 +104,14 @@ auto get_interrupt_driver(
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     HighThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient>& handler) ->
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
+                              linear_motor_tasks::tmc2160_driver::QueueClient>&
+        handler) ->
 #ifdef USE_SENSOR_MOVE
     motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient,
-        linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::SensorSyncMove,
+        linear_motor_tasks::tmc2160_driver::QueueClient,
+        motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #else
     motor_interrupt_driver::MotorInterruptDriver<
