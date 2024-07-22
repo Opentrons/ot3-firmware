@@ -12,22 +12,22 @@
 
 namespace interfaces {
 
-template <typename Client>
+template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType =
 #ifdef USE_SENSOR_MOVE
     motor_handler::MotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, Client,
+        freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
         motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #else
     motor_handler::MotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, Client,
+        freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
         motor_messages::Move, sim_motor_hardware_iface::SimMotorHardwareIface>;
 #endif
 
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    freertos_message_queue::FreeRTOSMessageQueue, Client, Client,
     motor_messages::GearMotorMove,
     sim_motor_hardware_iface::SimGearMotorHardwareIface>;
 
@@ -71,38 +71,46 @@ namespace linear_motor {
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient>;
 
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
                    HighThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient>;
 
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     LowThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler) ->
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>& handler) ->
 #ifdef USE_SENSOR_MOVE
     motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #else
     motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #endif
 
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     HighThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler) ->
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient>& handler) ->
 #ifdef USE_SENSOR_MOVE
     motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, motor_messages::SensorSyncMove,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::SensorSyncMove,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #else
     motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 #endif
 
@@ -126,11 +134,13 @@ struct GearInterruptHandlers {
 
 struct GearInterruptDrivers {
     motor_interrupt_driver::MotorInterruptDriver<
-        gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient,
+        motor_messages::GearMotorMove,
         sim_motor_hardware_iface::SimGearMotorHardwareIface>
         left;
     motor_interrupt_driver::MotorInterruptDriver<
-        gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient,
+        motor_messages::GearMotorMove,
         sim_motor_hardware_iface::SimGearMotorHardwareIface>
         right;
 };

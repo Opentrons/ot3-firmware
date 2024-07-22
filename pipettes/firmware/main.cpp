@@ -46,6 +46,10 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
+static interfaces::diag0_handler call_linear_diag0_handler = nullptr;
+static interfaces::diag0_handler call_left_gear_diag0_handler = nullptr;
+static interfaces::diag0_handler call_right_gear_diag0_handler = nullptr;
+
 static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(), utility_configs::led_gpio(PIPETTE_TYPE));
 
@@ -145,6 +149,22 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 sensor_queue_client.tip_notification_queue_rear->try_write_isr(
                     sensors::tip_presence::TipStatusChangeDetected{}));
         }
+    } else if (GPIO_Pin == linear_motor_hardware.get_pins().diag0.pin) {
+        if (call_linear_diag0_handler != nullptr) {
+            if (*call_linear_diag0_handler != nullptr) {
+                (*call_linear_diag0_handler)();
+            }
+        }
+        if (call_left_gear_diag0_handler != nullptr) {
+            if (*call_left_gear_diag0_handler != nullptr) {
+                (*call_left_gear_diag0_handler)();
+            }
+        }
+        if (call_right_gear_diag0_handler != nullptr) {
+            if (*call_right_gear_diag0_handler != nullptr) {
+                (*call_right_gear_diag0_handler)();
+            }
+        }
     }
 }
 
@@ -197,13 +217,15 @@ auto initialize_motor_tasks(
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
     initialize_enc_timer(encoder_callback);
-    linear_motor_tasks::start_tasks(
+    call_linear_diag0_handler = linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
         tail_accessor);
-    gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, gear_motion,
-        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks, tail_accessor);
+    std::tie(call_left_gear_diag0_handler, call_right_gear_diag0_handler) =
+        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                      gear_motion,
+                                      peripheral_tasks::get_spi_client(), conf,
+                                      id, gmh_tsks, tail_accessor);
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,
@@ -234,7 +256,7 @@ auto initialize_motor_tasks(
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);
-    linear_motor_tasks::start_tasks(
+    call_linear_diag0_handler = linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
         tail_accessor);
