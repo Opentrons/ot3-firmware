@@ -128,10 +128,12 @@ void encoder_callback(int32_t direction) {
                                                 direction);
 }
 
+static auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
 static auto pins_for_sensor =
     utility_configs::sensor_configurations<PIPETTE_TYPE>();
 static auto sensor_hardware_container =
-    utility_configs::get_sensor_hardware_container(pins_for_sensor);
+    utility_configs::get_sensor_hardware_container(pins_for_sensor, version_wrapper);
+
 
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
@@ -191,8 +193,9 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               sensor_hardware_container.primary,
-                              sensor_hardware_container.secondary.value(), id,
-                              eeprom_hardware_iface, pressure_sensor_version);
+                              sensor_hardware_container.secondary.value(),
+                              version_wrapper, id,
+                              eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -219,17 +222,17 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   sensor_hardware_container.primary,
                                   sensor_hardware_container.secondary.value(),
-                                  id, eeprom_hardware_iface,
-                                  pressure_sensor_version);
+                                  version_wrapper,
+                                  id, eeprom_hardware_iface);
     } else {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                   peripheral_tasks::get_i2c3_client(),
                                   peripheral_tasks::get_i2c3_poller_client(),
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  sensor_hardware_container.primary, id,
-                                  eeprom_hardware_iface,
-                                  pressure_sensor_version);
+                                  sensor_hardware_container.primary,
+                                  version_wrapper, id,
+                                  eeprom_hardware_iface);
     }
 
     initialize_linear_timer(plunger_callback);

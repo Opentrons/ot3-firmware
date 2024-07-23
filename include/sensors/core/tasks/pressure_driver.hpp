@@ -42,7 +42,6 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version,
            std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
@@ -50,7 +49,6 @@ class MMR920 {
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_version(version),
           sensor_buffer(sensor_buffer) {}
 
     /**
@@ -403,12 +401,12 @@ class MMR920 {
 
         save_pressure(shifted_data_store);
         auto pressure = mmr920::PressureResult::to_pressure(
-            _registers.pressure_result.reading, sensor_version);
+            _registers.pressure_result.reading, sensor_version());
 
         if (max_pressure_sync) {
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
-                mmr920::get_max_pressure_reading(sensor_version);
+                mmr920::get_max_pressure_reading(sensor_version());
             bool over_threshold = false;
             if (this_tick_over_threshold) {
                 max_pressure_consecutive_readings =
@@ -508,7 +506,7 @@ class MMR920 {
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store,
-                                                            sensor_version);
+                                                            sensor_version());
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
@@ -585,7 +583,6 @@ class MMR920 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
-    const sensors::mmr920::SensorVersion sensor_version;
 
     mmr920::MMR920RegisterMap _registers{};
     mmr920::FilterSetting filter_setting =
@@ -649,6 +646,17 @@ class MMR920 {
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
     uint16_t sensor_buffer_index = 0;
     bool crossed_buffer_index = false;
+
+    sensors::mmr920::SensorVersion sensor_version() {
+        utils::SensorBoardRev rev = hardware.get_board_rev();
+        switch (rev) {
+            case utils::SensorBoardRev::VERSION_1:
+                return sensors::mmr920::SensorVersion::mmr920c10;
+            case utils::SensorBoardRev::VERSION_0:
+            default:
+                return sensors::mmr920::SensorVersion::mmr920c04;
+        }
+    }
 };
 
 }  // namespace tasks
