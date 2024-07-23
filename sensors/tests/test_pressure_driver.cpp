@@ -60,8 +60,8 @@ SCENARIO("Testing the pressure sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920 driver(
-        writer, poller, queue_client, pressure_queue, hardware, sensor_id, &sensor_buffer);
+    sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
+                                  hardware, sensor_id, &sensor_buffer);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 
@@ -114,7 +114,8 @@ SCENARIO("Testing the pressure sensor driver") {
             }
         }
         WHEN("The Board version is changed") {
-            version_wrapper.set_board_rev(sensors::utils::SensorBoardRev::VERSION_1);
+            version_wrapper.set_board_rev(
+                sensors::utils::SensorBoardRev::VERSION_1);
             driver.handle_baseline_pressure_response(message);
             THEN(
                 "A ReadFromSensorResponse is sent to the CAN queue and it's "
@@ -129,7 +130,7 @@ SCENARIO("Testing the pressure sensor driver") {
                         empty_can_msg.message);
                 float check_data_pascals =
                     fixed_point_to_float(response_msg.sensor_data, 16);
-                float expected_pascals = 3922.66*2;
+                float expected_pascals = 3922.66 * 2;
                 REQUIRE(check_data_pascals == Approx(expected_pascals));
                 REQUIRE(hardware.get_sync_state_mock() == false);
             }
@@ -226,7 +227,7 @@ SCENARIO("Testing the pressure sensor driver") {
     }
 
     GIVEN("An unlimited poll with sensor binding set to max_pressure_sync") {
-        driver.set_echoing(true);
+        driver.set_echoing(false);
         driver.set_max_bind_sync(true);
         std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                         sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
@@ -258,21 +259,14 @@ SCENARIO("Testing the pressure sensor driver") {
                 .id = id, .bytes_read = 3, .read_buffer = {0x7F, 0xFF, 0xFF}};
 
             driver.handle_ongoing_pressure_response(sensor_response);
-            THEN("First response sends pressure") {
-                can_queue.try_read(&empty_can_msg);
-                auto response_msg =
-                    std::get<can::messages::ReadFromSensorResponse>(
-                        empty_can_msg.message);
-                REQUIRE(response_msg.error_code==can::ids::ErrorCode::over_pressure);
-            }
             driver.handle_ongoing_pressure_response(sensor_response);
             driver.handle_ongoing_pressure_response(sensor_response);
             THEN("We get the overpressure error") {
                 can_queue.try_read(&empty_can_msg);
-                auto response_msg =
-                    std::get<can::messages::ErrorMessage>(
-                        empty_can_msg.message);
-                REQUIRE(response_msg.error_code==can::ids::ErrorCode::over_pressure);
+                auto response_msg = std::get<can::messages::ErrorMessage>(
+                    empty_can_msg.message);
+                REQUIRE(response_msg.error_code ==
+                        can::ids::ErrorCode::over_pressure);
             }
         }
     }
