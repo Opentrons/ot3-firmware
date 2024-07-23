@@ -60,8 +60,8 @@ SCENARIO("Testing the pressure sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
-                                  hardware, sensor_id, &sensor_buffer);
+    sensors::tasks::MMR920 driver(
+        writer, poller, queue_client, pressure_queue, hardware, sensor_id, &sensor_buffer);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 
@@ -109,6 +109,27 @@ SCENARIO("Testing the pressure sensor driver") {
                 float check_data_pascals =
                     fixed_point_to_float(response_msg.sensor_data, 16);
                 float expected_pascals = 3922.66;
+                REQUIRE(check_data_pascals == Approx(expected_pascals));
+                REQUIRE(hardware.get_sync_state_mock() == false);
+            }
+        }
+        WHEN("The Board version is changed") {
+            version_wrapper.set_board_rev(sensors::utils::SensorBoardRev::VERSION_1);
+            driver.handle_baseline_pressure_response(message);
+            THEN(
+                "A ReadFromSensorResponse is sent to the CAN queue and it's "
+                "the expected value") {
+                can_queue.try_read(&empty_can_msg);
+                REQUIRE(std::holds_alternative<
+                        can::messages::ReadFromSensorResponse>(
+                    empty_can_msg.message));
+
+                auto response_msg =
+                    std::get<can::messages::ReadFromSensorResponse>(
+                        empty_can_msg.message);
+                float check_data_pascals =
+                    fixed_point_to_float(response_msg.sensor_data, 16);
+                float expected_pascals = 3922.66*2;
                 REQUIRE(check_data_pascals == Approx(expected_pascals));
                 REQUIRE(hardware.get_sync_state_mock() == false);
             }
