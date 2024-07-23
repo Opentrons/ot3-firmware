@@ -57,7 +57,7 @@ class SensorHardwareVersionSingleton {
 
     void set_board_rev(utils::SensorBoardRev rev) { b_revision = rev; }
 
-    utils::SensorBoardRev get_board_rev() { return b_revision; }
+    auto get_board_rev() -> utils::SensorBoardRev { return b_revision; }
 
   private:
     utils::SensorBoardRev b_revision = utils::SensorBoardRev::VERSION_0;
@@ -70,9 +70,9 @@ class SensorHardwareBase {
         : version_wrapper{version_wrapper} {}
     virtual ~SensorHardwareBase() = default;
     SensorHardwareBase(const SensorHardwareBase&) = default;
-    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = default;
+    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = delete;
     SensorHardwareBase(SensorHardwareBase&&) = default;
-    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = default;
+    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = delete;
 
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
@@ -137,7 +137,7 @@ class SensorHardwareBase {
             reset_sync();
         }
     }
-    utils::SensorBoardRev get_board_rev() {
+    auto get_board_rev() -> utils::SensorBoardRev {
         return version_wrapper.get_board_rev();
     }
 

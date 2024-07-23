@@ -647,7 +647,7 @@ class MMR920 {
     uint16_t sensor_buffer_index = 0;
     bool crossed_buffer_index = false;
 
-    sensors::mmr920::SensorVersion sensor_version() {
+    auto sensor_version() -> sensors::mmr920::SensorVersion{
         utils::SensorBoardRev rev = hardware.get_board_rev();
         switch (rev) {
             case utils::SensorBoardRev::VERSION_1:
