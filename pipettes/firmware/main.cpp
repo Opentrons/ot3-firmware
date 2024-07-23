@@ -150,14 +150,6 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
 }
 
-#if PCBA_PRIMARY_REVISION == 'e'
-static constexpr auto pressure_sensor_version =
-    sensors::mmr920::SensorVersion::mmr920c10;
-#else
-static constexpr auto pressure_sensor_version =
-    sensors::mmr920::SensorVersion::mmr920c04;
-#endif
-
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
