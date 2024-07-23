@@ -54,6 +54,11 @@ enum class ResponseTag : size_t {
     IS_THRESHOLD_SENSE = 4,
 };
 
+enum class SensorBoardRev : uint32_t {
+    VERSION_0 = 0,
+    VERSION_1 = 1,
+};
+
 [[nodiscard]] constexpr auto byte_from_tag(ResponseTag tag) -> uint8_t {
     return (1 << static_cast<size_t>(tag));
 }

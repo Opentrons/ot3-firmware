@@ -5,6 +5,7 @@
 
 #include "can/core/ids.hpp"
 #include "common/firmware/gpio.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace hardware {
@@ -41,6 +42,24 @@ static auto get_mask_from_id(can::ids::SensorId sensor) -> uint8_t {
     }
     return static_cast<uint8_t>(mask_enum);
 }
+
+class SensorHardwareVersionSingleton {
+  public:
+    SensorHardwareVersionSingleton() = default;
+    virtual ~SensorHardwareVersionSingleton() = default;
+    SensorHardwareVersionSingleton(const SensorHardwareVersionSingleton&) = default;
+    auto operator=(const SensorHardwareVersionSingleton&) -> SensorHardwareVersionSingleton& = default;
+    SensorHardwareVersionSingleton(SensorHardwareVersionSingleton&&) = default;
+    auto operator=(SensorHardwareVersionSingleton&&) -> SensorHardwareVersionSingleton& = default;
+
+    void set_board_rev(utils::SensorBoardRev rev) { b_revision = rev; }
+
+    utils::SensorBoardRev get_board_rev() { return b_revision; }
+  private:
+    utils::SensorBoardRev b_revision = utils::SensorBoardRev::VERSION_0;
+};
+
+
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
   public:
