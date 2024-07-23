@@ -35,14 +35,14 @@ using I2CClient =
 using I2CPollerClient =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 
-void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-                 I2CPollerClient& i2c3_poller_client,
-                 I2CClient& i2c1_task_client,
-                 I2CPollerClient& i2c1_poller_client,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
-                 sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
-                 can::ids::NodeId id,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 void start_tasks(
     CanWriterTask& can_writer, I2CClient& i2c3_task_client,
@@ -82,8 +82,8 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>*
         tip_notification_task_front{nullptr};
     sensors::tasks::ReadSenorBoardTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        read_sensor_board_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* read_sensor_board_task{
+        nullptr};
 };
 
 /**

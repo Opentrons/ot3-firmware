@@ -12,11 +12,14 @@ using TaskMessage =
 template <class I2CQueueWriter, class OwnQueue>
 class ReadSenorBoardHandler {
   public:
-    explicit ReadSenorBoardHandler(I2CQueueWriter &i2c_writer, OwnQueue &own_queue)
+    explicit ReadSenorBoardHandler(I2CQueueWriter &i2c_writer,
+                                   OwnQueue &own_queue)
         : i2c_writer{i2c_writer}, task_queue{own_queue} {
         // request gpio expander status register
-        i2c_writer->read(pie4ioe4::ADDRESS, static_cast<uint8_t>(pie4ioe4::registers::input_status), 1,
-                        task_queue);
+        i2c_writer->read(
+            pie4ioe4::ADDRESS,
+            static_cast<uint8_t>(pie4ioe4::registers::input_status), 1,
+            task_queue);
     }
     ReadSenorBoardHandler(const ReadSenorBoardHandler &) = delete;
     ReadSenorBoardHandler(const ReadSenorBoardHandler &&) = delete;
@@ -37,14 +40,15 @@ class ReadSenorBoardHandler {
 
     void visit(i2c::messages::TransactionResponse &m) {
         if (m.bytes_read == 1 &&
-            m.read_buffer[0] == static_cast<uint8_t>(pie4ioe4::version_responses::VERSION_1)) {
+            m.read_buffer[0] ==
+                static_cast<uint8_t>(pie4ioe4::version_responses::VERSION_1)) {
             rev = utils::SensorBoardRev::VERSION_1;
         }
     }
 
     utils::SensorBoardRev rev = utils::SensorBoardRev::VERSION_0;
     I2CQueueWriter &i2c_writer;
-    OwnQueue& task_queue;
+    OwnQueue &task_queue;
 };
 
 /**
@@ -56,8 +60,7 @@ class ReadSenorBoardTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    ReadSenorBoardTask(QueueType &queue)
-        : queue{queue} {}
+    ReadSenorBoardTask(QueueType &queue) : queue{queue} {}
     ReadSenorBoardTask(const ReadSenorBoardTask &c) = delete;
     ReadSenorBoardTask(const ReadSenorBoardTask &&c) = delete;
     auto operator=(const ReadSenorBoardTask &c) = delete;
@@ -69,7 +72,7 @@ class ReadSenorBoardTask {
      */
     void operator()(
         i2c::writer::Writer<QueueImpl> *writer,
-        sensors::hardware::SensorHardwareVersionSingleton* version_wrapper) {
+        sensors::hardware::SensorHardwareVersionSingleton *version_wrapper) {
         auto handler = ReadSenorBoardHandler(writer, get_queue());
 
         TaskMessage message{};
@@ -86,5 +89,5 @@ class ReadSenorBoardTask {
     QueueType &queue;
 };
 
-}  // namespace task
+}  // namespace tasks
 }  // namespace sensors

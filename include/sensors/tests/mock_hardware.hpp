@@ -4,6 +4,9 @@
 namespace test_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
+    MockSensorHardware(
+        sensors::hardware::SensorHardwareVersionSingleton& version_wrapper)
+        : sensors::hardware::SensorHardwareBase{version_wrapper} {}
     auto set_sync() -> void override {
         sync_state = true;
         sync_set_calls++;

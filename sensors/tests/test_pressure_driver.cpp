@@ -47,21 +47,21 @@ SCENARIO("Testing the pressure sensor driver") {
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
-    test_mocks::MockSensorHardware mock_hw{};
+
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    test_mocks::MockSensorHardware hardware{};
+    test_mocks::MockSensorHardware hardware{version_wrapper};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920 driver(
-        writer, poller, queue_client, pressure_queue, hardware, sensor_id,
-        sensors::mmr920::SensorVersion::mmr920c04, &sensor_buffer);
+    sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
+                                  hardware, sensor_id, &sensor_buffer);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 

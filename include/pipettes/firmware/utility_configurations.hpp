@@ -21,7 +21,9 @@ struct SensorHardwareContainer {
 
 auto led_gpio(PipetteType pipette_type) -> gpio::PinConfig;
 
-auto get_sensor_hardware_container(SensorHardwareGPIO pins, sensors::hardware::SensorHardwareVersionSingleton& version_wrapper)
+auto get_sensor_hardware_container(
+    SensorHardwareGPIO pins,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper)
     -> SensorHardwareContainer;
 
 template <PipetteType P>

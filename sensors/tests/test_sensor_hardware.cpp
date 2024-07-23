@@ -5,11 +5,13 @@
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/tests/mock_hardware.hpp"
 
+auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
 constexpr auto sensor_id_primary = can::ids::SensorId::S0;
 constexpr auto sensor_id_secondary = can::ids::SensorId::S1;
 
 SCENARIO("Multiple Sensors connected") {
-    test_mocks::MockSensorHardware mock_hw = test_mocks::MockSensorHardware{};
+    test_mocks::MockSensorHardware mock_hw =
+        test_mocks::MockSensorHardware{version_wrapper};
     GIVEN("One Sensor In use") {
         WHEN("Sensor not enabled") {
             REQUIRE(mock_hw.get_sync_state_mock() == false);
@@ -103,7 +105,7 @@ SCENARIO("Multiple Sensors connected") {
 }
 
 SCENARIO("Controling multiple sensors at once") {
-    test_mocks::MockSensorHardware mock_hw{};
+    test_mocks::MockSensorHardware mock_hw{version_wrapper};
     GIVEN("Using the BOTH sensorid") {
         WHEN("BOTH sensors are enabled") {
             mock_hw.set_sync_enabled(can::ids::SensorId::BOTH, true);
