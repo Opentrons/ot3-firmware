@@ -42,7 +42,7 @@ static auto tip_notification_task_builder_front =
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto sensor_board_reader_task_builder =
-    freertos_task::TaskStarter<256, sensors::tasks::ReadSenorBoardTask>{};
+    freertos_task::TaskStarter<256, sensors::tasks::ReadSensorBoardTask>{};
 
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,

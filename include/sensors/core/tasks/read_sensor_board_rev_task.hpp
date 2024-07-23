@@ -10,9 +10,9 @@ using TaskMessage =
     std::variant<std::monostate, i2c::messages::TransactionResponse>;
 
 template <class I2CQueueWriter, class OwnQueue>
-class ReadSenorBoardHandler {
+class ReadSensorBoardHandler {
   public:
-    explicit ReadSenorBoardHandler(I2CQueueWriter &i2c_writer,
+    explicit ReadSensorBoardHandler(I2CQueueWriter &i2c_writer,
                                    OwnQueue &own_queue)
         : i2c_writer{i2c_writer}, task_queue{own_queue} {
         // request gpio expander status register
@@ -21,13 +21,13 @@ class ReadSenorBoardHandler {
             static_cast<uint8_t>(pie4ioe4::registers::input_status), 1,
             task_queue);
     }
-    ReadSenorBoardHandler(const ReadSenorBoardHandler &) = delete;
-    ReadSenorBoardHandler(const ReadSenorBoardHandler &&) = delete;
-    auto operator=(const ReadSenorBoardHandler &)
-        -> ReadSenorBoardHandler & = delete;
-    auto operator=(const ReadSenorBoardHandler &&)
-        -> ReadSenorBoardHandler && = delete;
-    ~ReadSenorBoardHandler() {}
+    ReadSensorBoardHandler(const ReadSensorBoardHandler &) = delete;
+    ReadSensorBoardHandler(const ReadSensorBoardHandler &&) = delete;
+    auto operator=(const ReadSensorBoardHandler &)
+        -> ReadSensorBoardHandler & = delete;
+    auto operator=(const ReadSensorBoardHandler &&)
+        -> ReadSensorBoardHandler && = delete;
+    ~ReadSensorBoardHandler() {}
 
     void handle_message(const TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -56,16 +56,16 @@ class ReadSenorBoardHandler {
  */
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-class ReadSenorBoardTask {
+class ReadSensorBoardTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    ReadSenorBoardTask(QueueType &queue) : queue{queue} {}
-    ReadSenorBoardTask(const ReadSenorBoardTask &c) = delete;
-    ReadSenorBoardTask(const ReadSenorBoardTask &&c) = delete;
-    auto operator=(const ReadSenorBoardTask &c) = delete;
-    auto operator=(const ReadSenorBoardTask &&c) = delete;
-    ~ReadSenorBoardTask() = default;
+    ReadSensorBoardTask(QueueType &queue) : queue{queue} {}
+    ReadSensorBoardTask(const ReadSensorBoardTask &c) = delete;
+    ReadSensorBoardTask(const ReadSensorBoardTask &&c) = delete;
+    auto operator=(const ReadSensorBoardTask &c) = delete;
+    auto operator=(const ReadSensorBoardTask &&c) = delete;
+    ~ReadSensorBoardTask() = default;
 
     /**
      * Task entry point.
@@ -73,7 +73,7 @@ class ReadSenorBoardTask {
     void operator()(
         i2c::writer::Writer<QueueImpl> *writer,
         sensors::hardware::SensorHardwareVersionSingleton *version_wrapper) {
-        auto handler = ReadSenorBoardHandler(writer, get_queue());
+        auto handler = ReadSensorBoardHandler(writer, get_queue());
 
         TaskMessage message{};
         if (queue.try_read(&message, 1000)) {

@@ -81,7 +81,7 @@ struct Tasks {
     sensors::tasks::TipPresenceNotificationTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         tip_notification_task_front{nullptr};
-    sensors::tasks::ReadSenorBoardTask<
+    sensors::tasks::ReadSensorBoardTask<
         freertos_message_queue::FreeRTOSMessageQueue>* read_sensor_board_task{
         nullptr};
 };
