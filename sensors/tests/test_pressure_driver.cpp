@@ -225,6 +225,58 @@ SCENARIO("Testing the pressure sensor driver") {
         }
     }
 
+    GIVEN("An unlimited poll with sensor binding set to max_pressure_sync") {
+        driver.set_echoing(true);
+        driver.set_max_bind_sync(true);
+        std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
+                        sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
+        auto tags_as_int = sensors::utils::byte_from_tags(tags);
+        WHEN("the continuous poll function is called") {
+            driver.poll_continuous_pressure(tags_as_int);
+            THEN("a READ_PRESSURE command only") {
+                REQUIRE(i2c_queue.get_size() == 0);
+                REQUIRE(i2c_poll_queue.get_size() == 1);
+                auto read_command = get_message<
+                    i2c::messages::ConfigureSingleRegisterContinuousPolling>(
+                    i2c_poll_queue);
+                REQUIRE(
+                    read_command.first.write_buffer[0] ==
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
+            }
+        }
+        WHEN("the driver receives a response higher than the threshold") {
+            auto id = i2c::messages::TransactionIdentifier{
+                .token = sensors::utils::build_id(
+                    sensors::mmr920::ADDRESS,
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
+                    tags_as_int),
+                .is_completed_poll = false,
+                .transaction_index = static_cast<uint8_t>(0)};
+            auto sensor_response = i2c::messages::TransactionResponse{
+                .id = id, .bytes_read = 3, .read_buffer = {0x7F, 0xFF, 0xFF}};
+
+            driver.handle_ongoing_pressure_response(sensor_response);
+            THEN("First response sends pressure") {
+                can_queue.try_read(&empty_can_msg);
+                auto response_msg =
+                    std::get<can::messages::ReadFromSensorResponse>(
+                        empty_can_msg.message);
+                REQUIRE(response_msg.error_code==can::ids::ErrorCode::over_pressure);
+            }
+            driver.handle_ongoing_pressure_response(sensor_response);
+            driver.handle_ongoing_pressure_response(sensor_response);
+            THEN("We get the overpressure error") {
+                can_queue.try_read(&empty_can_msg);
+                auto response_msg =
+                    std::get<can::messages::ErrorMessage>(
+                        empty_can_msg.message);
+                REQUIRE(response_msg.error_code==can::ids::ErrorCode::over_pressure);
+            }
+        }
+    }
+
     GIVEN("output binding = report") {
         driver.set_bind_sync(true);
         std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
