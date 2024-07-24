@@ -25,7 +25,8 @@ using CanMessageTuple =
                can::messages::BaselineSensorRequest,
                can::messages::SetSensorThresholdRequest,
                can::messages::BindSensorOutputRequest,
-               can::messages::PeripheralStatusRequest>;
+               can::messages::PeripheralStatusRequest,
+               can::messages::MaxSensorValueRequest>;
 using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
 using CanMessageHandler = typename ::utils::TuplesToVariants<
     std::tuple<std::monostate, can::messages::TipStatusQueryRequest>,

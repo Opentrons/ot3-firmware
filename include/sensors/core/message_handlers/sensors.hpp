@@ -46,6 +46,11 @@ class SensorHandler {
                       can::ids::SensorId(m.sensor_id), m);
     }
 
+    void visit(const can::messages::MaxSensorValueRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor),
+                      can::ids::SensorId(m.sensor_id), m);
+    }
+
     void visit(const can::messages::SendAccumulatedSensorDataRequest &m) {
         if (can::ids::SensorType(m.sensor_type) ==
             can::ids::SensorType::pressure) {

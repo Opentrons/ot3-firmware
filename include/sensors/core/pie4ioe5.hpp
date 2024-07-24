@@ -30,7 +30,7 @@ enum class registers : uint8_t {
 enum class version_responses : uint8_t {
     // right now only version D1.1 of the pipette sensor board responds
     // version 0 does not respond
-    VERSION_1 = 0x01, // Pipette_sensor board D1.1
+    VERSION_1 = 0x01,  // Pipette_sensor board D1.1
 };
 
 }  // namespace pie4ioe4

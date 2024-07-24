@@ -576,6 +576,17 @@ class MMR920 {
 
     auto get_can_client() -> CanClient & { return can_client; }
 
+    auto sensor_version() -> sensors::mmr920::SensorVersion {
+        utils::SensorBoardRev rev = hardware.get_board_rev();
+        switch (rev) {
+            case utils::SensorBoardRev::VERSION_1:
+                return sensors::mmr920::SensorVersion::mmr920c10;
+            case utils::SensorBoardRev::VERSION_0:
+            default:
+                return sensors::mmr920::SensorVersion::mmr920c04;
+        }
+    }
+
   private:
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
@@ -646,17 +657,6 @@ class MMR920 {
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
     uint16_t sensor_buffer_index = 0;
     bool crossed_buffer_index = false;
-
-    auto sensor_version() -> sensors::mmr920::SensorVersion {
-        utils::SensorBoardRev rev = hardware.get_board_rev();
-        switch (rev) {
-            case utils::SensorBoardRev::VERSION_1:
-                return sensors::mmr920::SensorVersion::mmr920c10;
-            case utils::SensorBoardRev::VERSION_0:
-            default:
-                return sensors::mmr920::SensorVersion::mmr920c04;
-        }
-    }
 };
 
 }  // namespace tasks

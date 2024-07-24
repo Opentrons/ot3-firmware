@@ -25,7 +25,8 @@ class PressureMessageHandler {
         const can::ids::SensorId &id,
         std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : driver{i2c_writer, i2c_poller, can_client,   own_queue,
-                 hardware,   id,         sensor_buffer} {}
+                 hardware,   id,         sensor_buffer},
+          sensor_id{id} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -95,6 +96,17 @@ class PressureMessageHandler {
             auto tags_as_int = 1;
             driver.poll_limited_temperature(1, tags_as_int);
         }
+    }
+
+    void visit(const can::messages::MaxSensorValueRequest &m) {
+        auto max = mmr920::get_max_pressure_reading(driver.sensor_version());
+        auto message = can::messages::ReadFromSensorResponse{
+            .message_index = m.message_index,
+            .sensor = SensorType::pressure,
+            .sensor_id = sensor_id,
+            .sensor_data = mmr920::reading_to_fixed_point(max)};
+        driver.get_can_client().send_can_message(can::ids::NodeId::host,
+                                                 message);
     }
 
     void visit(const can::messages::WriteToSensorRequest &m) {
@@ -181,6 +193,7 @@ class PressureMessageHandler {
     }
 
     MMR920<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    can::ids::SensorId sensor_id;
 };
 
 /**
