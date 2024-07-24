@@ -76,7 +76,7 @@ class ReadSensorBoardTask {
         auto handler = ReadSensorBoardHandler(writer, get_queue());
 
         TaskMessage message{};
-        if (queue.try_read(&message, 1000)) {
+        if (queue.try_read(&message, queue.max_delay)) {
             handler.handle_message(message);
         }
         version_wrapper->set_board_rev(handler.get_rev());
