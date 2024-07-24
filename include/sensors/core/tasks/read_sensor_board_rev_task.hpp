@@ -13,7 +13,7 @@ template <class I2CQueueWriter, class OwnQueue>
 class ReadSensorBoardHandler {
   public:
     explicit ReadSensorBoardHandler(I2CQueueWriter &i2c_writer,
-                                   OwnQueue &own_queue)
+                                    OwnQueue &own_queue)
         : i2c_writer{i2c_writer}, task_queue{own_queue} {
         // request gpio expander status register
         i2c_writer->read(
