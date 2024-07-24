@@ -27,13 +27,13 @@ class ReadSensorBoardHandler {
         -> ReadSensorBoardHandler & = delete;
     auto operator=(const ReadSensorBoardHandler &&)
         -> ReadSensorBoardHandler && = delete;
-    ~ReadSensorBoardHandler() {}
+    ~ReadSensorBoardHandler() = default;
 
     void handle_message(const TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    utils::SensorBoardRev get_rev() { return rev; }
+    auto get_rev() -> utils::SensorBoardRev { return rev; }
 
   private:
     void visit(const std::monostate &) {}
