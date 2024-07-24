@@ -47,21 +47,21 @@ SCENARIO("Testing the pressure sensor driver") {
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
-    test_mocks::MockSensorHardware mock_hw{};
+
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    test_mocks::MockSensorHardware hardware{};
+    test_mocks::MockSensorHardware hardware{version_wrapper};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920 driver(
-        writer, poller, queue_client, pressure_queue, hardware, sensor_id,
-        sensors::mmr920::SensorVersion::mmr920c04, &sensor_buffer);
+    sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
+                                  hardware, sensor_id, &sensor_buffer);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 
@@ -109,6 +109,28 @@ SCENARIO("Testing the pressure sensor driver") {
                 float check_data_pascals =
                     fixed_point_to_float(response_msg.sensor_data, 16);
                 float expected_pascals = 3922.66;
+                REQUIRE(check_data_pascals == Approx(expected_pascals));
+                REQUIRE(hardware.get_sync_state_mock() == false);
+            }
+        }
+        WHEN("The Board version is changed") {
+            version_wrapper.set_board_rev(
+                sensors::utils::SensorBoardRev::VERSION_1);
+            driver.handle_baseline_pressure_response(message);
+            THEN(
+                "A ReadFromSensorResponse is sent to the CAN queue and it's "
+                "the expected value") {
+                can_queue.try_read(&empty_can_msg);
+                REQUIRE(std::holds_alternative<
+                        can::messages::ReadFromSensorResponse>(
+                    empty_can_msg.message));
+
+                auto response_msg =
+                    std::get<can::messages::ReadFromSensorResponse>(
+                        empty_can_msg.message);
+                float check_data_pascals =
+                    fixed_point_to_float(response_msg.sensor_data, 16);
+                float expected_pascals = 3922.66 * 2;
                 REQUIRE(check_data_pascals == Approx(expected_pascals));
                 REQUIRE(hardware.get_sync_state_mock() == false);
             }
@@ -200,6 +222,51 @@ SCENARIO("Testing the pressure sensor driver") {
                 REQUIRE(can_queue.get_size() == 0);
 
                 REQUIRE(hardware.get_sync_state_mock() == true);
+            }
+        }
+    }
+
+    GIVEN("An unlimited poll with sensor binding set to max_pressure_sync") {
+        driver.set_echoing(false);
+        driver.set_max_bind_sync(true);
+        std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
+                        sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
+        auto tags_as_int = sensors::utils::byte_from_tags(tags);
+        WHEN("the continuous poll function is called") {
+            driver.poll_continuous_pressure(tags_as_int);
+            THEN("a READ_PRESSURE command only") {
+                REQUIRE(i2c_queue.get_size() == 0);
+                REQUIRE(i2c_poll_queue.get_size() == 1);
+                auto read_command = get_message<
+                    i2c::messages::ConfigureSingleRegisterContinuousPolling>(
+                    i2c_poll_queue);
+                REQUIRE(
+                    read_command.first.write_buffer[0] ==
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
+            }
+        }
+        WHEN("the driver receives a response higher than the threshold") {
+            auto id = i2c::messages::TransactionIdentifier{
+                .token = sensors::utils::build_id(
+                    sensors::mmr920::ADDRESS,
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
+                    tags_as_int),
+                .is_completed_poll = false,
+                .transaction_index = static_cast<uint8_t>(0)};
+            auto sensor_response = i2c::messages::TransactionResponse{
+                .id = id, .bytes_read = 3, .read_buffer = {0x7F, 0xFF, 0xFF}};
+
+            driver.handle_ongoing_pressure_response(sensor_response);
+            driver.handle_ongoing_pressure_response(sensor_response);
+            driver.handle_ongoing_pressure_response(sensor_response);
+            THEN("We get the overpressure error") {
+                can_queue.try_read(&empty_can_msg);
+                auto response_msg = std::get<can::messages::ErrorMessage>(
+                    empty_can_msg.message);
+                REQUIRE(response_msg.error_code ==
+                        can::ids::ErrorCode::over_pressure);
             }
         }
     }

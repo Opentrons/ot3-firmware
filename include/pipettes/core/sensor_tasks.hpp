@@ -13,6 +13,7 @@
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
+#include "sensors/core/tasks/read_sensor_board_rev_task.hpp"
 #include "sensors/core/tasks/tip_presence_notification_task.hpp"
 
 /**
@@ -34,14 +35,14 @@ using I2CClient =
 using I2CPollerClient =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 
-void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-                 I2CPollerClient& i2c3_poller_client,
-                 I2CClient& i2c1_task_client,
-                 I2CPollerClient& i2c1_poller_client,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
-                 can::ids::NodeId id,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
-                 sensors::mmr920::SensorVersion sensor_version);
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 void start_tasks(
     CanWriterTask& can_writer, I2CClient& i2c3_task_client,
@@ -49,9 +50,9 @@ void start_tasks(
     I2CPollerClient& i2c1_poller_client,
     sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
     sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
-    sensors::mmr920::SensorVersion sensor_version);
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.
@@ -80,6 +81,9 @@ struct Tasks {
     sensors::tasks::TipPresenceNotificationTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         tip_notification_task_front{nullptr};
+    sensors::tasks::ReadSensorBoardTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* read_sensor_board_task{
+        nullptr};
 };
 
 /**

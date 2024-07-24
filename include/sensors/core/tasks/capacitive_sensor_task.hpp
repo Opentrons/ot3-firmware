@@ -99,6 +99,10 @@ class CapacitiveMessageHandler {
         }
     }
 
+    void visit(const can::messages::MaxSensorValueRequest &m) {
+        std::ignore = m;
+    }
+
     void visit(can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         // FIXME we should send a response message after a write request

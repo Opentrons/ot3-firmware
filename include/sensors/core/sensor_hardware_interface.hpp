@@ -5,6 +5,7 @@
 
 #include "can/core/ids.hpp"
 #include "common/firmware/gpio.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace hardware {
@@ -41,15 +42,37 @@ static auto get_mask_from_id(can::ids::SensorId sensor) -> uint8_t {
     }
     return static_cast<uint8_t>(mask_enum);
 }
+
+class SensorHardwareVersionSingleton {
+  public:
+    SensorHardwareVersionSingleton() = default;
+    virtual ~SensorHardwareVersionSingleton() = default;
+    SensorHardwareVersionSingleton(const SensorHardwareVersionSingleton&) =
+        default;
+    auto operator=(const SensorHardwareVersionSingleton&)
+        -> SensorHardwareVersionSingleton& = default;
+    SensorHardwareVersionSingleton(SensorHardwareVersionSingleton&&) = default;
+    auto operator=(SensorHardwareVersionSingleton&&)
+        -> SensorHardwareVersionSingleton& = default;
+
+    void set_board_rev(utils::SensorBoardRev rev) { b_revision = rev; }
+
+    auto get_board_rev() -> utils::SensorBoardRev { return b_revision; }
+
+  private:
+    utils::SensorBoardRev b_revision = utils::SensorBoardRev::VERSION_0;
+};
+
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
   public:
-    SensorHardwareBase() = default;
+    SensorHardwareBase(SensorHardwareVersionSingleton& version_wrapper)
+        : version_wrapper{version_wrapper} {}
     virtual ~SensorHardwareBase() = default;
     SensorHardwareBase(const SensorHardwareBase&) = default;
-    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = default;
+    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = delete;
     SensorHardwareBase(SensorHardwareBase&&) = default;
-    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = default;
+    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = delete;
 
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
@@ -114,11 +137,15 @@ class SensorHardwareBase {
             reset_sync();
         }
     }
+    auto get_board_rev() -> utils::SensorBoardRev {
+        return version_wrapper.get_board_rev();
+    }
 
   private:
     uint8_t set_sync_required_mask = 0x00;
     uint8_t set_sync_enabled_mask = 0x00;
     uint8_t sync_state_mask = 0x00;
+    SensorHardwareVersionSingleton& version_wrapper;
 };
 
 struct SensorHardwareContainer {

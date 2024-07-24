@@ -33,7 +33,8 @@ constexpr uint8_t sensor_id_int = 0x0;
 static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer;
 
 SCENARIO("read capacitance sensor values without shared CINs") {
-    test_mocks::MockSensorHardware mock_hw{};
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    test_mocks::MockSensorHardware mock_hw(version_wrapper);
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -362,7 +363,8 @@ SCENARIO("read capacitance sensor values without shared CINs") {
 }
 
 SCENARIO("read capacitance sensor values supporting shared CINs") {
-    test_mocks::MockSensorHardware mock_hw{};
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -567,7 +569,8 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
 }
 
 SCENARIO("capacitance driver tests no shared CINs") {
-    test_mocks::MockSensorHardware mock_hw{};
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -752,7 +755,8 @@ SCENARIO("capacitance driver tests no shared CINs") {
 }
 
 SCENARIO("threshold configuration") {
-    test_mocks::MockSensorHardware mock_hw{};
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 

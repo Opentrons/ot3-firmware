@@ -11,6 +11,9 @@ using StateManagerHandle = std::shared_ptr<StateManager>;
 namespace sim_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
+    MockSensorHardware(
+        sensors::hardware::SensorHardwareVersionSingleton& version_wrapper)
+        : sensors::hardware::SensorHardwareBase{version_wrapper} {}
     auto set_sync() -> void override {
         if (_state_manager) {
             _state_manager->send_sync_msg(SyncPinState::HIGH);

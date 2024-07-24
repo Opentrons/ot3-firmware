@@ -85,7 +85,6 @@ class TipPresenceNotificationTask {
             }
         }
     }
-
     [[nodiscard]] auto get_queue() const -> QueueType & { return queue; }
 
   private:
