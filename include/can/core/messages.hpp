@@ -776,7 +776,8 @@ struct SendAccumulatedSensorDataRequest
         -> bool = default;
 };
 
-struct MaxSensorValueRequest : BaseMessage<MessageId::max_sensor_value_request> {
+struct MaxSensorValueRequest
+    : BaseMessage<MessageId::max_sensor_value_request> {
     uint32_t message_index = 0;
     uint8_t sensor = 0;
     uint8_t sensor_id = 0;
