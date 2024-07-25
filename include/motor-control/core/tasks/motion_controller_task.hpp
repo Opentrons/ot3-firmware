@@ -205,6 +205,16 @@ class MotionControllerMessageHandler {
         const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
         if (m.debounce_count > DIAG0_DEBOUNCE_REPS) {
             if (controller.read_tmc_diag0()) {
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = m.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::
+                            motor_driver_error_detected});
+                driver_client.send_motor_driver_queue(
+                    can::messages::ReadMotorDriverErrorStatusRequest{
+                        .message_index = m.message_index});
                 controller.stop(
                     can::ids::ErrorSeverity::unrecoverable,
                     can::ids::ErrorCode::motor_driver_error_detected);
