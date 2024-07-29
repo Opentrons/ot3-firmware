@@ -38,7 +38,7 @@ jobs:
   handle-pr:
     runs-on: 'ubuntu-latest'
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'Opentrons/ot3-firmware' && contains(github.event.pull_request.labels.*.name, 'flex-build')
-    name: "Start a Flex build for a requested PR"
+    name: "Start a Flex build for a PR from branch ${{ github.ref_name }}"
     steps:
       - name: 'start build'
         uses: octokit/request-action@v2.x
