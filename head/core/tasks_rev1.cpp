@@ -116,7 +116,7 @@ auto head_tasks::start_tasks(
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     i2c::hardware::I2CBase& i2c3,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
-    -> std::tuple<diag0_handler, diag0_handler> {
+    -> std::tuple<head_tasks::diag0_handler, head_tasks::diag0_handler> {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
