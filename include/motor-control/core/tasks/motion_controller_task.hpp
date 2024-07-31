@@ -10,7 +10,7 @@
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
-constexpr uint32_t DIAG0_DEBOUNCE_REPS = 9;
+constexpr uint32_t DIAG0_DEBOUNCE_REPS = 0; // 9
 constexpr uint32_t DIAG0_DEBOUNCE_DELAY = 100;
 
 namespace motion_controller_task {
