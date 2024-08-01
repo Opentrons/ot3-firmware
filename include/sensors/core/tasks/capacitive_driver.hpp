@@ -72,7 +72,7 @@ class FDC1004 {
         if (sensor_id != _id) {
             // we should always update the sensor id
             sensor_id = _id;
-            if (shared_sensor) {
+            if (using_both_sensors) {
                 // if we're sharing the sensor, then we need to update
                 // the measure mode
                 if (_id == can::ids::SensorId::S1) {
