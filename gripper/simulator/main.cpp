@@ -36,7 +36,8 @@ static auto sensor_map =
 static auto i2c2 = i2c::hardware::SimI2C{sensor_map};
 
 static sensors::hardware::SensorHardwareVersionSingleton version_wrapper{};
-static sim_mocks::MockSensorHardware fake_sensor_hw{version_wrapper};
+static sensors::hardware::SensorHardwareSyncControlSingleton sync_control{};
+static sim_mocks::MockSensorHardware fake_sensor_hw{version_wrapper,sync_control};
 
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>

@@ -46,7 +46,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
-    test_mocks::MockSensorHardware mock_hw{version_wrapper};
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper, sync_control};
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
