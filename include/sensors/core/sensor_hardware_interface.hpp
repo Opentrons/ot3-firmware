@@ -43,16 +43,16 @@ static auto get_mask_from_id(can::ids::SensorId sensor) -> uint8_t {
     return static_cast<uint8_t>(mask_enum);
 }
 
-
 class SensorHardwareSyncControlSingleton {
   public:
     SensorHardwareSyncControlSingleton() = default;
     virtual ~SensorHardwareSyncControlSingleton() = default;
-    SensorHardwareSyncControlSingleton(const SensorHardwareSyncControlSingleton&) =
-        default;
+    SensorHardwareSyncControlSingleton(
+        const SensorHardwareSyncControlSingleton&) = default;
     auto operator=(const SensorHardwareSyncControlSingleton&)
         -> SensorHardwareSyncControlSingleton& = default;
-    SensorHardwareSyncControlSingleton(SensorHardwareSyncControlSingleton&&) = default;
+    SensorHardwareSyncControlSingleton(SensorHardwareSyncControlSingleton&&) =
+        default;
     auto operator=(SensorHardwareSyncControlSingleton&&)
         -> SensorHardwareSyncControlSingleton& = default;
 
@@ -100,6 +100,7 @@ class SensorHardwareSyncControlSingleton {
             set_sync_required_mask |= applied_mask;
         }
     }
+
   private:
     uint8_t set_sync_required_mask = 0x00;
     uint8_t set_sync_enabled_mask = 0x00;
@@ -129,7 +130,8 @@ class SensorHardwareVersionSingleton {
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
   public:
-    SensorHardwareBase(SensorHardwareVersionSingleton& version_wrapper, SensorHardwareSyncControlSingleton& sync_control)
+    SensorHardwareBase(SensorHardwareVersionSingleton& version_wrapper,
+                       SensorHardwareSyncControlSingleton& sync_control)
         : version_wrapper{version_wrapper}, sync_control{sync_control} {}
     virtual ~SensorHardwareBase() = default;
     SensorHardwareBase(const SensorHardwareBase&) = default;

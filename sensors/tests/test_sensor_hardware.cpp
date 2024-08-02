@@ -107,8 +107,10 @@ SCENARIO("Multiple Sensors connected") {
 
 SCENARIO("Controling multiple sensors at once") {
     auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
-    test_mocks::MockSensorHardware mock_hw_primary{version_wrapper, sync_control};
-    test_mocks::MockSensorHardware mock_hw_secondary{version_wrapper, sync_control};
+    test_mocks::MockSensorHardware mock_hw_primary{version_wrapper,
+                                                   sync_control};
+    test_mocks::MockSensorHardware mock_hw_secondary{version_wrapper,
+                                                     sync_control};
     GIVEN("Using the BOTH sensorid") {
         WHEN("BOTH sensors are enabled") {
             mock_hw_primary.set_sync_enabled(can::ids::SensorId::BOTH, true);
@@ -148,7 +150,8 @@ SCENARIO("Controling multiple sensors at once") {
     GIVEN("Using the NONE sensorid") {
         WHEN("NONE sensors are enabled") {
             mock_hw_primary.set_sync_enabled(can::ids::SensorId::UNUSED, true);
-            mock_hw_secondary.set_sync_enabled(can::ids::SensorId::UNUSED, true);
+            mock_hw_secondary.set_sync_enabled(can::ids::SensorId::UNUSED,
+                                               true);
             THEN("Primary doesn't set") {
                 mock_hw_primary.set_sync(sensor_id_primary);
                 REQUIRE(mock_hw_primary.get_sync_state_mock() == false);
@@ -162,7 +165,8 @@ SCENARIO("Controling multiple sensors at once") {
         }
         WHEN("NONE sensors are required") {
             mock_hw_primary.set_sync_required(can::ids::SensorId::UNUSED, true);
-            mock_hw_secondary.set_sync_required(can::ids::SensorId::UNUSED, true);
+            mock_hw_secondary.set_sync_required(can::ids::SensorId::UNUSED,
+                                                true);
             THEN("Primary wont solo trigger") {
                 mock_hw_primary.set_sync(sensor_id_primary);
                 REQUIRE(mock_hw_primary.get_sync_state_mock() == false);

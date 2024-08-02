@@ -306,7 +306,8 @@ int main(int argc, char** argv) {
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
     auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
     auto fake_sensor_hw_primary =
-        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper, sync_control);
+        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper,
+                                                        sync_control);
     fake_sensor_hw_primary->provide_state_manager(state_manager_connection);
     auto fake_sensor_hw_secondary =
         std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper);

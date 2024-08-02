@@ -33,15 +33,14 @@ auto utility_configs::get_sensor_hardware_container(
     -> utility_configs::SensorHardwareContainer {
     if (pins.secondary.has_value()) {
         return utility_configs::SensorHardwareContainer{
-            .primary = sensors::hardware::SensorHardware(pins.primary,
-                                                         version_wrapper,
-                                                         sync_control),
+            .primary = sensors::hardware::SensorHardware(
+                pins.primary, version_wrapper, sync_control),
             .secondary = sensors::hardware::SensorHardware(
                 pins.secondary.value(), version_wrapper, sync_control)};
     }
     return utility_configs::SensorHardwareContainer{
-        .primary =
-            sensors::hardware::SensorHardware(pins.primary, version_wrapper, sync_control)};
+        .primary = sensors::hardware::SensorHardware(
+            pins.primary, version_wrapper, sync_control)};
 }
 
 template <>

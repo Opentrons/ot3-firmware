@@ -5,8 +5,10 @@ namespace test_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
     MockSensorHardware(
-                   sensors::hardware::SensorHardwareVersionSingleton& version_wrapper, sensors::hardware::SensorHardwareSyncControlSingleton& sync_control)
-        : sensors::hardware::SensorHardwareBase{version_wrapper, sync_control} {}
+        sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+        sensors::hardware::SensorHardwareSyncControlSingleton& sync_control)
+        : sensors::hardware::SensorHardwareBase{version_wrapper, sync_control} {
+    }
     auto set_sync() -> void override {
         sync_state = true;
         sync_set_calls++;
@@ -17,7 +19,9 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
     }
     auto check_tip_presence() -> bool override { return false; }
 
-    auto get_sync_state_mock() const -> bool { return sensors::hardware::SensorHardwareBase::mask_satisfied(); }
+    auto get_sync_state_mock() const -> bool {
+        return sensors::hardware::SensorHardwareBase::mask_satisfied();
+    }
     auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }
     auto get_sync_reset_calls() const -> uint32_t { return sync_reset_calls; }
 
