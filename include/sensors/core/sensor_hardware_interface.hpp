@@ -59,8 +59,6 @@ class SensorHardwareSyncControlSingleton {
     [[nodiscard]] auto mask_satisfied() const -> bool {
         if (set_sync_required_mask !=
             static_cast<uint8_t>(SensorIdBitMask::UNUSED)) {
-            printf("%x is required\n", set_sync_required_mask);
-            printf("%x sync_state_mask\n", sync_state_mask);
             // if anything is "required" only sync when they are all triggered
             return (sync_state_mask & set_sync_required_mask) ==
                    set_sync_required_mask;
@@ -70,7 +68,6 @@ class SensorHardwareSyncControlSingleton {
 
     auto set_sync(can::ids::SensorId sensor) -> void {
         // force the bit for this sensor to 1
-        printf("setting sync on %x sensor\n", get_mask_from_id(sensor));
         sync_state_mask |= get_mask_from_id(sensor);
     }
 
