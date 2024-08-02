@@ -10,8 +10,8 @@ namespace hardware {
 class SensorHardware : public SensorHardwareBase {
   public:
     SensorHardware(sensors::hardware::SensorHardwareConfiguration hardware,
-                   SensorHardwareVersionSingleton& version_wrapper)
-        : SensorHardwareBase(version_wrapper), hardware(hardware) {}
+                   SensorHardwareVersionSingleton& version_wrapper, SensorHardwareSyncControlSingleton& sync_control)
+        : SensorHardwareBase(version_wrapper, sync_control), hardware(hardware) {}
     auto set_sync() -> void override { gpio::set(hardware.sync_out); }
     auto reset_sync() -> void override { gpio::reset(hardware.sync_out); }
     auto check_tip_presence() -> bool override {

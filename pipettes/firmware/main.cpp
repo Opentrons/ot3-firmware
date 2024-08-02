@@ -130,11 +130,16 @@ void encoder_callback(int32_t direction) {
 
 static auto version_wrapper =
     sensors::hardware::SensorHardwareVersionSingleton();
+
+static auto sync_control =
+    sensors::hardware::SensorHardwareSyncControlSingleton();
+
 static auto pins_for_sensor =
     utility_configs::sensor_configurations<PIPETTE_TYPE>();
 static auto sensor_hardware_container =
     utility_configs::get_sensor_hardware_container(pins_for_sensor,
-                                                   version_wrapper);
+                                                   version_wrapper,
+                                                   sync_control);
 
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 

@@ -28,18 +28,20 @@ auto utility_configs::led_gpio(PipetteType pipette_type) -> gpio::PinConfig {
 
 auto utility_configs::get_sensor_hardware_container(
     utility_configs::SensorHardwareGPIO pins,
-    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper)
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+    sensors::hardware::SensorHardwareSyncControlSingleton& sync_control)
     -> utility_configs::SensorHardwareContainer {
     if (pins.secondary.has_value()) {
         return utility_configs::SensorHardwareContainer{
             .primary = sensors::hardware::SensorHardware(pins.primary,
-                                                         version_wrapper),
+                                                         version_wrapper,
+                                                         sync_control),
             .secondary = sensors::hardware::SensorHardware(
-                pins.secondary.value(), version_wrapper)};
+                pins.secondary.value(), version_wrapper, sync_control)};
     }
     return utility_configs::SensorHardwareContainer{
         .primary =
-            sensors::hardware::SensorHardware(pins.primary, version_wrapper)};
+            sensors::hardware::SensorHardware(pins.primary, version_wrapper, sync_control)};
 }
 
 template <>

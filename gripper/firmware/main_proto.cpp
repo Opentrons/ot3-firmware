@@ -87,8 +87,11 @@ auto sensor_pins = sensors::hardware::SensorHardwareConfiguration{
                  .active_setting = GPIO_PIN_RESET}};
 
 auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+static auto sync_control =
+    sensors::hardware::SensorHardwareSyncControlSingleton();
+
 auto sensor_hardware =
-    sensors::hardware::SensorHardware(sensor_pins, version_wrapper);
+    sensors::hardware::SensorHardware(sensor_pins, version_wrapper, sync_control);
 
 auto main() -> int {
     HardwareInit();
