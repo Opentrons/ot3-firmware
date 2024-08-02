@@ -73,14 +73,14 @@ class SensorHardwareSyncControlSingleton {
 
     auto reset_sync(can::ids::SensorId sensor) -> void {
         // force the bit for this sensor to 0
-        sync_state_mask &= 0xFF ^ get_mask_from_id(sensor);
+        sync_state_mask &= ~get_mask_from_id(sensor);
     }
 
     auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
         uint8_t applied_mask = get_mask_from_id(sensor);
         if (!enabled) {
             // force enabled bit to 0
-            set_sync_enabled_mask &= 0xFF ^ applied_mask;
+            set_sync_enabled_mask &= ~applied_mask;
         } else {
             // force enabled bit to 1
             set_sync_enabled_mask |= applied_mask;
@@ -91,7 +91,7 @@ class SensorHardwareSyncControlSingleton {
         uint8_t applied_mask = get_mask_from_id(sensor);
         if (!required) {
             // force required bit to 0
-            set_sync_required_mask &= 0xFF ^ applied_mask;
+            set_sync_required_mask &= ~applied_mask;
         } else {
             // force required bit to 1
             set_sync_required_mask |= applied_mask;
