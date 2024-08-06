@@ -2,6 +2,7 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/tests/mock_motor_driver_client.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
@@ -15,10 +16,11 @@ TEST_CASE("motor interrupt handler queue functionality") {
             can::messages::UpdateMotorPositionEstimationRequest>
             update_position_queue;
         test_mocks::MockMoveStatusReporterClient reporter{};
+        test_mocks::MockMotorDriverClient driver{};
         test_mocks::MockMotorHardware hardware;
         stall_check::StallCheck stall(10, 10, 10);
-        auto handler = MotorInterruptHandler(queue, reporter, hardware, stall,
-                                             update_position_queue);
+        auto handler = MotorInterruptHandler(queue, reporter, driver, hardware,
+                                             stall, update_position_queue);
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {

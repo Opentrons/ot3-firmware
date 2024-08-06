@@ -52,10 +52,11 @@ class TMC2130 {
     auto operator=(const TMC2130&& c) = delete;
     ~TMC2130() = default;
 
-    auto read(Registers addr, uint32_t command_data, uint32_t message_index)
-        -> void {
+    auto read(Registers addr, uint32_t command_data, uint32_t message_index,
+              uint8_t tags = 0) -> void {
         auto converted_addr = static_cast<uint8_t>(addr);
-        _spi_manager.read(converted_addr, command_data, _task_queue, _cs_intf,
+        uint32_t token = spi::utils::build_token(converted_addr, tags);
+        _spi_manager.read(token, command_data, _task_queue, _cs_intf,
                           message_index);
     }
 

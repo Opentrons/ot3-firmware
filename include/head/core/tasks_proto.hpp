@@ -24,11 +24,12 @@
 
 namespace head_tasks {
 
+extern "C" using diag0_handler = void(*)();
+
 /**
  * Start head tasks.
  */
-
-void start_tasks(
+auto start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
@@ -42,7 +43,8 @@ void start_tasks(
     motor_hardware_task::MotorHardwareTask& right_motor_hardware,
     motor_hardware_task::MotorHardwareTask& left_motor_hardware,
     i2c::hardware::I2CBase& i2c3,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> std::tuple<diag0_handler, diag0_handler>;
 
 /**
  * Access to all tasks not associated with a motor. This will be a singleton.

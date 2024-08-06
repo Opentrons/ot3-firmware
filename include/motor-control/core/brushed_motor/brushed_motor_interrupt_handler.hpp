@@ -180,7 +180,7 @@ class BrushedMotorInterruptHandler {
         } else if (in_estop) {
             // if we've received a stop request during this time we can clear
             // that flag since there isn't anything running
-            std::ignore = hardware.has_cancel_request();
+            std::ignore = hardware.get_cancel_request();
             // return out of error state once the estop is disabled
             if (!estop_triggered()) {
                 in_estop = false;
@@ -197,7 +197,9 @@ class BrushedMotorInterruptHandler {
         } else if (estop_triggered()) {
             in_estop = true;
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
-        } else if (hardware.has_cancel_request()) {
+        } else if (static_cast<can::ids::ErrorCode>(
+                       hardware.get_cancel_request().code) !=
+                   can::ids::ErrorCode::ok) {
             if (!hardware.get_stay_enabled()) {
                 hardware.set_motor_state(BrushedMotorState::UNHOMED);
             }

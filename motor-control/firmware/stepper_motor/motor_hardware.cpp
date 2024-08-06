@@ -24,7 +24,7 @@ void MotorHardware::activate_motor() {
 void MotorHardware::deactivate_motor() {
     if (pins.ebrake.has_value()) {
         gpio::set(pins.ebrake.value());
-        motor_hardware_delay(20);
+        motor_hardware_delay(20); // need more time? How was this derived?
     }
     gpio::reset(pins.enable);
 }
@@ -49,6 +49,8 @@ void MotorHardware::read_estop_in() {
 }
 
 void MotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }
+
+bool MotorHardware::read_tmc_diag0() { return gpio::is_set(pins.diag0); }
 
 void MotorHardware::set_LED(bool status) {
     if (status) {

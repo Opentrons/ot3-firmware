@@ -31,7 +31,7 @@ static auto linear_usage_storage_task_builder =
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<256, eeprom::data_rev_task::UpdateDataRevTask>{};
 
-void linear_motor_tasks::start_tasks(
+auto linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
@@ -39,7 +39,7 @@ void linear_motor_tasks::start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) {
+        tail_accessor) -> interfaces::diag0_handler {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -49,8 +49,9 @@ void linear_motor_tasks::start_tasks(
     auto& motion_tasks = linear_motor_tasks::get_tasks();
 
     // Linear Motor Tasks
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues, queues);
+    auto& motion =
+        mc_task_builder.start(5, "motion controller", motion_controller, queues,
+                              queues, tmc2130_queues, queues);
     auto& tmc2130_driver = tmc2130_driver_task_builder.start(
         5, "tmc2130 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =
@@ -80,9 +81,11 @@ void linear_motor_tasks::start_tasks(
     queues.move_status_report_queue = &move_status_reporter.get_queue();
     queues.usage_storage_queue = &usage_storage_task.get_queue();
     lmh_tsk.start_task();
+
+    return linear_motor_tasks::call_run_diag0_interrupt;
 }
 
-void linear_motor_tasks::start_tasks(
+auto linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
@@ -90,7 +93,7 @@ void linear_motor_tasks::start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) {
+        tail_accessor) -> interfaces::diag0_handler {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -100,8 +103,9 @@ void linear_motor_tasks::start_tasks(
     auto& motion_tasks = linear_motor_tasks::get_tasks();
 
     // Linear Motor Tasks
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues, queues);
+    auto& motion =
+        mc_task_builder.start(5, "motion controller", motion_controller, queues,
+                              queues, tmc2160_queues, queues);
     auto& tmc2160_driver = tmc2160_driver_task_builder.start(
         5, "tmc2160 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =
@@ -133,6 +137,15 @@ void linear_motor_tasks::start_tasks(
     queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     lmh_tsk.start_task();
+
+    return linear_motor_tasks::call_run_diag0_interrupt;
+}
+
+void linear_motor_tasks::call_run_diag0_interrupt() {
+    if (linear_motor_tasks::get_tasks().motion_controller) {
+        return linear_motor_tasks::get_tasks()
+            .motion_controller->run_diag0_interrupt();
+    }
 }
 
 linear_motor_tasks::QueueClient::QueueClient()

@@ -53,6 +53,7 @@ void utility_gpio_init();
 // z motor pins
 #define Z_MOT_DIR_PIN GPIO_PIN_10
 #define Z_MOT_STEP_PIN GPIO_PIN_1
+#define Z_MOT_DIAG0_PIN GPIO_PIN_2
 #define Z_MOT_STEPDIR_PORT GPIOB
 #define Z_MOT_ENABLE_PIN GPIO_PIN_9
 #define Z_MOT_ENABLE_PORT GPIOA

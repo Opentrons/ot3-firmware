@@ -23,19 +23,22 @@ using TMC2130MotorDispatchTarget = can::dispatch::DispatchParseTarget<
         linear_motor_tasks::tmc2130_driver::QueueClient>,
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::messages::WriteMotorCurrentRequest,
+    can::messages::ReadMotorDriverErrorStatusRequest>;
 
 using TMC2160MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<
         linear_motor_tasks::tmc2160_driver::QueueClient>,
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::messages::WriteMotorCurrentRequest,
+    can::messages::ReadMotorDriverErrorStatusRequest>;
 
 using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::GearMotorHandler<
         gear_motor_tasks::QueueClient>,
     can::messages::GearReadMotorDriverRegister,
+    can::messages::ReadMotorDriverErrorStatusRequest,
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 
