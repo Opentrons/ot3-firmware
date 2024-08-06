@@ -101,6 +101,8 @@ typedef enum {
     can_messageid_gear_set_current_request = 0x505,
     can_messageid_gear_write_motor_driver_request = 0x506,
     can_messageid_gear_read_motor_driver_request = 0x507,
+    can_messageid_max_sensor_value_request = 0x70,
+    can_messageid_max_sensor_value_response = 0x71,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,

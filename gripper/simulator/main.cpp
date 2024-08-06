@@ -37,7 +37,10 @@ static auto sensor_map =
     i2c::hardware::SimI2C::DeviceMap{{capsensor.get_address(), capsensor}};
 static auto i2c2 = i2c::hardware::SimI2C{sensor_map};
 
-static sim_mocks::MockSensorHardware fake_sensor_hw{};
+static sensors::hardware::SensorHardwareVersionSingleton version_wrapper{};
+static sensors::hardware::SensorHardwareSyncControlSingleton sync_control{};
+static sim_mocks::MockSensorHardware fake_sensor_hw{version_wrapper,
+                                                    sync_control};
 
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>

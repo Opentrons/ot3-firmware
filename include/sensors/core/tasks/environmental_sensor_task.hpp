@@ -81,6 +81,10 @@ class EnvironmentSensorMessageHandler {
         std::ignore = m;
     }
 
+    void visit(const can::messages::MaxSensorValueRequest &m) {
+        std::ignore = m;
+    }
+
     void visit(const can::messages::BindSensorOutputRequest &m) {
         LOG("Received bind sensor output request from %d sensor", m.sensor);
         // sync doesn't quite mean the same thing here for us. We should

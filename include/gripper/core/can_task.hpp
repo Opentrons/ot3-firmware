@@ -80,7 +80,8 @@ using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,
-    can::messages::PeripheralStatusRequest>;
+    can::messages::PeripheralStatusRequest,
+    can::messages::MaxSensorValueRequest>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

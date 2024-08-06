@@ -1,6 +1,6 @@
 # ot3_firmware
 
-This repository holds the firmware for the OT-3 and all of its peripheral systems. **Note** that the cmake directory is
+This repository holds the firmware for the Flex and all of its peripheral systems. **Note** that the cmake directory is
 actually a subtree of cmake-utils. Do not make changes to the `cmake-utils` directory in the ot3_firmware repository.
 Instead, navigate to the [CMake Utils Repository](https://github.com/Opentrons/cmake-utils).
 
@@ -8,20 +8,17 @@ Instead, navigate to the [CMake Utils Repository](https://github.com/Opentrons/c
 
 Aside from the common directory, each repository should contain a `firmware`, `include`, `src`, `tests` folder.
 
-1. `include` should hold any header file that crosses subsystem boundaries - public interfaces. This folder
-   should include another subset of directories labeled `firmware`, `src` and `tests` for import cleanness.
-2. Source subdirectories for end executables - `pipettes`, `head`, `gantry` - and subsystems - `can`,
-   `motor-control`. Each should have subdirectories for `core`, `tests`, `firmware`, and the like.
-3. `python` is a subdirectory for python bindings and utilities, providing python bindings for canbus message 
-   definitions. It can be used by external python projects to deal with serializing and unserializing these
-   messages, as well as being a source of truth for generating IDs in c++.
+1. `include` should hold any header file that crosses subsystem boundaries - public interfaces. This folder should include another subset of directories labeled `firmware`, `src` and `tests` for import cleanness.
+2. Source subdirectories for end executables - `pipettes`, `head`, `gantry` - and subsystems - `can`,`motor-control`. Each should have subdirectories for `core`, `tests`, `firmware`, and the like.
+3. `python` is a subdirectory for python bindings and utilities, providing python bindings for canbus message definitions. It can be used by external python projects to deal with serializing and unserializing these messages, as well as being a source of truth for generating IDs in c++.
 
 ## Revisions
 
 Each application - the executables that we compile to run on a specific microcontroller - is compiled for all the different PCBA revisions that we support. The revisions are defined based on the actual PCBA revisions that get manufactured. The expectation is that we'll always maintain firmware compatible with each revision, and pack executables for each revision of each PCBA into the robot software for in-field updates.
 
-The meaning of a revision is aligned with Opentrons electrical engineering product lifecycle management. A PCBA revision is PN.M, where
-- P is the primary revision and is a letter. The primary revision changes when traces, drills, manufacturing notes, etc on the PCBA designs change - anything that would require different board fabs. 
+The meaning of a revision is aligned with Opentrons electrical engineering product lifecycle management. A PCBA revision is PN.M, where:
+
+- P is the primary revision and is a letter. The primary revision changes when traces, drills, manufacturing notes, etc on the PCBA designs change - anything that would require different board fabs.
 - N is the secondary revision and is a number. The secondary revision changes when a schematic, assembly note, component, etc on the PCBA designs change - anything that has the same fabs, but functionally different PCBAs
 - M, which we don't care about, is the tertiary revision, and is a change that does not result in a functional change.
 
@@ -45,7 +42,6 @@ Building has presets now too. You can run `cmake --build --list-presets` to show
 
 When building, even with a preset, you can set any target you want with `--target`. To prevent mistakenly using a target from the wrong cross configuration, executables all have their own presets, which depend on the correct configuration. When building a target, always try and use the preset that matches that target. For instance, if you're trying to debug a gantry board, run `cmake --build --preset=gantry --target gantry-debug`.
 
-
 ## Setup
 
 To setup this directory to run on an STM32G4 system board (gantry and head), you should run:
@@ -53,7 +49,6 @@ To setup this directory to run on an STM32G4 system board (gantry and head), you
 1. `cmake --preset=cross .`
 2. `cmake --build --preset=gantry --target <TARGET>` or `cmake --build --preset=head --target <TARGET>`
 3. To build a specific gantry you can also use the `gantry_x` and `gantry_y` targets
-
 
 To setup this directory to run tests, you should run:
 
@@ -64,15 +59,13 @@ To setup this directory to run tests, you should run:
 
    `brew install gcc@10`
    `cmake --preset=host-gcc10 .`
-   
    The python bindings require specific versions of python - python 3.7 for now. As with the monorepo, the best way
    to handle this without altering your main system is to install and use [pyenv](https://github.com/pyenv/pyenv),
    which will be respected by the cmake infrastructure here. A pyenv configuration file is in the root of the repo.
-   
 2. `cmake --build ./build-host --target build-and-test`, which will run all of the tests available in each periphery.
 3. or, `cmake --build ./build-host --target <TARGET>-build-and-test`
 
-#### Gantry Subsystem
+### Gantry Subsystem
 
 While the `gantry` target builds both, there are separate firmwares (and separate cmake targets) for x and y:
 
@@ -147,6 +140,7 @@ Each peripheral system can be run in a simulating mode. Because we use the posix
 ### CAN Communication
 
 Two modes of CAN communication are supported:
+
 - socketcan (linux only)
 - opentrons_sock (mac + linux)
 
@@ -165,13 +159,14 @@ The script `run_simulators.sh` will run all the simulators.
 The simulators can be customized using environment variables.
 
 #### Socket CAN
+
 `CAN_CHANNEL` - is the SocketCAN channel to use.
 
 #### Opentrons Socket
+
 `CAN_SERVER_HOST` - Host name of opentrons can socket server
 
 `CAN_PORT` - Port of opentrons can socket server
-
 
 ## FW Update
 
@@ -194,3 +189,12 @@ This repository is configured to generate code coverage from the tests.
 To enable code coverage, configure the host toolchain for tests with the options `-DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug`. _In order for code coverage to be accurate, you must run the build-and-test target for all targets_. After running every build-and-test target, the target `lcov` will generate an HTMl report of the code coverage from the tests.
 
 In general, do not enable code coverage unless you need it. Test execution will be far slower.
+
+## Tags, Flex Build Triggers, and Releases
+
+- pushes to `main` trigger Flex builds over in <https://github.com/Opentrons/oe-core>
+- `v*` and `*@*` tags are only used by the Robot Stack release process
+- pushes of `v*` and `*@*` do **NOT** trigger Flex builds
+- firmware release bundles happen on all pushes and `v*` tag
+- PRs with `flex-build` contained in the branch name kick off Flex builds.
+  - this is the developer workflow for getting the builds you need over in <https://github.com/Opentrons/oe-core>

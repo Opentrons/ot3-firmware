@@ -5,6 +5,7 @@
 
 #include "can/core/ids.hpp"
 #include "common/firmware/gpio.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace hardware {
@@ -41,19 +42,19 @@ static auto get_mask_from_id(can::ids::SensorId sensor) -> uint8_t {
     }
     return static_cast<uint8_t>(mask_enum);
 }
-/** abstract sensor hardware device for a sync line */
-class SensorHardwareBase {
-  public:
-    SensorHardwareBase() = default;
-    virtual ~SensorHardwareBase() = default;
-    SensorHardwareBase(const SensorHardwareBase&) = default;
-    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = default;
-    SensorHardwareBase(SensorHardwareBase&&) = default;
-    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = default;
 
-    virtual auto set_sync() -> void = 0;
-    virtual auto reset_sync() -> void = 0;
-    virtual auto check_tip_presence() -> bool = 0;
+class SensorHardwareSyncControlSingleton {
+  public:
+    SensorHardwareSyncControlSingleton() = default;
+    virtual ~SensorHardwareSyncControlSingleton() = default;
+    SensorHardwareSyncControlSingleton(
+        const SensorHardwareSyncControlSingleton&) = default;
+    auto operator=(const SensorHardwareSyncControlSingleton&)
+        -> SensorHardwareSyncControlSingleton& = default;
+    SensorHardwareSyncControlSingleton(SensorHardwareSyncControlSingleton&&) =
+        default;
+    auto operator=(SensorHardwareSyncControlSingleton&&)
+        -> SensorHardwareSyncControlSingleton& = default;
 
     [[nodiscard]] auto mask_satisfied() const -> bool {
         if (set_sync_required_mask !=
@@ -68,28 +69,99 @@ class SensorHardwareBase {
     auto set_sync(can::ids::SensorId sensor) -> void {
         // force the bit for this sensor to 1
         sync_state_mask |= get_mask_from_id(sensor);
-        if (mask_satisfied()) {
-            set_sync();
-        }
     }
 
     auto reset_sync(can::ids::SensorId sensor) -> void {
         // force the bit for this sensor to 0
-        sync_state_mask &= 0xFF ^ get_mask_from_id(sensor);
-        if (!mask_satisfied()) {
-            reset_sync();
-        }
+        sync_state_mask &= ~get_mask_from_id(sensor);
     }
 
     auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
         uint8_t applied_mask = get_mask_from_id(sensor);
         if (!enabled) {
             // force enabled bit to 0
-            set_sync_enabled_mask &= 0xFF ^ applied_mask;
+            set_sync_enabled_mask &= ~applied_mask;
         } else {
             // force enabled bit to 1
             set_sync_enabled_mask |= applied_mask;
         }
+    }
+
+    auto set_sync_required(can::ids::SensorId sensor, bool required) -> void {
+        uint8_t applied_mask = get_mask_from_id(sensor);
+        if (!required) {
+            // force required bit to 0
+            set_sync_required_mask &= ~applied_mask;
+        } else {
+            // force required bit to 1
+            set_sync_required_mask |= applied_mask;
+        }
+    }
+
+  private:
+    uint8_t set_sync_required_mask = 0x00;
+    uint8_t set_sync_enabled_mask = 0x00;
+    uint8_t sync_state_mask = 0x00;
+};
+
+class SensorHardwareVersionSingleton {
+  public:
+    SensorHardwareVersionSingleton() = default;
+    virtual ~SensorHardwareVersionSingleton() = default;
+    SensorHardwareVersionSingleton(const SensorHardwareVersionSingleton&) =
+        default;
+    auto operator=(const SensorHardwareVersionSingleton&)
+        -> SensorHardwareVersionSingleton& = default;
+    SensorHardwareVersionSingleton(SensorHardwareVersionSingleton&&) = default;
+    auto operator=(SensorHardwareVersionSingleton&&)
+        -> SensorHardwareVersionSingleton& = default;
+
+    void set_board_rev(utils::SensorBoardRev rev) { b_revision = rev; }
+
+    auto get_board_rev() -> utils::SensorBoardRev { return b_revision; }
+
+  private:
+    utils::SensorBoardRev b_revision = utils::SensorBoardRev::VERSION_0;
+};
+
+/** abstract sensor hardware device for a sync line */
+class SensorHardwareBase {
+  public:
+    SensorHardwareBase(SensorHardwareVersionSingleton& version_wrapper,
+                       SensorHardwareSyncControlSingleton& sync_control)
+        : version_wrapper{version_wrapper}, sync_control{sync_control} {}
+    virtual ~SensorHardwareBase() = default;
+    SensorHardwareBase(const SensorHardwareBase&) = default;
+    auto operator=(const SensorHardwareBase&) -> SensorHardwareBase& = delete;
+    SensorHardwareBase(SensorHardwareBase&&) = default;
+    auto operator=(SensorHardwareBase&&) -> SensorHardwareBase& = delete;
+
+    virtual auto set_sync() -> void = 0;
+    virtual auto reset_sync() -> void = 0;
+    virtual auto check_tip_presence() -> bool = 0;
+
+    [[nodiscard]] auto mask_satisfied() const -> bool {
+        return sync_control.mask_satisfied();
+    }
+
+    auto set_sync(can::ids::SensorId sensor) -> void {
+        sync_control.set_sync(sensor);
+        // update sync state now that requirements are different
+        if (mask_satisfied()) {
+            set_sync();
+        }
+    }
+
+    auto reset_sync(can::ids::SensorId sensor) -> void {
+        sync_control.reset_sync(sensor);
+        // update sync state now that requirements are different
+        if (!mask_satisfied()) {
+            reset_sync();
+        }
+    }
+
+    auto set_sync_enabled(can::ids::SensorId sensor, bool enabled) -> void {
+        sync_control.set_sync_enabled(sensor, enabled);
         // update sync state now that requirements are different
         if (mask_satisfied()) {
             set_sync();
@@ -99,14 +171,7 @@ class SensorHardwareBase {
     }
 
     auto set_sync_required(can::ids::SensorId sensor, bool required) -> void {
-        uint8_t applied_mask = get_mask_from_id(sensor);
-        if (!required) {
-            // force required bit to 0
-            set_sync_required_mask &= 0xFF ^ applied_mask;
-        } else {
-            // force required bit to 1
-            set_sync_required_mask |= applied_mask;
-        }
+        sync_control.set_sync_required(sensor, required);
         // update sync state now that requirements are different
         if (mask_satisfied()) {
             set_sync();
@@ -114,11 +179,13 @@ class SensorHardwareBase {
             reset_sync();
         }
     }
+    auto get_board_rev() -> utils::SensorBoardRev {
+        return version_wrapper.get_board_rev();
+    }
 
   private:
-    uint8_t set_sync_required_mask = 0x00;
-    uint8_t set_sync_enabled_mask = 0x00;
-    uint8_t sync_state_mask = 0x00;
+    SensorHardwareVersionSingleton& version_wrapper;
+    SensorHardwareSyncControlSingleton& sync_control;
 };
 
 struct SensorHardwareContainer {

@@ -45,7 +45,9 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
-    test_mocks::MockSensorHardware mock_hw{};
+    auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper, sync_control};
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
@@ -58,14 +60,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     poller.set_queue(&i2c_poll_queue);
 
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer,
-        poller,
-        queue_client,
-        response_queue,
-        mock_hw,
-        sensor_id,
-        sensors::mmr920::SensorVersion::mmr920c04,
-        &sensor_buffer};
+        writer,  poller,    queue_client,  response_queue,
+        mock_hw, sensor_id, &sensor_buffer};
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();

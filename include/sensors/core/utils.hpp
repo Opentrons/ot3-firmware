@@ -25,7 +25,8 @@ using CanMessageTuple =
                can::messages::BaselineSensorRequest,
                can::messages::SetSensorThresholdRequest,
                can::messages::BindSensorOutputRequest,
-               can::messages::PeripheralStatusRequest>;
+               can::messages::PeripheralStatusRequest,
+               can::messages::MaxSensorValueRequest>;
 using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
 using CanMessageHandler = typename ::utils::TuplesToVariants<
     std::tuple<std::monostate, can::messages::TipStatusQueryRequest>,
@@ -52,6 +53,11 @@ enum class ResponseTag : size_t {
     IS_BASELINE = 1,
     POLL_IS_CONTINUOUS = 2,
     IS_THRESHOLD_SENSE = 4,
+};
+
+enum class SensorBoardRev : uint32_t {
+    VERSION_0 = 0,
+    VERSION_1 = 1,
 };
 
 [[nodiscard]] constexpr auto byte_from_tag(ResponseTag tag) -> uint8_t {
