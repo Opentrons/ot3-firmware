@@ -49,12 +49,13 @@ SCENARIO("Testing the pressure sensor driver") {
     test_mocks::MockI2CResponseQueue response_queue{};
 
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    test_mocks::MockSensorHardware hardware{version_wrapper};
+    test_mocks::MockSensorHardware hardware{version_wrapper, sync_control};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     queue_client.set_queue(&can_queue);

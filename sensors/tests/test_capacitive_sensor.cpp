@@ -34,7 +34,8 @@ static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer;
 
 SCENARIO("read capacitance sensor values without shared CINs") {
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
-    test_mocks::MockSensorHardware mock_hw(version_wrapper);
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw(version_wrapper, sync_control);
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -364,7 +365,8 @@ SCENARIO("read capacitance sensor values without shared CINs") {
 
 SCENARIO("read capacitance sensor values supporting shared CINs") {
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
-    test_mocks::MockSensorHardware mock_hw{version_wrapper};
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper, sync_control};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -570,7 +572,8 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
 
 SCENARIO("capacitance driver tests no shared CINs") {
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
-    test_mocks::MockSensorHardware mock_hw{version_wrapper};
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper, sync_control};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
@@ -756,7 +759,8 @@ SCENARIO("capacitance driver tests no shared CINs") {
 
 SCENARIO("threshold configuration") {
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
-    test_mocks::MockSensorHardware mock_hw{version_wrapper};
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
+    test_mocks::MockSensorHardware mock_hw{version_wrapper, sync_control};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 

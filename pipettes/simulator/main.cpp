@@ -304,11 +304,14 @@ int main(int argc, char** argv) {
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
         eeprom_model, options, TEMPORARY_PIPETTE_SERIAL);
     auto version_wrapper = sensors::hardware::SensorHardwareVersionSingleton();
+    auto sync_control = sensors::hardware::SensorHardwareSyncControlSingleton();
     auto fake_sensor_hw_primary =
-        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper);
+        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper,
+                                                        sync_control);
     fake_sensor_hw_primary->provide_state_manager(state_manager_connection);
     auto fake_sensor_hw_secondary =
-        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper);
+        std::make_shared<sim_mocks::MockSensorHardware>(version_wrapper,
+                                                        sync_control);
     fake_sensor_hw_secondary->provide_state_manager(state_manager_connection);
     auto pressuresensor_i2c1 = std::make_shared<mmr920_simulator::MMR920>();
     auto pressuresensor_i2c3 = std::make_shared<mmr920_simulator::MMR920>();
