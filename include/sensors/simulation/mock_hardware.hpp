@@ -13,7 +13,7 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
     MockSensorHardware(
         sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
-        SensorHardwareSyncControlSingleton& sync_control)
+        sensors::hardware::SensorHardwareSyncControlSingleton& sync_control)
         : sensors::hardware::SensorHardwareBase{version_wrapper, sync_control} {
     }
     auto set_sync() -> void override {
