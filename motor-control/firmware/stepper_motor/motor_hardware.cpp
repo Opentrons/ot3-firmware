@@ -24,7 +24,7 @@ void MotorHardware::activate_motor() {
 void MotorHardware::deactivate_motor() {
     if (pins.ebrake.has_value()) {
         gpio::set(pins.ebrake.value());
-        motor_hardware_delay(20);
+        motor_hardware_delay(20); // need more time? How was this derived?
     }
     gpio::reset(pins.enable);
 }
