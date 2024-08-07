@@ -1,24 +1,21 @@
 #pragma once
 
 #include <cmath>
+#include <numeric>
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/mmr920.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
-
-#if defined(USE_PRESSURE_MOVE)
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = P_BUFF_SIZE;
-#else
-constexpr size_t PRESSURE_SENSOR_BUFFER_SIZE = 0;
-#endif
 
 namespace sensors {
 
@@ -34,6 +31,9 @@ using namespace can::ids;
  * @tparam CanClient
  */
 
+constexpr auto AUTO_BASELINE_START = 10;
+constexpr auto AUTO_BASELINE_END = 20;
+
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class MMR920 {
@@ -42,16 +42,14 @@ class MMR920 {
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           const sensors::mmr920::SensorVersion version,
-           std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff)
+           std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_version(version),
-          p_buff(p_buff) {}
+          sensor_buffer(sensor_buffer) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -73,18 +71,31 @@ class MMR920 {
     void set_echoing(bool should_echo) {
         echoing = should_echo;
         if (should_echo) {
-            pressure_buffer_index = 0;  // reset buffer index
+            sensor_buffer_index = 0;  // reset buffer index
+            crossed_buffer_index = false;
+            sensor_buffer->fill(0.0);
         }
+    }
+
+    void set_auto_baseline_report(bool should_auto) {
+        enable_auto_baseline = should_auto;
+        // Always set this to 0, we want to clear it if disabled and
+        // reset if if we haven't baselined yet
+        current_moving_pressure_baseline_pa = 0.0;
     }
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
-        hardware.reset_sync();
+        hardware.set_sync_enabled(sensor_id, should_bind);
+    }
+
+    void set_multi_sensor_sync(bool should_bind) {
+        hardware.set_sync_required(sensor_id, should_bind);
     }
 
     void set_max_bind_sync(bool should_bind) {
         max_pressure_sync = should_bind;
-        hardware.reset_sync();
+        hardware.reset_sync(sensor_id);
     }
 
     auto get_threshold() -> int32_t { return threshold_pascals; }
@@ -233,6 +244,15 @@ class MMR920 {
         return true;
     }
 
+    auto sensor_buffer_log(float data) -> void {
+        sensor_buffer->at(sensor_buffer_index) = data;
+        sensor_buffer_index++;
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+            crossed_buffer_index = true;
+        }
+    }
+
     auto save_temperature(int32_t data) -> bool {
         _registers.temperature_result.reading = data;
         LOG("Updated temperature reading is %u",
@@ -284,27 +304,83 @@ class MMR920 {
             mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
-    void send_accumulated_pressure_data(uint32_t message_index) {
-#ifdef USE_PRESSURE_MOVE
-        for (int i = 0; i < pressure_buffer_index; i++) {
-            // send over buffer adn then clear buffer values
+    void send_accumulated_sensor_data(uint32_t message_index) {
+        auto start = 0;
+        auto count = sensor_buffer_index;
+        if (crossed_buffer_index) {
+            start = sensor_buffer_index;
+            count = SENSOR_BUFFER_SIZE;
+        }
+
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = count});
+        for (int i = 0; i < count; i++) {
+            // send over buffer and then clear buffer values
+            // NOLINTNEXTLINE(div-by-zero)
+            int current_index =
+                (i + start) % static_cast<int>(SENSOR_BUFFER_SIZE);
+
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
                     .message_index = message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
-                    .sensor_data =
-                        mmr920::reading_to_fixed_point((*p_buff).at(i))});
+                    .sensor_data = mmr920::reading_to_fixed_point(
+                        (*sensor_buffer).at(current_index))});
             if (i % 10 == 0) {
                 // slow it down so the can buffer doesn't choke
-                vTaskDelay(50);
+                vtask_hardware_delay(20);
             }
-            (*p_buff).at(i) = 0;
         }
-#else
-        std::ignore = message_index;
-#endif
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = message_index});
+    }
+
+    auto compute_auto_baseline() -> void {
+        // this is the auto-base lining during a move.  It requires that
+        // a BaselineSensorRequest is sent prior to a move using the
+        // auto baseline. it works by taking several samples
+        // at the beginning of the move but after noise has stopped.
+        // and we haven't crossed the circular buffer barrier yet) it
+        // then takes the average of those samples to create a new
+        // baseline factor
+        current_moving_pressure_baseline_pa =
+            std::accumulate(sensor_buffer->begin() + AUTO_BASELINE_START,
+                            sensor_buffer->begin() + AUTO_BASELINE_END, 0.0) /
+            float(AUTO_BASELINE_END - AUTO_BASELINE_START);
+        for (auto i = sensor_buffer_index - AUTO_BASELINE_END;
+             i < sensor_buffer_index; i++) {
+            // apply the moving baseline to older samples to so that
+            // data is in the same format as later samples, don't apply
+            // the current_pressure_baseline_pa since it has already
+            // been applied
+            sensor_buffer->at(i) =
+                sensor_buffer->at(i) - current_moving_pressure_baseline_pa;
+        }
+    }
+
+    auto handle_sync_threshold(float pressure) -> void {
+        if (enable_auto_baseline) {
+            if ((sensor_buffer_index > AUTO_BASELINE_END ||
+                 crossed_buffer_index) &&
+                (std::fabs(pressure - current_pressure_baseline_pa -
+                           current_moving_pressure_baseline_pa) >
+                 threshold_pascals)) {
+                hardware.set_sync(sensor_id);
+            } else {
+                hardware.reset_sync(sensor_id);
+            }
+        } else {
+            if (std::fabs(pressure - current_pressure_baseline_pa) >
+                threshold_pascals) {
+                hardware.set_sync(sensor_id);
+            } else {
+                hardware.reset_sync(sensor_id);
+            }
+        }
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
@@ -325,12 +401,12 @@ class MMR920 {
 
         save_pressure(shifted_data_store);
         auto pressure = mmr920::PressureResult::to_pressure(
-            _registers.pressure_result.reading, sensor_version);
+            _registers.pressure_result.reading, sensor_version());
 
         if (max_pressure_sync) {
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
-                mmr920::get_max_pressure_reading(sensor_version);
+                mmr920::get_max_pressure_reading(sensor_version());
             bool over_threshold = false;
             if (this_tick_over_threshold) {
                 max_pressure_consecutive_readings =
@@ -343,6 +419,7 @@ class MMR920 {
                 max_pressure_consecutive_readings = 0;
             }
             if (over_threshold) {
+                // Use the set_sync that always sets the sync line here
                 hardware.set_sync();
                 can_client.send_can_message(
                     can::ids::NodeId::host,
@@ -350,36 +427,43 @@ class MMR920 {
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::over_pressure});
-            } else {
-                hardware.reset_sync();
+            } else if (!bind_sync) {
+                // if we're not using bind sync turn off the sync line
+                // we don't do this during bind sync because if it's triggering
+                // the sync line on purpose this causes bouncing on the line
+                // that turns off the sync and then immediately turns it back on
+                // and this can cause disrupt the behavior
+                hardware.reset_sync(sensor_id);
             }
         }
         if (bind_sync) {
-            if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
-                threshold_pascals) {
-                hardware.set_sync();
-            } else {
-                hardware.reset_sync();
-            }
+            handle_sync_threshold(pressure);
         }
 
         if (echo_this_time) {
-#ifdef USE_PRESSURE_MOVE
-            // send a response with 9999 to make an overload of the buffer
-            // visible
-            if (pressure_buffer_index < PRESSURE_SENSOR_BUFFER_SIZE) {
-                (*p_buff).at(pressure_buffer_index) = pressure;
-                pressure_buffer_index++;
+            auto response_pressure = pressure - current_pressure_baseline_pa;
+            if (enable_auto_baseline) {
+                // apply moving baseline if using
+                response_pressure -= current_moving_pressure_baseline_pa;
             }
-#else
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(pressure)});
-#endif
+            sensor_buffer_log(response_pressure);
+            if (!enable_auto_baseline) {
+                // This preserves the old way of echoing continuous polls
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ReadFromSensorResponse{
+                        .message_index = 0,
+                        .sensor = can::ids::SensorType::pressure,
+                        .sensor_id = sensor_id,
+                        .sensor_data =
+                            mmr920::reading_to_fixed_point(response_pressure)});
+            }
+
+            if (enable_auto_baseline &&
+                sensor_buffer_index == AUTO_BASELINE_END &&
+                !crossed_buffer_index) {
+                compute_auto_baseline();
+            }
         }
     }
 
@@ -422,7 +506,7 @@ class MMR920 {
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store,
-                                                            sensor_version);
+                                                            sensor_version());
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
@@ -492,6 +576,17 @@ class MMR920 {
 
     auto get_can_client() -> CanClient & { return can_client; }
 
+    auto sensor_version() -> sensors::mmr920::SensorVersion {
+        utils::SensorBoardRev rev = hardware.get_board_rev();
+        switch (rev) {
+            case utils::SensorBoardRev::VERSION_1:
+                return sensors::mmr920::SensorVersion::mmr920c10;
+            case utils::SensorBoardRev::VERSION_0:
+            default:
+                return sensors::mmr920::SensorVersion::mmr920c04;
+        }
+    }
+
   private:
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
@@ -499,7 +594,6 @@ class MMR920 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
-    const sensors::mmr920::SensorVersion sensor_version;
 
     mmr920::MMR920RegisterMap _registers{};
     mmr920::FilterSetting filter_setting =
@@ -516,16 +610,12 @@ class MMR920 {
      * exceed the threshold for the entirety of this period.
      */
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
-#ifdef USE_PRESSURE_MOVE
-    mmr920::MeasurementRate measurement_mode_rate =
-        mmr920::MeasurementRate::MEASURE_1;
-#else
     mmr920::MeasurementRate measurement_mode_rate =
         mmr920::MeasurementRate::MEASURE_4;
-#endif
 
     bool _initialized = false;
     bool echoing = false;
+    bool enable_auto_baseline = false;
     bool bind_sync = false;
     bool max_pressure_sync = false;
 
@@ -534,6 +624,7 @@ class MMR920 {
     uint16_t total_baseline_reads = 1;
 
     float current_pressure_baseline_pa = 0;
+    float current_moving_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
 
     size_t max_pressure_consecutive_readings = 0;
@@ -563,8 +654,9 @@ class MMR920 {
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
-    std::array<float, PRESSURE_SENSOR_BUFFER_SIZE> *p_buff;
-    uint16_t pressure_buffer_index = 0;
+    std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
+    uint16_t sensor_buffer_index = 0;
+    bool crossed_buffer_index = false;
 };
 
 }  // namespace tasks

@@ -67,10 +67,23 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_capacitive_sensor_queue_rear(
         const sensors::utils::TaskMessage& m);
 
+    void send_capacitive_sensor_queue_front_isr(
+        const sensors::utils::TaskMessage& m);
+
+    void send_capacitive_sensor_queue_rear_isr(
+        const sensors::utils::TaskMessage& m);
+
     void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
 
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
+
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
+
+    void send_pressure_sensor_queue_front_isr(
+        const sensors::utils::TaskMessage& m);
+
+    void send_pressure_sensor_queue_rear_isr(
+        const sensors::utils::TaskMessage& m);
 
     void send_tip_notification_queue_rear(
         const sensors::tip_presence::TaskMessage& m);
@@ -258,3 +271,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 }  // namespace g_tasks
 
 }  // namespace gripper_tasks
+
+namespace sensor_tasks {
+[[nodiscard]] auto get_queues() -> gripper_tasks::QueueClient&;
+}  // namespace sensor_tasks

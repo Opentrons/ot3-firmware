@@ -1,4 +1,7 @@
 function(target_gripper_core TARGET)
+    target_compile_definitions(${TARGET} PUBLIC USE_SENSOR_MOVE)
+    target_compile_definitions(${TARGET} PUBLIC SENSOR_BUFF_SIZE=300)
+    target_compile_definitions(${TARGET} PUBLIC USE_TWO_BUFFERS=true)
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_tasks.cpp
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/tasks.cpp

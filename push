@@ -123,10 +123,8 @@ def _update_shortsha(scp, host, json_data_path, targets):
     # copy updated subsystem data to the robot
     _scp_to_robot(scp, host, json_data_path, _ROBOT_MANIFEST_FILE_PATH)
 
-def _transfer_firmware(host, repo_path, scp, ssh, sensors, targets):
+def _transfer_firmware(host, repo_path, scp, ssh, targets):
     dist_dir = "dist"
-    if sensors:
-        dist_dir = dist_dir+"-sensor"
     apps_path = os.path.join(repo_path, dist_dir, 'applications')
     with _controlled_tempdir() as td:
         local_zip_path = os.path.join(td, 'fw.zip')
@@ -139,15 +137,10 @@ def _transfer_firmware(host, repo_path, scp, ssh, sensors, targets):
         _ssh(ssh, host, 'unzip -o {zip_path} -d /usr/lib/firmware/'.format(zip_path=robot_zip_path))
         _ssh(ssh, host, 'rm {zip_path}'.format(zip_path=robot_zip_path))
 
-def _prep_firmware(repo_path, cmake, sensors, targets):
+def _prep_firmware(repo_path, cmake, targets):
     working_dir = "./build-cross"
     full_build_preset = "firmware-g4"
 
-    if sensors:
-        working_dir = working_dir+"-sensor"
-        full_build_preset = full_build_preset+"-sensors"
-        # if sensors is true, disregard targets within the scope of this function
-        targets = None
     if targets:
         for target in targets:
             _cmd([cmake, '--build', 'build-cross', '--target', f'{target}-images'], cwd=repo_path)
@@ -187,26 +180,23 @@ def _check_targets(targets):
 def _restart_robot(host, ssh):
     _ssh(ssh, host, 'nohup systemctl restart opentrons-robot-server &')
 
-def _do_push(host, repo_path, build, restart, sensors, targets):
+def _do_push(host, repo_path, build, restart, targets):
 
     ssh, scp, cmake = _find_utils()
     if targets:
         targets = _check_targets(targets)
     if build:
-        _prep_firmware(repo_path, cmake, sensors, targets)
+        _prep_firmware(repo_path, cmake, targets)
     with _prep_robot(host, ssh):
-        _transfer_firmware(host, repo_path, scp, ssh, sensors, targets)
+        _transfer_firmware(host, repo_path, scp, ssh, targets)
     if restart:
         _restart_robot(host, ssh)
 
-def push(host, repo_path=None, build=True, restart=True, sensors=False, targets=[]):
-    # sensors is logically independent from targets here- if you specify both:
-    #   - all hex files under firmware-g4-sensors will be built and installed, but
-    #   - only the targets selected will actually be copied over to the robot
+def push(host, repo_path=None, build=True, restart=True, targets=[]):
 
     repo = repo_path or os.dirname(__file__)
     try:
-        _do_push(host, repo, build, restart, sensors, targets)
+        _do_push(host, repo, build, restart, targets)
         return 0
     except subprocess.CalledProcessError as e:
         print(
@@ -223,7 +213,7 @@ def _push_from_argparse(args):
     if args.key:
         _SSH_EXTRA_OPTS.append('-i')
         _SSH_EXTRA_OPTS.append(args.key)
-    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart, args.sensors, args.targets)
+    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart, args.targets)
 
 def _arg_parser(parent=None):
     parents = []
@@ -252,11 +242,6 @@ def _arg_parser(parent=None):
     parser.add_argument(
         '--key',
         type=str,
-        help='Private SSH key to use'
-    )
-    parser.add_argument(
-        '--sensors',
-        action='store_true',
         help='Private SSH key to use'
     )
     parser.add_argument(

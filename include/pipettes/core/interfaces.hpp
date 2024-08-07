@@ -6,7 +6,7 @@
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 
 namespace interfaces {
-#ifdef USE_PRESSURE_MOVE
+#ifdef USE_SENSOR_MOVE
 using MoveQueue = freertos_message_queue::FreeRTOSMessageQueue<
     motor_messages::SensorSyncMove>;
 #else

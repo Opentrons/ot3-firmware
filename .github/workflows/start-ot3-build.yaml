@@ -1,11 +1,9 @@
-name: 'Start OT-3 build'
+name: 'Start Flex build'
+run-name: 'Starting a branch build of Flex for ${{ github.ref_name }}'
 on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
-      - '*@*'
   pull_request:
     types:
       - opened
@@ -16,7 +14,7 @@ jobs:
   handle-push:
     runs-on: 'ubuntu-latest'
     if: github.event_name == 'push'
-    name: "Start an OT-3 build for a branch/tag push"
+    name: "Start a Flex build for a branch push of ${{ github.ref_name }}"
     steps:
       - name: 'start build'
         uses: octokit/request-action@v2.x
@@ -39,8 +37,8 @@ jobs:
 
   handle-pr:
     runs-on: 'ubuntu-latest'
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'Opentrons/ot3-firmware' && contains(github.event.pull_request.labels.*.name, 'ot3-build')
-    name: "Start an OT-3 build for a requested PR"
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'Opentrons/ot3-firmware' && contains(github.event.pull_request.labels.*.name, 'flex-build')
+    name: "Start a Flex build for a PR from branch ${{ github.ref_name }}"
     steps:
       - name: 'start build'
         uses: octokit/request-action@v2.x

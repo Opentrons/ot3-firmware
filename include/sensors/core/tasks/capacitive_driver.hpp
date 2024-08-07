@@ -2,27 +2,14 @@
 
 #include <array>
 
-#ifdef ENABLE_CROSS_ONLY_HEADERS
-// TODO(fps 7/12/2023): This is super hacky and I hate throwing #ifdefs
-// in our nicely host-independent code but for now we really just need
-// the vTaskDelay function and hopefully sometime in the near future I
-// can refactor this file with a nice templated sleep function.
-#include "FreeRTOS.h"
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HACKY_TASK_SLEEP(___timeout___) vTaskDelay(___timeout___)
-
-#else
-
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HACKY_TASK_SLEEP(___timeout___) (void)(___timeout___)
-#endif
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
@@ -40,13 +27,16 @@ class FDC1004 {
   public:
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
-            sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor)
+            sensors::hardware::SensorHardwareBase &hardware,
+            bool using_both_sensors,
+            std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
-          shared_sensor(shared_sensor) {}
+          using_both_sensors(using_both_sensors),
+          sensor_buffer(sensor_buffer) {}
 
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
@@ -60,11 +50,11 @@ class FDC1004 {
             // holding off for this PR.
 
             // Initial delay to avoid I2C bus traffic.
-            HACKY_TASK_SLEEP(100);
+            vtask_hardware_delay(100);
             update_capacitance_configuration();
             // Second delay to ensure IC is ready to start
             // readings (and also to avoid I2C bus traffic).
-            HACKY_TASK_SLEEP(100);
+            vtask_hardware_delay(100);
             set_sample_rate();
             _initialized = true;
         }
@@ -79,29 +69,42 @@ class FDC1004 {
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
     auto set_sensor_id(can::ids::SensorId _id) -> void {
-        if (shared_sensor && sensor_id != _id) {
-            if (_id == can::ids::SensorId::S1) {
-                measure_mode = fdc1004::MeasureConfigMode::TWO;
-            } else {
-                measure_mode = fdc1004::MeasureConfigMode::ONE;
-            }
+        if (sensor_id != _id) {
+            // we should always update the sensor id
             sensor_id = _id;
-            update_capacitance_configuration();
+            if (using_both_sensors) {
+                // if we're sharing the sensor, then we need to update
+                // the measure mode
+                if (_id == can::ids::SensorId::S1) {
+                    measure_mode = fdc1004::MeasureConfigMode::TWO;
+                } else {
+                    measure_mode = fdc1004::MeasureConfigMode::ONE;
+                }
+                update_capacitance_configuration();
+            }
         }
     }
 
     [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
 
-    void set_echoing(bool should_echo) { echoing = should_echo; }
+    void set_echoing(bool should_echo) {
+        echoing = should_echo;
+        if (should_echo) {
+            sensor_buffer_index = 0;  // reset buffer index
+        }
+    }
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
-        hardware.reset_sync();
+        hardware.set_sync_enabled(sensor_id, should_bind);
+    }
+    void set_multi_sensor_sync(bool should_bind) {
+        hardware.set_sync_required(sensor_id, should_bind);
     }
 
     void set_max_bind_sync(bool should_bind) {
         max_capacitance_sync = should_bind;
-        hardware.reset_sync();
+        hardware.reset_sync(sensor_id);
     }
 
     auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
@@ -205,6 +208,37 @@ class FDC1004 {
             own_queue, transaction_id);
     }
 
+    void send_accumulated_sensor_data(uint32_t message_index) {
+        for (int i = 0; i < sensor_buffer_index; i++) {
+            // send over buffer adn then clear buffer values
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .message_index = message_index,
+                    .sensor = can::ids::SensorType::capacitive,
+                    .sensor_id = sensor_id,
+                    .sensor_data = convert_to_fixed_point(
+                        (*sensor_buffer).at(i), S15Q16_RADIX)});
+            if (i % 10 == 0) {
+                // slow it down so the can buffer doesn't choke
+                vtask_hardware_delay(50);
+            }
+            (*sensor_buffer).at(i) = 0;
+        }
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = message_index});
+    }
+
+    auto sensor_buffer_log(float data) -> void {
+        sensor_buffer->at(sensor_buffer_index) = data;
+        sensor_buffer_index++;
+        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index = 0;
+            crossed_buffer_index = true;
+        }
+    }
+
     void handle_fdc_response(i2c::messages::TransactionResponse &m) {
         uint16_t reg_int = 0;
         static_cast<void>(bit_utils::bytes_to_int(
@@ -257,20 +291,22 @@ class FDC1004 {
 
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
+                // Use the set_sync that always sets the sync line here
                 hardware.set_sync();
             } else {
-                hardware.reset_sync();
+                hardware.reset_sync(sensor_id);
             }
         }
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
-                hardware.set_sync();
+                hardware.set_sync(sensor_id);
             } else {
-                hardware.reset_sync();
+                hardware.reset_sync(sensor_id);
             }
         }
 
         if (echoing) {
+            sensor_buffer_log(capacitance);
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -358,7 +394,7 @@ class FDC1004 {
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
     fdc1004::MeasurementRate measurement_rate =
         fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND;
-    bool shared_sensor = false;
+    bool using_both_sensors = false;
 
     float current_offset_pf = 0;
     float zero_threshold_pf = 30;
@@ -497,6 +533,9 @@ class FDC1004 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         return RG(*reinterpret_cast<Reg *>(&ret.value()));
     }
+    std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
+    uint16_t sensor_buffer_index = 0;
+    bool crossed_buffer_index = false;
 
 };  // end of FDC1004 class
 

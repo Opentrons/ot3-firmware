@@ -101,6 +101,8 @@ typedef enum {
     can_messageid_gear_set_current_request = 0x505,
     can_messageid_gear_write_motor_driver_request = 0x506,
     can_messageid_gear_read_motor_driver_request = 0x507,
+    can_messageid_max_sensor_value_request = 0x70,
+    can_messageid_max_sensor_value_response = 0x71,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,
@@ -114,7 +116,7 @@ typedef enum {
     can_messageid_peripheral_status_request = 0x8c,
     can_messageid_peripheral_status_response = 0x8d,
     can_messageid_baseline_sensor_response = 0x8e,
-    can_messageid_send_accumulated_pressure_data = 0x8f,
+    can_messageid_send_accumulated_sensor_data = 0x8f,
     can_messageid_set_hepa_fan_state_request = 0x90,
     can_messageid_get_hepa_fan_state_request = 0x91,
     can_messageid_get_hepa_fan_state_response = 0x92,
@@ -205,6 +207,7 @@ typedef enum {
     can_sensoroutputbinding_sync = 0x1,
     can_sensoroutputbinding_report = 0x2,
     can_sensoroutputbinding_max_threshold_sync = 0x4,
+    can_sensoroutputbinding_auto_baseline_report = 0x8,
 } CANSensorOutputBinding;
 
 /** How a sensor's threshold should be interpreted. */

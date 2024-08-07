@@ -103,6 +103,8 @@ enum class MessageId {
     gear_set_current_request = 0x505,
     gear_write_motor_driver_request = 0x506,
     gear_read_motor_driver_request = 0x507,
+    max_sensor_value_request = 0x70,
+    max_sensor_value_response = 0x71,
     read_sensor_request = 0x82,
     write_sensor_request = 0x83,
     baseline_sensor_request = 0x84,
@@ -116,7 +118,7 @@ enum class MessageId {
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
     baseline_sensor_response = 0x8e,
-    send_accumulated_pressure_data = 0x8f,
+    send_accumulated_sensor_data = 0x8f,
     set_hepa_fan_state_request = 0x90,
     get_hepa_fan_state_request = 0x91,
     get_hepa_fan_state_response = 0x92,
@@ -194,6 +196,7 @@ enum class SensorType {
     pressure_temperature = 0x4,
     humidity = 0x5,
     temperature = 0x6,
+    UNUSED = 0x7,
 };
 
 /** Sensor IDs available.
@@ -214,6 +217,8 @@ enum class SensorOutputBinding {
     sync = 0x1,
     report = 0x2,
     max_threshold_sync = 0x4,
+    auto_baseline_report = 0x08,
+    multi_sensor_sync = 0x10,
 };
 
 /** How a sensor's threshold should be interpreted. */

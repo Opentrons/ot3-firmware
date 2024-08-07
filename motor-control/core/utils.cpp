@@ -40,6 +40,7 @@ uint32_t fixed_point_multiply(sq31_31 a, uint32_t b) {
 }
 
 int32_t fixed_point_multiply(sq31_31 a, int32_t b, radix_offset_0 _) {
+    static_cast<void>(_);
     int64_t result = static_cast<int64_t>(a) * static_cast<int64_t>(b);
     return static_cast<int32_t>(result >> 31);
 }
