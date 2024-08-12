@@ -178,14 +178,11 @@ void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
 void EXTI15_10_IRQHandler(void) {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
-    /*if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    }
-    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {
+    } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
-    }*/
+    }
 }
 
 extern void xPortSysTickHandler(void);
