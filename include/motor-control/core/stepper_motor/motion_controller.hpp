@@ -12,6 +12,9 @@
 #include "motor-control/core/types.hpp"
 #include "motor-control/core/utils.hpp"
 
+constexpr uint32_t DIAG0_DEBOUNCE_REPS = 9;
+constexpr uint32_t DIAG0_DEBOUNCE_DELAY = 100;
+
 namespace motion_controller {
 
 using namespace motor_messages;
