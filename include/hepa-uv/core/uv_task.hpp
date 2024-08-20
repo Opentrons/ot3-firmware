@@ -160,7 +160,8 @@ class UVMessageHandler {
             };
             can_client.send_can_message(can::ids::NodeId::host, msg);
             led_control_client.send_led_control_message(
-            led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50, 0));
+                led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 50,
+                                                         0));
 
             uv_light_on = false;
             return;
@@ -187,7 +188,7 @@ class UVMessageHandler {
             led_control_client.send_led_control_message(
                 led_control_task_messages::PushButtonLED(UV_BUTTON, 0, 0, 0,
                                                          50));
-            }
+        }
 
         // wait 10ms for safety relay, then update the states
         ot_utils::freertos_sleep::sleep(100);
