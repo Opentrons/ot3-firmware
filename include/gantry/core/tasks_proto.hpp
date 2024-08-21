@@ -6,6 +6,7 @@
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/update_data_rev_task.hpp"
+#include "gantry/core/interfaces_proto.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
@@ -28,14 +29,17 @@ namespace tasks {
 /**
  * Start gantry tasks.
  */
-void start_tasks(
+auto start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask& mh_tsk,
     i2c::hardware::I2CBase& i2c2,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> interfaces::diag0_handler;
+
+void call_run_diag0_interrupt();
 
 /**
  * Access to all tasks in the system.

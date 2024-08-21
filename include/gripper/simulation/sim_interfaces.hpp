@@ -4,6 +4,8 @@
 
 namespace z_motor_iface {
 
+extern "C" using diag0_handler = void(*)();
+
 auto get_z_motor_interface()
     -> sim_motor_hardware_iface::SimMotorHardwareIface&;
 
