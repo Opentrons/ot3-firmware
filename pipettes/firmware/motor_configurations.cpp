@@ -15,7 +15,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
-                              .tpowerdown = {},
+                              .tpowerdown = {.time=0x7},
                               .tcoolthrs = {.threshold = 0},
                               .thigh = {.threshold = 0xFFFFF},
                               .chopconf = {.toff = 0x5,
