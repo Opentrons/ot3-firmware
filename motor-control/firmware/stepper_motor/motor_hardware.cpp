@@ -17,8 +17,10 @@ void MotorHardware::negative_direction() { gpio::reset(pins.direction); }
 void MotorHardware::activate_motor() {
     gpio::set(pins.enable);
     if (pins.ebrake.has_value()) {
-        gpio::reset(pins.ebrake.value());
+        // allow time for the motor current to stablize before releasing the
+        // brake
         motor_hardware_delay(20);
+        gpio::reset(pins.ebrake.value());
     }
 }
 void MotorHardware::deactivate_motor() {
