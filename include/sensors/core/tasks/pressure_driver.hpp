@@ -455,17 +455,6 @@ class MMR920 {
                 response_pressure -= current_moving_pressure_baseline_pa;
             }
             sensor_buffer_log(response_pressure);
-            if (!enable_auto_baseline) {
-                // This preserves the old way of echoing continuous polls
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ReadFromSensorResponse{
-                        .message_index = 0,
-                        .sensor = can::ids::SensorType::pressure,
-                        .sensor_id = sensor_id,
-                        .sensor_data =
-                            mmr920::reading_to_fixed_point(response_pressure)});
-            }
 
             if (enable_auto_baseline &&
                 sensor_buffer_index == AUTO_BASELINE_END &&
