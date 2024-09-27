@@ -315,24 +315,32 @@ class MMR920 {
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = count});
-        for (int i = 0; i < count; i++) {
+        std::array<uint32_t, 14> data{};
+        int i = 0;
+        while (i < count) {
             // send over buffer and then clear buffer values
             // NOLINTNEXTLINE(div-by-zero)
             int current_index =
                 (i + start) % static_cast<int>(SENSOR_BUFFER_SIZE);
-
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(
-                        (*sensor_buffer).at(current_index))});
-            if (i % 10 == 0) {
-                // slow it down so the can buffer doesn't choke
-                vtask_hardware_delay(20);
+            uint8_t j = 0;
+            while (j < 14 and i < count) {
+                data[j] = mmr920::reading_to_fixed_point(
+                    (*sensor_buffer).at(current_index));
+                i++;
+                j++;
+                current_index =
+                    (i + start) % static_cast<int>(SENSOR_BUFFER_SIZE);
             }
+
+            auto response = can::messages::BatchReadFromSensorResponse{
+                .message_index = message_index,
+                .sensor = can::ids::SensorType::pressure,
+                .sensor_id = sensor_id,
+                .data_length = j,
+                .sensor_data = data,
+            };
+            can_client.send_can_message(can::ids::NodeId::host, response);
+            vtask_hardware_delay(10);
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
