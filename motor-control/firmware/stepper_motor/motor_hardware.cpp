@@ -21,6 +21,7 @@ void MotorHardware::activate_motor() {
         // brake
         motor_hardware_delay(20);
         gpio::reset(pins.ebrake.value());
+        motor_hardware_delay(20);
     }
 }
 void MotorHardware::deactivate_motor() {
