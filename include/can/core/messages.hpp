@@ -986,7 +986,7 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 // Max len = (max size - uint32(message_index) - 3x uint8(sensor_type, sensor_id
 // and data_length))/uint32(data_element_size)
 constexpr size_t BATCH_SENSOR_MAX_LEN =
-    std::floor((can::message_core::MaxMessageSize - 4 - 1 - 1 - 1) / 4);
+    size_t((can::message_core::MaxMessageSize - 4 - 1 - 1 - 1) / 4);
 struct BatchReadFromSensorResponse
     : BaseMessage<MessageId::batch_read_sensor_response> {
     uint32_t message_index = 0;
@@ -1003,7 +1003,7 @@ struct BatchReadFromSensorResponse
         iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
                                        limit);
         for (auto i = 0; i < data_length; i++) {
-            iter = bit_utils::int_to_bytes(sensor_data[i], iter, limit);
+            iter = bit_utils::int_to_bytes(sensor_data.at(i), iter, limit);
         }
         return iter - body;
     }
