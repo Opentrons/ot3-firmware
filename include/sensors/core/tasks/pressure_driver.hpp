@@ -328,7 +328,7 @@ class MMR920 {
             return;
         }
         for (uint8_t i = 0; i < data_len; i++) {
-            data[i] = mmr920::reading_to_fixed_point(
+            data.at(i) = mmr920::reading_to_fixed_point(
                 (*sensor_buffer).at(sensor_buffer_index_start + i));
         }
         auto response = can::messages::BatchReadFromSensorResponse{
