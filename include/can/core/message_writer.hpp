@@ -29,7 +29,8 @@ class MessageWriter {
      * @param message The message to send
      */
     template <message_core::CanResponseMessage ResponseMessage>
-    void send_can_message(can::ids::NodeId node, ResponseMessage&& message) {
+    auto send_can_message(can::ids::NodeId node, ResponseMessage&& message)
+        -> bool {
         auto arbitration_id = can::arbitration_id::ArbitrationId{};
         auto task_message = can::message_writer_task::TaskMessage{};
 
@@ -41,7 +42,7 @@ class MessageWriter {
         arbitration_id.originating_node_id(node_id);
         task_message.arbitration_id = arbitration_id;
         task_message.message = message;
-        queue->try_write(task_message);
+        return queue->try_write(task_message);
     }
 
     void set_queue(QueueType* q) { queue = q; }
