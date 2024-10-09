@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <span>
 #include <vector>
@@ -982,13 +983,17 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
         -> bool = default;
 };
 
+// Max len = (max size - uint32(message_index) - 3x uint8(sensor_type, sensor_id
+// and data_length))/uint32(data_element_size)
+constexpr size_t BATCH_SENSOR_MAX_LEN =
+    std::floor((can::message_core::MaxMessageSize - 4 - 1 - 1 - 1) / 4);
 struct BatchReadFromSensorResponse
     : BaseMessage<MessageId::batch_read_sensor_response> {
     uint32_t message_index = 0;
     can::ids::SensorType sensor{};
     can::ids::SensorId sensor_id{};
     uint8_t data_length = 0;
-    std::array<uint32_t, 14> sensor_data{};
+    std::array<uint32_t, BATCH_SENSOR_MAX_LEN> sensor_data{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
