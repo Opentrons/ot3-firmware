@@ -98,13 +98,17 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                     sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                 sensors::utils::byte_from_tags(tags_for_continuous));
             auto response_read = sensors::utils::TaskMessage(response_details);
-            sensor.handle_message(response_read);
-            THEN("there should be a ReadFromSensorResponse") {
+            THEN(
+                "there should be a Batch read sensor response after 14 "
+                "messages") {
+                for (auto i = 0; i < 14; i++) {
+                    sensor.handle_message(response_read);
+                }
                 REQUIRE(can_queue.has_message());
                 REQUIRE(can_queue.get_size() == 1);
                 can_queue.try_read(&empty_can_msg);
                 REQUIRE(std::holds_alternative<
-                        can::messages::ReadFromSensorResponse>(
+                        can::messages::BatchReadFromSensorResponse>(
                     empty_can_msg.message));
             }
         }
