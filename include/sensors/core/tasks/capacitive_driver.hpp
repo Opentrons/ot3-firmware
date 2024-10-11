@@ -90,7 +90,8 @@ class FDC1004 {
     void set_echoing(bool should_echo) {
         echoing = should_echo;
         if (should_echo) {
-            sensor_buffer_index = 0;  // reset buffer index
+            sensor_buffer_index_start = 0;  // reset buffer index
+            sensor_buffer_index_end = 0;    // reset buffer index
         }
     }
 
@@ -209,21 +210,8 @@ class FDC1004 {
     }
 
     void send_accumulated_sensor_data(uint32_t message_index) {
-        for (int i = 0; i < sensor_buffer_index; i++) {
-            // send over buffer adn then clear buffer values
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = message_index,
-                    .sensor = can::ids::SensorType::capacitive,
-                    .sensor_id = sensor_id,
-                    .sensor_data = convert_to_fixed_point(
-                        (*sensor_buffer).at(i), S15Q16_RADIX)});
-            if (i % 10 == 0) {
-                // slow it down so the can buffer doesn't choke
-                vtask_hardware_delay(50);
-            }
-            (*sensor_buffer).at(i) = 0;
+        while (get_buffer_count() > 0) {
+            try_send_next_chunk(message_index);
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
@@ -231,11 +219,54 @@ class FDC1004 {
     }
 
     auto sensor_buffer_log(float data) -> void {
-        sensor_buffer->at(sensor_buffer_index) = data;
-        sensor_buffer_index++;
-        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
-            sensor_buffer_index = 0;
+        sensor_buffer->at(sensor_buffer_index_end) = data;
+        sensor_buffer_index_end++;
+        if (sensor_buffer_index_end == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index_end = 0;
             crossed_buffer_index = true;
+        }
+        if (sensor_buffer_index_end == sensor_buffer_index_start) {
+            sensor_buffer_index_start =
+                (sensor_buffer_index_end + 1) % SENSOR_BUFFER_SIZE;
+        }
+    }
+
+    auto get_buffer_count() -> uint16_t {
+        auto count = sensor_buffer_index_end;
+        if (sensor_buffer_index_end < sensor_buffer_index_start) {
+            count += (SENSOR_BUFFER_SIZE - sensor_buffer_index_start);
+        } else {
+            count -= sensor_buffer_index_start;
+        }
+        return count;
+    }
+
+    auto try_send_next_chunk(uint32_t message_index) -> void {
+        std::array<uint32_t, can::messages::BATCH_SENSOR_MAX_LEN> data{};
+        auto count = get_buffer_count();
+        auto data_len = std::min(uint8_t(count),
+                                 uint8_t(can::messages::BATCH_SENSOR_MAX_LEN));
+        if (data_len == 0) {
+            return;
+        }
+        for (uint8_t i = 0; i < data_len; i++) {
+            data.at(i) = convert_to_fixed_point((*sensor_buffer).at(sensor_buffer_index_start + i), S15Q16_RADIX);
+        }
+        auto response = can::messages::BatchReadFromSensorResponse{
+            .message_index = message_index,
+            .sensor = can::ids::SensorType::capacitive,
+            .sensor_id = sensor_id,
+            .data_length = data_len,
+            .sensor_data = data,
+        };
+        if (can_client.send_can_message(can::ids::NodeId::host, response)) {
+            // if we succesfully queue the can message, mark that data as sent
+            // by incrementing the buffer start pointer
+            sensor_buffer_index_start =
+                (sensor_buffer_index_start + data_len) % SENSOR_BUFFER_SIZE;
+        } else {
+            // if the queue is full release the task for bit
+            vtask_hardware_delay(20);
         }
     }
 
@@ -307,14 +338,9 @@ class FDC1004 {
 
         if (echoing) {
             sensor_buffer_log(capacitance);
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::capacitive,
-                    .sensor_id = sensor_id,
-                    .sensor_data =
-                        convert_to_fixed_point(capacitance, S15Q16_RADIX)});
+            if (get_buffer_count() >= can::messages::BATCH_SENSOR_MAX_LEN) {
+                try_send_next_chunk(0);
+            }
         }
     }
 
@@ -534,7 +560,8 @@ class FDC1004 {
         return RG(*reinterpret_cast<Reg *>(&ret.value()));
     }
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
-    uint16_t sensor_buffer_index = 0;
+    uint16_t sensor_buffer_index_start = 0;
+    uint16_t sensor_buffer_index_end = 0;
     bool crossed_buffer_index = false;
 
 };  // end of FDC1004 class
