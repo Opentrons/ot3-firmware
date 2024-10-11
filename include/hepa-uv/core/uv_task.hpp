@@ -72,9 +72,13 @@ class UVMessageHandler {
 
     // Helper to update safety relay state
     void update_safety_relay_state() {
-        if (drive_pins.safety_relay_active.has_value())
+        if (drive_pins.safety_relay_active.has_value()) {
             safety_relay_active =
                 gpio::is_set(drive_pins.safety_relay_active.value());
+        } else {
+            // rev b1 units have no safety relay so always return true.
+            safety_relay_active = true;
+        }
     }
 
     void visit(const std::monostate &) {}
@@ -149,9 +153,10 @@ class UVMessageHandler {
             return;
         }
 
-        // The safety relay needs to be active (Door Closed, Reed Switch set, and
-        // Push Button pressed) in order to turn on the UV Light. So Send an
-        // error if the safety relay is not active when trying to turn on the light.
+        // The safety relay needs to be active (Door Closed, Reed Switch set,
+        // and Push Button pressed) in order to turn on the UV Light. So Send an
+        // error if the safety relay is not active when trying to turn on the
+        // light.
         update_safety_relay_state();
         if (light_on && !safety_relay_active) {
             if (_timer.is_running()) _timer.stop();
