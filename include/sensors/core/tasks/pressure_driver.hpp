@@ -320,7 +320,7 @@ class MMR920 {
     }
 
     auto try_send_next_chunk(uint32_t message_index) -> void {
-        std::array<uint32_t, can::messages::BATCH_SENSOR_MAX_LEN> data{};
+        std::array<int32_t, can::messages::BATCH_SENSOR_MAX_LEN> data{};
         auto count = get_buffer_count();
         auto data_len = std::min(uint8_t(count),
                                  uint8_t(can::messages::BATCH_SENSOR_MAX_LEN));
