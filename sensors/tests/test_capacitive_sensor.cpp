@@ -541,8 +541,7 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
         WHEN("A response for S1 is received") {
             auto buffer_a = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
             auto buffer_b = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
-            std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
-                            sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
+            std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL};
             i2c::messages::TransactionResponse first{
                 .id =
                     i2c::messages::TransactionIdentifier{
@@ -621,8 +620,10 @@ SCENARIO("capacitance driver tests no shared CINs") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            callback_host.handle_ongoing_response(first);
-            callback_host.handle_ongoing_response(second);
+            for (auto i = 0; i < 14; i++) {
+                callback_host.handle_ongoing_response(first);
+                callback_host.handle_ongoing_response(second);
+            }
 
             THEN("it should forward the converted data via can") {
                 REQUIRE(can_queue.has_message());
@@ -654,17 +655,19 @@ SCENARIO("capacitance driver tests no shared CINs") {
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
 
-            callback_host.handle_ongoing_response(first);
-            callback_host.handle_ongoing_response(second);
+            for (auto i = 0; i < 14; i++) {
+                callback_host.handle_ongoing_response(first);
+                callback_host.handle_ongoing_response(second);
+            }
 
             THEN("it should forward the converted data via can") {
                 can_queue.try_read(&empty_msg);
-                auto sent = std::get<can::messages::ReadFromSensorResponse>(
+                auto sent = std::get<can::messages::BatchReadFromSensorResponse>(
                     empty_msg.message);
                 REQUIRE(sent.sensor == can::ids::SensorType::capacitive);
                 // we're just checking that the data is faithfully represented,
                 // don't really care what it is
-                REQUIRE(sent.sensor_data ==
+                REQUIRE(sent.sensor_data[0] ==
                         convert_to_fixed_point(15, S15Q16_RADIX));
             }
             THEN("it should not touch the sync line") {
