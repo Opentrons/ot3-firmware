@@ -307,7 +307,8 @@ SCENARIO("Testing the pressure sensor driver") {
             for (size_t i = 0; i <= SENSOR_BUFFER_SIZE + 1; i++) {
                 driver.handle_ongoing_pressure_response(sensor_response);
                 if (i > 0 && i % 14 == 0) {
-                    // Can queue here can't handle that many messages so just pop them off one at a time.
+                    // Can queue here can't handle that many messages so just
+                    // pop them off one at a time.
                     REQUIRE(can_queue.get_size() == 1);
                     can_queue.reset();
                 }

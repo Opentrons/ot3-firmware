@@ -557,7 +557,7 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            second.id.is_completed_poll=1;
+            second.id.is_completed_poll = 1;
             auto first_task_msg = sensors::utils::TaskMessage(first);
             auto second_task_msg = sensors::utils::TaskMessage(second);
             sensor_shared.handle_message(first_task_msg);
