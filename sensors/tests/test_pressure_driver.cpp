@@ -272,6 +272,49 @@ SCENARIO("Testing the pressure sensor driver") {
         }
     }
 
+    GIVEN("An unlimited poll with sensor binding set to report") {
+        driver.set_echoing(true);
+        driver.set_max_bind_sync(false);
+        std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
+                        sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
+        auto tags_as_int = sensors::utils::byte_from_tags(tags);
+        WHEN("the continuous poll function is called") {
+            driver.poll_continuous_pressure(tags_as_int);
+            THEN("a READ_PRESSURE command only") {
+                REQUIRE(i2c_queue.get_size() == 0);
+                REQUIRE(i2c_poll_queue.get_size() == 1);
+                auto read_command = get_message<
+                    i2c::messages::ConfigureSingleRegisterContinuousPolling>(
+                    i2c_poll_queue);
+                REQUIRE(
+                    read_command.first.write_buffer[0] ==
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
+            }
+        }
+        WHEN("pressure driver receives the requested sensor readings") {
+            auto id = i2c::messages::TransactionIdentifier{
+                .token = sensors::utils::build_id(
+                    sensors::mmr920::ADDRESS,
+                    static_cast<uint8_t>(
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
+                    tags_as_int),
+                .is_completed_poll = false,
+                .transaction_index = static_cast<uint8_t>(0)};
+            auto sensor_response = i2c::messages::TransactionResponse{
+                .id = id, .bytes_read = 3, .read_buffer = {0x00, 0xC0, 0xDE}};
+
+            for (size_t i = 0; i <= SENSOR_BUFFER_SIZE + 1; i++) {
+                driver.handle_ongoing_pressure_response(sensor_response);
+                if (i > 0 && i % 14 == 0) {
+                    // Can queue here can't handle that many messages so just pop them off one at a time.
+                    REQUIRE(can_queue.get_size() == 1);
+                    can_queue.reset();
+                }
+            }
+        }
+    }
+
     GIVEN("output binding = report") {
         driver.set_bind_sync(true);
         std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
