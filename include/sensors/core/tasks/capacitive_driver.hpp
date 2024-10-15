@@ -251,7 +251,8 @@ class FDC1004 {
         }
         for (uint8_t i = 0; i < data_len; i++) {
             data.at(i) = convert_to_fixed_point(
-                (*sensor_buffer).at(sensor_buffer_index_start + i),
+                (*sensor_buffer)
+                    .at((sensor_buffer_index_start + i) % SENSOR_BUFFER_SIZE),
                 S15Q16_RADIX);
         }
         auto response = can::messages::BatchReadFromSensorResponse{
