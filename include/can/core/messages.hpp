@@ -993,7 +993,7 @@ struct BatchReadFromSensorResponse
     can::ids::SensorType sensor{};
     can::ids::SensorId sensor_id{};
     uint8_t data_length = 0;
-    std::array<int32_t, BATCH_SENSOR_MAX_LEN> sensor_data;
+    std::array<int32_t, BATCH_SENSOR_MAX_LEN> sensor_data{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
