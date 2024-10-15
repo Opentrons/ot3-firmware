@@ -557,6 +557,7 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
+            second.id.is_completed_poll=1;
             auto first_task_msg = sensors::utils::TaskMessage(first);
             auto second_task_msg = sensors::utils::TaskMessage(second);
             sensor_shared.handle_message(first_task_msg);
@@ -662,8 +663,9 @@ SCENARIO("capacitance driver tests no shared CINs") {
 
             THEN("it should forward the converted data via can") {
                 can_queue.try_read(&empty_msg);
-                auto sent = std::get<can::messages::BatchReadFromSensorResponse>(
-                    empty_msg.message);
+                auto sent =
+                    std::get<can::messages::BatchReadFromSensorResponse>(
+                        empty_msg.message);
                 REQUIRE(sent.sensor == can::ids::SensorType::capacitive);
                 // we're just checking that the data is faithfully represented,
                 // don't really care what it is
