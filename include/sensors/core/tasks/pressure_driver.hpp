@@ -71,7 +71,8 @@ class MMR920 {
     void set_echoing(bool should_echo) {
         echoing = should_echo;
         if (should_echo) {
-            sensor_buffer_index = 0;  // reset buffer index
+            sensor_buffer_index_start = 0;  // reset buffer index
+            sensor_buffer_index_end = 0;    // reset buffer index
             crossed_buffer_index = false;
             sensor_buffer->fill(0.0);
         }
@@ -244,12 +245,26 @@ class MMR920 {
         return true;
     }
 
+    auto get_buffer_count() -> uint16_t {
+        auto count = sensor_buffer_index_end;
+        if (sensor_buffer_index_end < sensor_buffer_index_start) {
+            count += (SENSOR_BUFFER_SIZE - sensor_buffer_index_start);
+        } else {
+            count -= sensor_buffer_index_start;
+        }
+        return count;
+    }
+
     auto sensor_buffer_log(float data) -> void {
-        sensor_buffer->at(sensor_buffer_index) = data;
-        sensor_buffer_index++;
-        if (sensor_buffer_index == SENSOR_BUFFER_SIZE) {
-            sensor_buffer_index = 0;
+        sensor_buffer->at(sensor_buffer_index_end) = data;
+        sensor_buffer_index_end++;
+        if (sensor_buffer_index_end == SENSOR_BUFFER_SIZE) {
+            sensor_buffer_index_end = 0;
             crossed_buffer_index = true;
+        }
+        if (sensor_buffer_index_end == sensor_buffer_index_start) {
+            sensor_buffer_index_start =
+                (sensor_buffer_index_end + 1) % SENSOR_BUFFER_SIZE;
         }
     }
 
@@ -304,35 +319,40 @@ class MMR920 {
             mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
-    void send_accumulated_sensor_data(uint32_t message_index) {
-        auto start = 0;
-        auto count = sensor_buffer_index;
-        if (crossed_buffer_index) {
-            start = sensor_buffer_index;
-            count = SENSOR_BUFFER_SIZE;
+    auto try_send_next_chunk(uint32_t message_index) -> void {
+        std::array<int32_t, can::messages::BATCH_SENSOR_MAX_LEN> data{};
+        auto count = get_buffer_count();
+        auto data_len = std::min(uint8_t(count),
+                                 uint8_t(can::messages::BATCH_SENSOR_MAX_LEN));
+        if (data_len == 0) {
+            return;
         }
+        for (uint8_t i = 0; i < data_len; i++) {
+            data.at(i) = mmr920::reading_to_fixed_point(
+                (*sensor_buffer)
+                    .at((sensor_buffer_index_start + i) % SENSOR_BUFFER_SIZE));
+        }
+        auto response = can::messages::BatchReadFromSensorResponse{
+            .message_index = message_index,
+            .sensor = can::ids::SensorType::pressure,
+            .sensor_id = sensor_id,
+            .data_length = data_len,
+            .sensor_data = data,
+        };
+        if (can_client.send_can_message(can::ids::NodeId::host, response)) {
+            // if we succesfully queue the can message, mark that data as sent
+            // by incrementing the buffer start pointer
+            sensor_buffer_index_start =
+                (sensor_buffer_index_start + data_len) % SENSOR_BUFFER_SIZE;
+        } else {
+            // if the queue is full release the task for bit
+            vtask_hardware_delay(20);
+        }
+    }
 
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = count});
-        for (int i = 0; i < count; i++) {
-            // send over buffer and then clear buffer values
-            // NOLINTNEXTLINE(div-by-zero)
-            int current_index =
-                (i + start) % static_cast<int>(SENSOR_BUFFER_SIZE);
-
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ReadFromSensorResponse{
-                    .message_index = message_index,
-                    .sensor = can::ids::SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = mmr920::reading_to_fixed_point(
-                        (*sensor_buffer).at(current_index))});
-            if (i % 10 == 0) {
-                // slow it down so the can buffer doesn't choke
-                vtask_hardware_delay(20);
-            }
+    void send_accumulated_sensor_data(uint32_t message_index) {
+        while (get_buffer_count() > 0) {
+            try_send_next_chunk(message_index);
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
@@ -351,8 +371,8 @@ class MMR920 {
             std::accumulate(sensor_buffer->begin() + AUTO_BASELINE_START,
                             sensor_buffer->begin() + AUTO_BASELINE_END, 0.0) /
             float(AUTO_BASELINE_END - AUTO_BASELINE_START);
-        for (auto i = sensor_buffer_index - AUTO_BASELINE_END;
-             i < sensor_buffer_index; i++) {
+        for (auto i = sensor_buffer_index_end - AUTO_BASELINE_END;
+             i < sensor_buffer_index_end; i++) {
             // apply the moving baseline to older samples to so that
             // data is in the same format as later samples, don't apply
             // the current_pressure_baseline_pa since it has already
@@ -364,7 +384,7 @@ class MMR920 {
 
     auto handle_sync_threshold(float pressure) -> void {
         if (enable_auto_baseline) {
-            if ((sensor_buffer_index > AUTO_BASELINE_END ||
+            if ((sensor_buffer_index_end > AUTO_BASELINE_END ||
                  crossed_buffer_index) &&
                 (std::fabs(pressure - current_pressure_baseline_pa -
                            current_moving_pressure_baseline_pa) >
@@ -447,20 +467,12 @@ class MMR920 {
                 response_pressure -= current_moving_pressure_baseline_pa;
             }
             sensor_buffer_log(response_pressure);
-            if (!enable_auto_baseline) {
-                // This preserves the old way of echoing continuous polls
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ReadFromSensorResponse{
-                        .message_index = 0,
-                        .sensor = can::ids::SensorType::pressure,
-                        .sensor_id = sensor_id,
-                        .sensor_data =
-                            mmr920::reading_to_fixed_point(response_pressure)});
+            if (get_buffer_count() >= can::messages::BATCH_SENSOR_MAX_LEN) {
+                try_send_next_chunk(0);
             }
 
             if (enable_auto_baseline &&
-                sensor_buffer_index == AUTO_BASELINE_END &&
+                sensor_buffer_index_end == AUTO_BASELINE_END &&
                 !crossed_buffer_index) {
                 compute_auto_baseline();
             }
@@ -655,7 +667,8 @@ class MMR920 {
         return write(Reg::address, value);
     }
     std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer;
-    uint16_t sensor_buffer_index = 0;
+    uint16_t sensor_buffer_index_start = 0;
+    uint16_t sensor_buffer_index_end = 0;
     bool crossed_buffer_index = false;
 };
 

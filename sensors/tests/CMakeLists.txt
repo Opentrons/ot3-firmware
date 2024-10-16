@@ -21,7 +21,7 @@ set_target_properties(sensors
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
-
+target_compile_definitions(sensors PUBLIC SENSOR_BUFF_SIZE=300)
 target_compile_options(sensors
         PUBLIC
         -Wall
