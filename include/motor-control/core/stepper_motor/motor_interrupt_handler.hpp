@@ -108,10 +108,22 @@ class MotorInterruptHandler {
             hardware.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok) or
             buffered_move.check_stop_condition(
-                MoveStopCondition::limit_switch) or
-            buffered_move.check_stop_condition(
                 MoveStopCondition::limit_switch_backoff)) {
             return;
+        }
+        if (buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch)) {
+            // Since the encoders are always setup that negative is towards the
+            // limit switch if the encoder has increased past the start position
+            // we know that we've stalled which means on the z axis that
+            // something is falling so we want to trigger a collision so we can
+            // catch it before it hits something
+            if ((buffered_move.start_encoder_position -
+                 hardware.get_encoder_pulses()) > 10) {
+                return;
+            } else {
+                cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+            }
         }
 
         if (buffered_move.check_stop_condition(MoveStopCondition::stall)) {
