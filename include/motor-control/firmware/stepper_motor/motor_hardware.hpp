@@ -18,6 +18,7 @@ struct HardwareConfig {
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
     gpio::PinConfig estop_in;
+    gpio::PinConfig diag0;
     std::optional<gpio::PinConfig> ebrake = std::nullopt;
 };
 

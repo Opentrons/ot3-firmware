@@ -55,6 +55,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
+
+        // A motor diag0
+        GPIO_InitStruct.Pin = GPIO_PIN_15;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                      &GPIO_InitStruct);
     }
 
     else if (hspi->Instance == SPI3) {
@@ -88,6 +95,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
         GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                      &GPIO_InitStruct);
+
+        // Z motor diag0
+        GPIO_InitStruct.Pin = GPIO_PIN_13;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);

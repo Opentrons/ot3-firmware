@@ -121,6 +121,11 @@ static void z_motor_gpio_init(void) {
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     HAL_GPIO_Init(Z_MOT_ENABLE_PORT,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                   &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = Z_MOT_DIAG0_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(Z_MOT_STEPDIR_PORT, &GPIO_InitStruct);
 }
 
 #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'

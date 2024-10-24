@@ -56,6 +56,12 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
+
+        // Diag0
+        GPIO_InitStruct.Pin = GPIO_PIN_5;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
 }
 SPI_HandleTypeDef hspi2 = {
@@ -89,7 +95,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |
                                    GPIO_PIN_15 | GPIO_PIN_1);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9);
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8);
+        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8 | GPIO_PIN_5);
     }
 }
 
