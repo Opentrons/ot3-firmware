@@ -47,7 +47,8 @@ using MoveGroupTaskMessage =
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
                  can::messages::WriteMotorDriverRegister,
-                 can::messages::WriteMotorCurrentRequest>;
+                 can::messages::WriteMotorCurrentRequest,
+                 can::messages::ReadMotorDriverErrorStatusRequest>;
 
 using MoveStatusReporterTaskMessage = std::variant<
     std::monostate, motor_messages::Ack, motor_messages::UpdatePositionResponse,

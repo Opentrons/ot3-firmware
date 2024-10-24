@@ -7,6 +7,7 @@
 #include "common/core/logging.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "pipettes/core/tasks/messages.hpp"
 

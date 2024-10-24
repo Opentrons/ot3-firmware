@@ -8,11 +8,14 @@ namespace tmc {
 namespace tasks {
 
 using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
-                                   can::messages::WriteMotorDriverRegister,
-                                   can::messages::WriteMotorCurrentRequest>;
+using CanMessageTuple =
+    std::tuple<can::messages::ReadMotorDriverRegister,
+               can::messages::WriteMotorDriverRegister,
+               can::messages::WriteMotorCurrentRequest,
+               can::messages::ReadMotorDriverErrorStatusRequest>;
 using GearCanMessageTuple =
     std::tuple<can::messages::GearReadMotorDriverRegister,
+               can::messages::ReadMotorDriverErrorStatusRequest,
                can::messages::GearWriteMotorDriverRegister,
                can::messages::GearWriteMotorCurrentRequest>;
 using CanMessage =

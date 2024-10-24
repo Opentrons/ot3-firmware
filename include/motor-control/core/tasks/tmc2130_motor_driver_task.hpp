@@ -58,12 +58,24 @@ class MotorDriverMessageHandler {
             auto data = driver.handle_spi_read(
                 tmc2130::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
-            can::messages::ReadMotorDriverRegisterResponse response_msg{
-                .message_index = m.id.message_index,
-                .reg_address = static_cast<uint8_t>(m.id.token),
-                .data = data,
-            };
-            can_client.send_can_message(can::ids::NodeId::host, response_msg);
+            if (spi::utils::tag_in_token(
+                    m.id.token, spi::utils::ResponseTag::IS_ERROR_RESPONSE)) {
+                can::messages::ReadMotorDriverErrorStatusResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            } else {
+                can::messages::ReadMotorDriverRegisterResponse response_msg{
+                    .message_index = m.id.message_index,
+                    .reg_address = static_cast<uint8_t>(m.id.token),
+                    .data = data,
+                };
+                can_client.send_can_message(can::ids::NodeId::host,
+                                            response_msg);
+            }
         }
     }
 
@@ -84,6 +96,15 @@ class MotorDriverMessageHandler {
             driver.read(tmc2130::registers::Registers(m.reg_address), data,
                         m.message_index);
         }
+    }
+
+    void handle(const can::messages::ReadMotorDriverErrorStatusRequest& m) {
+        LOG("Received read motor driver error register request");
+        uint32_t data = 0;
+        std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};
+        uint8_t tag_byte = spi::utils::byte_from_tags(tags);
+        driver.read(tmc2130::registers::Registers::DRVSTATUS, data,
+                    m.message_index, tag_byte);
     }
 
     void handle(const can::messages::WriteMotorCurrentRequest& m) {
