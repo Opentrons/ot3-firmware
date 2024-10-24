@@ -52,9 +52,19 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
-        controller.enable_motor();
-        can_client.send_can_message(can::ids::NodeId::host,
-                                    can::messages::ack_from_request(m));
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.enable_motor();
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::ack_from_request(m));
+        }
     }
 
     void handle(const can::messages::DisableMotorRequest& m) {
@@ -92,7 +102,17 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 
 #ifdef USE_SENSOR_MOVE
@@ -101,7 +121,17 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 #endif
 
@@ -109,7 +139,17 @@ class MotionControllerMessageHandler {
         LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
             m.velocity, m.group_id, m.seq_id);
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::ReadLimitSwitchRequest& m) {
