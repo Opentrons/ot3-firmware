@@ -195,6 +195,7 @@ class MotionController {
         if (hardware.is_timer_interrupt_running()) {
             hardware.set_cancel_request(error_severity, error_code);
         }
+        disable_motor();
     }
 
     void clear_cancel_request() { hardware.clear_cancel_request(); }

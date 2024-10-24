@@ -308,11 +308,17 @@ SCENARIO("motor handler stall detection") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
                 THEN("move completed and no error was raised") {
-                    REQUIRE(test_objs.reporter.messages.size() == 1);
-                    Ack ack_msg =
-                        std::get<Ack>(test_objs.reporter.messages.front());
-                    REQUIRE(ack_msg.ack_id ==
-                            AckMessageId::complete_without_condition);
+                    REQUIRE(test_objs.reporter.messages.size() == 6);
+                    for (auto& element : test_objs.reporter.messages) {
+                        printf("%ld\n", element.index());
+                    }
+                    can::messages::ErrorMessage err =
+                        std::get<can::messages::ErrorMessage>(
+                            test_objs.reporter.messages.front());
+                    REQUIRE(err.error_code ==
+                            can::ids::ErrorCode::collision_detected);
+                    REQUIRE(err.severity ==
+                            can::ids::ErrorSeverity::unrecoverable);
                 }
             }
         }
