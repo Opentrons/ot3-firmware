@@ -34,6 +34,7 @@ class MotorHardwareTask {
             hardware->read_estop_in();
             hardware->read_limit_switch();
             hardware->read_sync_in();
+            hardware->read_tmc_diag0();
         }
     }
 

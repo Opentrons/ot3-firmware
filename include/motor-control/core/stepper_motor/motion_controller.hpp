@@ -206,6 +206,8 @@ class MotionController {
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
+    auto check_tmc_diag0() -> bool { return hardware.check_tmc_diag0(); }
+
     void enable_motor() {
         hardware.activate_motor();
         hardware.start_timer_interrupt();
@@ -353,6 +355,8 @@ class PipetteMotionController {
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
+
+    auto check_tmc_diag0() -> bool { return hardware.check_tmc_diag0(); }
 
     void enable_motor() {
         hardware.start_timer_interrupt();

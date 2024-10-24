@@ -42,6 +42,8 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void stop_pwm() final { move_dir = PWM_DIRECTION::unset; }
     auto check_sync_in() -> bool final { return sync_val; }
     void read_sync_in() final {}
+    void read_tmc_diag0() final {}
+    bool check_tmc_diag0() final { return diag0_val; }
 
     auto get_encoder_pulses() -> int32_t final {
         return (motor_encoder_overflow_count << 16) + enc_val;
@@ -97,6 +99,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
+    bool diag0_val = false;
     bool estop_in_val = false;
     bool is_gripping = false;
     bool motor_enabled = false;

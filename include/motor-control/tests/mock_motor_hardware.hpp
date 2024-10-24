@@ -27,9 +27,11 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool check_limit_switch() final { return mock_lim_sw_value; }
     bool check_estop_in() final { return mock_estop_in_value; }
     bool check_sync_in() final { return mock_sync_value; }
+    bool check_tmc_diag0() final { return mock_diag0_value; }
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    void read_tmc_diag0() final {}
     void set_LED(bool) final {}
     void set_mock_lim_sw(bool value) { mock_lim_sw_value = value; }
     void set_mock_estop_in(bool value) { mock_estop_in_value = value; }
@@ -61,6 +63,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool mock_lim_sw_value = false;
     bool mock_estop_in_value = false;
     bool mock_sync_value = false;
+    bool mock_diag0_value = false;
     bool mock_sr_value = false;
     bool mock_dir_value = false;
     uint8_t finished_move_id = 0x0;

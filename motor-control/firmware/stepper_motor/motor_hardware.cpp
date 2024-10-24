@@ -53,6 +53,8 @@ void MotorHardware::read_estop_in() {
 
 void MotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }
 
+bool MotorHardware::read_tmc_diag0() { diag.debounce_update(gpio::is_set(pins.diag0)); }
+
 void MotorHardware::set_LED(bool status) {
     if (status) {
         gpio::set(pins.led);
