@@ -121,9 +121,8 @@ class MotorInterruptHandler {
             if ((buffered_move.start_encoder_position -
                  hardware.get_encoder_pulses()) > 10) {
                 return;
-            } else {
-                cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
+            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
         }
 
         if (buffered_move.check_stop_condition(MoveStopCondition::stall)) {
