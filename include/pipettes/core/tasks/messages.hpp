@@ -10,11 +10,6 @@ namespace task_messages {
 
 namespace motor_control_task_messages {
 
-struct RouteMotorDriverInterrupt {
-    uint32_t message_index;
-    uint8_t debounce_count;
-};
-
 using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::TipActionRequest,
     can::messages::GearDisableMotorRequest,
@@ -22,7 +17,7 @@ using MotionControlTaskMessage = std::variant<
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::GetMotorUsageRequest,
-    can::messages::MotorStatusRequest, RouteMotorDriverInterrupt>;
+    can::messages::MotorStatusRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,

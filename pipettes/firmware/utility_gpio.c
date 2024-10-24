@@ -59,16 +59,6 @@ static void nvic_priority_enable_init() {
         /* EXTI interrupt init block tip sense*/
         HAL_NVIC_SetPriority(block_2, 10, 0);
         HAL_NVIC_EnableIRQ(block_2);
-
-        IRQn_Type block_15_10 = get_interrupt_line(gpio_block_15_10);
-        /* EXTI interrupt init block diag0*/
-        HAL_NVIC_SetPriority(block_15_10, 5, 0);
-        HAL_NVIC_EnableIRQ(block_15_10);
-    } else {
-        IRQn_Type block_9_5 = get_interrupt_line(gpio_block_9_5);
-        /* EXTI interrupt init block diag0*/
-        HAL_NVIC_SetPriority(block_9_5, 5, 0);
-        HAL_NVIC_EnableIRQ(block_9_5);
     }
 }
 

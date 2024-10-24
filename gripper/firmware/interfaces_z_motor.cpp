@@ -203,9 +203,8 @@ static motor_class::Motor z_motor{
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gripper_tasks::z_tasks::get_queues(),
-    gripper_tasks::z_tasks::get_queues(), motor_hardware_iface, stallcheck,
-    update_position_queue);
+    motor_queue, gripper_tasks::z_tasks::get_queues(), motor_hardware_iface,
+    stallcheck, update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
@@ -218,13 +217,12 @@ extern "C" void call_enc_handler(int32_t direction) {
     motor_hardware_iface.encoder_overflow(direction);
 }
 
-void z_motor_iface::initialize(diag0_handler* call_diag0_handler) {
+void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
     initialize_hardware_z();
-    set_z_motor_timer_callback(call_motor_handler, call_diag0_handler,
-                               call_enc_handler);
+    set_z_motor_timer_callback(call_motor_handler, call_enc_handler);
     encoder_background_timer.start();
 }
 

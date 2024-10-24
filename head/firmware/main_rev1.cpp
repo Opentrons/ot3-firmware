@@ -1,7 +1,6 @@
 #include <array>
 #include <cstdio>
 #include <cstring>
-#include <tuple>
 
 // clang-format off
 #include "FreeRTOS.h"
@@ -40,9 +39,6 @@
 #include "spi/firmware/spi_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
-
-static head_tasks::diag0_handler call_diag0_z_handler = nullptr;
-static head_tasks::diag0_handler call_diag0_a_handler = nullptr;
 
 static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(),
@@ -302,9 +298,8 @@ static stall_check::StallCheck stallcheck_right(
 static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7, &htim2, right_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue_right, head_tasks::get_right_queues(),
-    head_tasks::get_right_queues(), motor_hardware_right, stallcheck_right,
-    update_position_queue_right);
+    motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
+    stallcheck_right, update_position_queue_right);
 
 static auto encoder_background_timer_right =
     motor_encoder::BackgroundTimer(motor_interrupt_right, motor_hardware_right);
@@ -328,9 +323,8 @@ static stall_check::StallCheck stallcheck_left(
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3, left_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue_left, head_tasks::get_left_queues(),
-    head_tasks::get_left_queues(), motor_hardware_left, stallcheck_left,
-    update_position_queue_left);
+    motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
+    stallcheck_left, update_position_queue_left);
 
 static auto encoder_background_timer_left =
     motor_encoder::BackgroundTimer(motor_interrupt_left, motor_hardware_left);
@@ -436,8 +430,7 @@ auto main() -> int {
     app_update_clear_flags();
 
     initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
-                     right_enc_overflow_callback_glue, &call_diag0_z_handler,
-                     &call_diag0_a_handler);
+                     right_enc_overflow_callback_glue);
 
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
@@ -451,12 +444,11 @@ auto main() -> int {
 
     utility_gpio_init();
     can_bus_1.start(can_bit_timings);
-    std::tie(call_diag0_z_handler, call_diag0_a_handler) =
-        head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
-                                motor_right.motion_controller, psd, spi_comms2,
-                                spi_comms3, motor_driver_configs_left,
-                                motor_driver_configs_right, rmh_tsk, lmh_tsk,
-                                i2c_comms3, eeprom_hw_iface);
+    head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
+                            motor_right.motion_controller, psd, spi_comms2,
+                            spi_comms3, motor_driver_configs_left,
+                            motor_driver_configs_right, rmh_tsk, lmh_tsk,
+                            i2c_comms3, eeprom_hw_iface);
 
     timer_for_notifier.start();
 

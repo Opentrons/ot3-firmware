@@ -21,8 +21,6 @@ TIM_HandleTypeDef htim3 = {
 motor_interrupt_callback motor_callback = NULL;
 encoder_overflow_callback left_enc_overflow_callback = NULL;
 encoder_overflow_callback right_enc_overflow_callback = NULL;
-static diag0_interrupt_callback* diag0_z_callback = NULL;
-static diag0_interrupt_callback* diag0_a_callback = NULL;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -60,8 +58,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
 
         // A motor diag0
         GPIO_InitStruct.Pin = GPIO_PIN_15;
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
@@ -104,8 +101,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
 
         // Z motor diag0
         GPIO_InitStruct.Pin = GPIO_PIN_13;
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
@@ -247,9 +243,6 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     initialize_rev_specific_pins();
-
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 #if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
@@ -366,31 +359,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         // disable both left and right enable pins
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-    } else if (GPIO_Pin == GPIO_PIN_13) {
-        if (diag0_z_callback != NULL) {
-            if (*diag0_z_callback != NULL) {
-                (*diag0_z_callback)();
-            }
-        }
-    } else if (GPIO_Pin == GPIO_PIN_15) {
-        if (diag0_a_callback != NULL) {
-            if (*diag0_a_callback != NULL) {
-                (*diag0_a_callback)();
-            }
-        }
     }
 }
 
 void initialize_timer(motor_interrupt_callback callback,
                       encoder_overflow_callback l_f_callback,
-                      encoder_overflow_callback r_f_callback,
-                      diag0_interrupt_callback* diag0_z_int_callback,
-                      diag0_interrupt_callback* diag0_a_int_callback) {
+                      encoder_overflow_callback r_f_callback) {
     motor_callback = callback;
     left_enc_overflow_callback = l_f_callback;
     right_enc_overflow_callback = r_f_callback;
-    diag0_z_callback = diag0_z_int_callback;
-    diag0_a_callback = diag0_a_int_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
     encoder_init(&htim2);

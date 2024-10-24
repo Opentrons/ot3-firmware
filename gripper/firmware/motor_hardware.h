@@ -32,7 +32,6 @@ extern TIM_HandleTypeDef htim8;
 
 typedef void (*motor_interrupt_callback)();
 typedef void (*z_encoder_overflow_callback)(int32_t);
-typedef void (*diag0_interrupt_callback)();
 
 
 HAL_StatusTypeDef initialize_spi();
@@ -40,7 +39,6 @@ void initialize_hardware_z();
 
 void set_z_motor_timer_callback(
         motor_interrupt_callback callback,
-        diag0_interrupt_callback* diag0_int_callback,
         z_encoder_overflow_callback enc_callback);
 
 

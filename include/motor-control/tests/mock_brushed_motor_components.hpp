@@ -42,7 +42,8 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void stop_pwm() final { move_dir = PWM_DIRECTION::unset; }
     auto check_sync_in() -> bool final { return sync_val; }
     void read_sync_in() final {}
-    bool read_tmc_diag0() final { return diag0_val; }
+    void read_tmc_diag0() final {}
+    bool check_tmc_diag0() final { return diag0_val; }
 
     auto get_encoder_pulses() -> int32_t final {
         return (motor_encoder_overflow_count << 16) + enc_val;
@@ -72,23 +73,12 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     PWM_DIRECTION get_direction() { return move_dir; }
     void set_stay_enabled(bool state) { stay_enabled = state; }
     auto get_stay_enabled() -> bool { return stay_enabled; }
-    auto get_cancel_request() -> CancelRequest final {
-        CancelRequest old_request = cancel_request;
-        CancelRequest exchange_request{};
-        cancel_request = exchange_request;
+    auto has_cancel_request() -> bool final {
+        bool old_request = cancel_request;
+        cancel_request = false;
         return old_request;
     }
-    void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                            can::ids::ErrorCode error_code) final {
-        CancelRequest update_request{
-            .severity = static_cast<uint8_t>(error_severity),
-            .code = static_cast<uint8_t>(error_code)};
-        cancel_request = update_request;
-    }
-    void clear_cancel_request() final {
-        CancelRequest clear_request{};
-        cancel_request = clear_request;
-    }
+    void request_cancel() final { cancel_request = true; }
     void set_timer_interrupt_running(bool is_running) {
         timer_interrupt_running = is_running;
     }
@@ -121,7 +111,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     // when the "motor" instantly goes to top speed then instantly stops
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
-    CancelRequest cancel_request = {};
+    bool cancel_request = false;
     bool timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{std::array<UsageRequestSet, 3>{

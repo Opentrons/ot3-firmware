@@ -74,15 +74,45 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::AddBrushedLinearMoveRequest& m) {
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::GripperGripRequest& m) {
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::GripperHomeRequest& m) {
-        controller.move(m);
+        if (controller.check_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::ReadLimitSwitchRequest& m) {

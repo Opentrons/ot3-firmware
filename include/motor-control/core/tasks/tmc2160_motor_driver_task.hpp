@@ -168,16 +168,6 @@ class MotorDriverTask {
     QueueType& queue;
 };
 
-/**
- * Concept describing a class that can message this task.
- * @tparam Client
- */
-template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_motor_driver_queue(m)};
-    {client.send_motor_driver_queue_isr(m)};
-};
-
 }  // namespace tasks
 
 }  // namespace tmc2160

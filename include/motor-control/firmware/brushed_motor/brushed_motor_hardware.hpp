@@ -22,6 +22,7 @@ struct BrushedHardwareConfig {
     gpio::PinConfig limit_switch;
     gpio::PinConfig sync_in;
     gpio::PinConfig estop_in;
+    gpio::PinConfig diag0;
     double encoder_interrupt_freq;
     double pid_kp;
     double pid_ki;
@@ -59,10 +60,11 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     auto check_limit_switch() -> bool final { return limit.debounce_state(); }
     auto check_estop_in() -> bool final { return estop.debounce_state(); }
     auto check_sync_in() -> bool final { return sync.debounce_state(); }
+    auto check_tmc_diag0() -> bool final { return false; }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
-    auto read_tmc_diag0() -> bool final;
+    void read_tmc_diag0() final;
     void grip() final;
     void ungrip() final;
     void stop_pwm() final;
@@ -79,21 +81,10 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
-    auto get_cancel_request() -> CancelRequest final {
-        CancelRequest exchange_request = {};
-        return cancel_request.exchange(exchange_request);
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
     }
-    void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                            can::ids::ErrorCode error_code) final {
-        CancelRequest update_request{
-            .severity = static_cast<uint8_t>(error_severity),
-            .code = static_cast<uint8_t>(error_code)};
-        cancel_request.store(update_request);
-    }
-    void clear_cancel_request() final {
-        CancelRequest clear_request = {};
-        cancel_request.store(clear_request);
-    }
+    void request_cancel() final { cancel_request.store(true); }
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
     }
@@ -113,7 +104,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
-    std::atomic<CancelRequest> cancel_request = {};
+    std::atomic<bool> cancel_request = false;
     const UsageEEpromConfig& eeprom_config;
     void* stopwatch_handle;
     BrushedMotorState motor_state = BrushedMotorState::UNHOMED;

@@ -21,8 +21,6 @@
 
 namespace po = boost::program_options;
 
-static z_motor_iface::diag0_handler call_diag0_handler = nullptr;
-
 void signal_handler(int signum) {
     LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
@@ -116,9 +114,9 @@ int main(int argc, char** argv) {
     auto i2c3 = std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
     static auto canbus =
         can::sim::bus::SimCANBus(can::sim::transport::create(options));
-    z_motor_iface::initialize(&call_diag0_handler);
+    z_motor_iface::initialize();
     grip_motor_iface::initialize();
-    call_diag0_handler = gripper_tasks::start_tasks(
+    gripper_tasks::start_tasks(
         canbus, z_motor_iface::get_z_motor(),
         grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
         z_motor_iface::get_tmc2130_driver_configs(), i2c2, *i2c3,

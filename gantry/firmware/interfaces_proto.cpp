@@ -244,8 +244,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(),
-    motor_hardware_iface, stallcheck, update_position_queue);
+    motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
+    update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
@@ -281,14 +281,13 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-void interfaces::initialize(diag0_handler* call_diag0_handler) {
+void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi(get_axis_type()) != HAL_OK) {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler, call_diag0_handler,
-                     enc_overflow_callback);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

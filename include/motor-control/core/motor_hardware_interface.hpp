@@ -72,11 +72,6 @@ class UsageEEpromConfig {
     size_t num_keys = 0;
 };
 
-struct __attribute__((packed)) CancelRequest {
-    uint8_t severity;
-    uint8_t code;
-};
-
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
@@ -92,10 +87,11 @@ class MotorHardwareIface {
     virtual auto check_limit_switch() -> bool = 0;
     virtual auto check_estop_in() -> bool = 0;
     virtual auto check_sync_in() -> bool = 0;
+    virtual auto check_tmc_diag0() -> bool = 0;
     virtual void read_limit_switch() = 0;
     virtual void read_estop_in() = 0;
     virtual void read_sync_in() = 0;
-    virtual auto read_tmc_diag0() -> bool = 0;
+    virtual void read_tmc_diag0() = 0;
     virtual auto get_encoder_pulses() -> int32_t = 0;
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
@@ -104,10 +100,8 @@ class MotorHardwareIface {
     virtual void enable_encoder() = 0;
     virtual void disable_encoder() = 0;
 
-    virtual auto get_cancel_request() -> CancelRequest = 0;
-    virtual void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                                    can::ids::ErrorCode error_code) = 0;
-    virtual void clear_cancel_request() = 0;
+    virtual auto has_cancel_request() -> bool = 0;
+    virtual void request_cancel() = 0;
     virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods

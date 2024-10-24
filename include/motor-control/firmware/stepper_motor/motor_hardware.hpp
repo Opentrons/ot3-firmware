@@ -47,32 +47,22 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto is_timer_interrupt_running() -> bool final;
     auto check_limit_switch() -> bool final { return limit.debounce_state(); }
     auto check_estop_in() -> bool final { return estop.debounce_state(); }
+    auto check_tmc_diag0() -> bool final { return diag.debounce_state(); }
     auto check_sync_in() -> bool final { return sync; }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
-    auto read_tmc_diag0() -> bool final;
+    void read_tmc_diag0() final;
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
     void disable_encoder() final;
     void enable_encoder() final;
 
-    auto get_cancel_request() -> CancelRequest final {
-        CancelRequest exchange_request = {};
-        return cancel_request.exchange(exchange_request);
-    }
-    void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                            can::ids::ErrorCode error_code) final {
-        CancelRequest update_request{
-            .severity = static_cast<uint8_t>(error_severity),
-            .code = static_cast<uint8_t>(error_code)};
-        cancel_request.store(update_request);
-    }
-    void clear_cancel_request() final {
-        CancelRequest clear_request = {};
-        cancel_request.store(clear_request);
-    }
+    void request_cancel() final { cancel_request.store(true); }
 
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
@@ -80,10 +70,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
 
-    auto get_pins() -> HardwareConfig { return pins; }
-
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
+    debouncer::Debouncer diag = debouncer::Debouncer{.holdoff_cnt = 90};
     debouncer::Debouncer limit = debouncer::Debouncer{};
     std::atomic_bool sync = false;
     static constexpr uint16_t encoder_reset_offset = 20;
@@ -92,7 +81,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void* enc_handle;
     const UsageEEpromConfig& eeprom_config;
     std::atomic<int32_t> motor_encoder_overflow_count = 0;
-    std::atomic<CancelRequest> cancel_request = {};
+    std::atomic<bool> cancel_request = false;
     static constexpr uint32_t ENCODER_OVERFLOW_PULSES_BIT = 0x1 << 31;
 };
 

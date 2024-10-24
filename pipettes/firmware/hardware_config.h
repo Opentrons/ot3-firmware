@@ -1,5 +1,4 @@
 #pragma once
-#include <stdbool.h>
 #include "pipettes/core/pipette_type.h"
 #include "platform_specific_hal_conf.h"
 

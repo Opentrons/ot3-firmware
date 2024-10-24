@@ -96,7 +96,8 @@ void motor_driver_gpio_init() {
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
         // Diag0 pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_diag0_pin(pipette_type);
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     } else {
         // Enable Dir/Step pin
@@ -107,7 +108,8 @@ void motor_driver_gpio_init() {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
         // Diag0 pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_diag0_pin(pipette_type);
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 
