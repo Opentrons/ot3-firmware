@@ -113,6 +113,8 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
+    auto check_tmc_diag0() -> bool { return hardware.check_tmc_diag0(); }
+
     auto read_encoder_pulses() {
         return fixed_point_multiply(um_per_encoder_pulse,
                                     hardware.get_encoder_pulses(),
