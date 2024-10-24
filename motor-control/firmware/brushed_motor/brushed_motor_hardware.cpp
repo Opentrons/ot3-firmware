@@ -58,7 +58,9 @@ void BrushedMotorHardware::read_sync_in() {
     sync.debounce_update(gpio::is_set(pins.sync_in));
 }
 
-void BrushedMotorHardware::read_tmc_diag0() { diag.debounce_update(gpio::is_set(pins.diag0)); }
+void BrushedMotorHardware::read_tmc_diag0() {
+    diag.debounce_update(gpio::is_set(pins.diag0));
+}
 
 int32_t BrushedMotorHardware::get_encoder_pulses() {
     if (!enc_handle) {

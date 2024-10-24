@@ -72,7 +72,7 @@ class MotorHardware : public StepperMotorHardwareIface {
 
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
-    debouncer::Debouncer diag = debouncer::Debouncer{.holdoff_cnt=90};
+    debouncer::Debouncer diag = debouncer::Debouncer{.holdoff_cnt = 90};
     debouncer::Debouncer limit = debouncer::Debouncer{};
     std::atomic_bool sync = false;
     static constexpr uint16_t encoder_reset_offset = 20;
