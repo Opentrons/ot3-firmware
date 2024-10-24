@@ -142,10 +142,16 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOA,
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_4,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_4,
+        .port = GPIOC,
+        .pin = GPIO_PIN_13,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -186,10 +192,16 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOA,
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_4,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_4,
+        .port = GPIOC,
+        .pin = GPIO_PIN_15,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -197,7 +209,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
             .ihold_irun = {.hold_current = 0xB,
                            .run_current = 0x19,
                            .hold_current_delay = 0x7},
@@ -224,7 +236,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
 static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
             .ihold_irun = {.hold_current = 0xB,
                            .run_current = 0x19,
                            .hold_current_delay = 0x7},

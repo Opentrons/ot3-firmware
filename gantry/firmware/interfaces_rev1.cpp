@@ -86,10 +86,16 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -125,15 +131,21 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
         .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
-    .registers = {.gconfig = {.en_pwm_mode = 0},
+    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -159,6 +171,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
+                  .drvconf = {.ot_select = 0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {
@@ -172,7 +185,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
     }};
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
-    .registers = {.gconfig = {.en_pwm_mode = 0},
+    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -198,6 +211,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
+                  .drvconf = {.ot_select = 0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {

@@ -23,6 +23,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PC8   ------> Motor Step Pin
         Enable
         PA9   ------> Motor Enable Pin
+        DIAG0
+        PC5   ------> Motor Diag0 Pin
         */
         GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;

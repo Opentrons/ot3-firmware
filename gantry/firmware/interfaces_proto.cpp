@@ -86,10 +86,16 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -125,15 +131,21 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOB,
             .pin = GPIO_PIN_5,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
         .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 0x2,
                                  .run_current = 0x18,
                                  .hold_current_delay = 0x7},
@@ -156,7 +168,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
     }};
 
 static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 1, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 0x2,
                                  .run_current = 0x18,
                                  .hold_current_delay = 0x7},

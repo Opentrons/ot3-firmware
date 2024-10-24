@@ -219,3 +219,15 @@ uint16_t pipette_hardware_motor_driver_pins(const PipetteType pipette_type, GPIO
             return get_motor_driver_pins_lt(for_handle);
     }
 }
+
+uint16_t pipette_hardware_motor_driver_diag0_pin(const PipetteType pipette_type) {
+    switch (pipette_type) {
+        case NINETY_SIX_CHANNEL:
+        case THREE_EIGHTY_FOUR_CHANNEL:
+            return GPIO_PIN_6;
+        case SINGLE_CHANNEL:
+        case EIGHT_CHANNEL:
+        default:
+            return GPIO_PIN_11;
+    }
+}
