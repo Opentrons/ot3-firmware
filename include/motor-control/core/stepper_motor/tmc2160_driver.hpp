@@ -105,6 +105,9 @@ class TMC2160 {
         if (!set_glob_scaler(_registers.glob_scale)) {
             return false;
         }
+        if (!set_drv_conf(_registers.drvconf)) {
+            return false;
+        }
         _initialized = true;
         return true;
     }
@@ -267,6 +270,22 @@ class TMC2160 {
         reg.padding_4 = 0;
         if (set_register(reg)) {
             _registers.coolconf = reg;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Update DRV_CONF register
+     * @param reg New configuration register to set
+     * @param policy Instance of abstraction policy to use
+     * @return True if new register was set succesfully, false otherwise
+     */
+    auto set_drv_conf(DriveConf reg) -> bool {
+        reg.bit_padding_1 = 0;
+        reg.bit_padding_2 = 0;
+        if (set_register(reg)) {
+            _registers.drvconf = reg;
             return true;
         }
         return false;
