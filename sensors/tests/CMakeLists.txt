@@ -36,7 +36,7 @@ target_compile_options(sensors
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
-target_link_libraries(sensors PUBLIC Catch2::Catch2 Boost::boost Boost::program_options Boost::date_time common-core motor-utils common-simulation)
+target_link_libraries(sensors PUBLIC Catch2::Catch2 common-core motor-utils common-simulation)
 
 target_i2c_simlib(sensors)
 

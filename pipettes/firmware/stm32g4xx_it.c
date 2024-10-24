@@ -125,8 +125,6 @@ void EXTI2_IRQHandler(void) {
 void EXTI9_5_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
-    } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_6)) {
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
     }
 }
 
@@ -134,8 +132,6 @@ void EXTI9_5_IRQHandler(void) {
 void EXTI15_10_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
-    } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_11)) {
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
     }
 }
 
