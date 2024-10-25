@@ -40,7 +40,6 @@ using GearTaskMessage = typename ::utils::VariantCat<
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_motor_driver_queue(m)};
-    {client.send_motor_driver_queue_isr(m)};
 };
 
 /**
@@ -50,7 +49,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
 template <typename Client>
 concept GearTaskClient = requires(Client client, const GearTaskMessage& m) {
     {client.send_motor_driver_queue(m)};
-    {client.send_motor_driver_queue_isr(m)};
 };
 };  // namespace tasks
 };  // namespace tmc

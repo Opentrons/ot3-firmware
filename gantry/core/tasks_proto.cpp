@@ -55,20 +55,18 @@ static auto eeprom_data_rev_update_builder =
 /**
  * Start gantry tasks.
  */
-auto gantry::tasks::start_tasks(
+void gantry::tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask& mh_tsk,
     i2c::hardware::I2CBase& i2c2,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
-    -> interfaces::diag0_handler {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    auto& motion =
-        mc_task_builder.start(5, "motion controller", motion_controller,
-                              ::queues, ::queues, ::queues, ::queues);
+    auto& motion = mc_task_builder.start(5, "motion controller",
+                                         motion_controller, ::queues, ::queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(
         5, "tmc2130 driver", driver_configs, ::queues, spi_task_client);
     auto& move_group =
@@ -118,15 +116,6 @@ auto gantry::tasks::start_tasks(
     ::queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     mh_tsk.start_task();
-
-    return gantry::tasks::call_run_diag0_interrupt;
-}
-
-void gantry::tasks::call_run_diag0_interrupt() {
-    if (gantry::tasks::get_tasks().motion_controller) {
-        return gantry::tasks::get_tasks()
-            .motion_controller->run_diag0_interrupt();
-    }
 }
 
 gantry::queues::QueueClient::QueueClient(can::ids::NodeId this_fw)
@@ -140,11 +129,6 @@ void gantry::queues::QueueClient::send_motion_controller_queue(
 void gantry::queues::QueueClient::send_motor_driver_queue(
     const tmc2130::tasks::TaskMessage& m) {
     motor_driver_queue->try_write(m);
-}
-
-void gantry::queues::QueueClient::send_motor_driver_queue_isr(
-    const tmc2130::tasks::TaskMessage& m) {
-    static_cast<void>(motor_driver_queue->try_write_isr(m));
 }
 
 void gantry::queues::QueueClient::send_move_group_queue(
