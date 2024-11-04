@@ -190,7 +190,7 @@ class MotionController {
             hardware.request_cancel();
         }
         hardware.deactivate_motor();
-        enabled = false;
+        hardware.activate_motor();
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
