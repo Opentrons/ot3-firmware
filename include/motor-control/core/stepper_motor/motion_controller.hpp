@@ -189,7 +189,8 @@ class MotionController {
         if (hardware.is_timer_interrupt_running()) {
             hardware.request_cancel();
         }
-        disable_motor();
+        hardware.deactivate_motor();
+        enabled = false;
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
