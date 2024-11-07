@@ -1002,8 +1002,15 @@ struct BatchReadFromSensorResponse
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), iter, limit);
         iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
                                        limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(data_length), iter,
+                                       limit);
         for (auto i = 0; i < data_length; i++) {
             iter = bit_utils::int_to_bytes(sensor_data.at(i), iter, limit);
+        }
+        // Since python expects statically sized messages to unpack, pad the end
+        // with 0's
+        for (auto i = data_length; i < BATCH_SENSOR_MAX_LEN; i++) {
+            iter = bit_utils::int_to_bytes(int32_t(0), iter, limit);
         }
         return iter - body;
     }
