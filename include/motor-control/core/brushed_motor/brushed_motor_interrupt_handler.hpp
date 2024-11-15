@@ -151,6 +151,7 @@ class BrushedMotorInterruptHandler {
                         can::ids::ErrorCode::collision_detected);
                     report_position(pulses);
                     error_handled = true;
+                    hardware.set_motor_state(BrushedMotorState::UNHOMED);
                 }
             } else if (motor_state != BrushedMotorState::UNHOMED) {
                 auto pulses = hardware.get_encoder_pulses();
@@ -166,6 +167,7 @@ class BrushedMotorInterruptHandler {
                         motor_state == BrushedMotorState::FORCE_CONTROLLING
                             ? can::ids::ErrorCode::labware_dropped
                             : can::ids::ErrorCode::collision_detected;
+                    hardware.set_motor_state(BrushedMotorState::UNHOMED);
                     cancel_and_clear_moves(err);
                     report_position(pulses);
                     error_handled = true;
@@ -198,8 +200,9 @@ class BrushedMotorInterruptHandler {
             in_estop = true;
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
         } else if (hardware.has_cancel_request()) {
-            if (!hardware.get_stay_enabled()) {
-                hardware.set_motor_state(BrushedMotorState::UNHOMED);
+            if (!hardware.get_stay_enabled() &&
+                hardware.get_motor_state() != BrushedMotorState::UNHOMED) {
+                hardware.set_motor_state(BrushedMotorState::STOPPED);
             }
             cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
                                    can::ids::ErrorSeverity::warning);
