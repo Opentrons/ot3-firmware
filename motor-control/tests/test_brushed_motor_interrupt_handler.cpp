@@ -526,10 +526,10 @@ SCENARIO("handler recovers from error state") {
             test_objs.hw.request_cancel();
             test_objs.handler.run_interrupt();
             THEN(
-                "motor state should become un-homed only if stay engaged is "
-                "falsy") {
+                "motor state should become stopped only if stay engaged is "
+                "false") {
                 REQUIRE(test_objs.hw.get_motor_state() ==
-                        (!stay_engaged ? BrushedMotorState::UNHOMED
+                        (!stay_engaged ? BrushedMotorState::STOPPED
                                        : og_motor_state));
             }
             THEN("a stop requested warning is issued") {

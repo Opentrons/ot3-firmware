@@ -44,5 +44,6 @@ enum class BrushedMotorState : uint8_t {
     UNHOMED = 0x0,
     FORCE_CONTROLLING_HOME = 0x1,
     FORCE_CONTROLLING = 0x2,
-    POSITION_CONTROLLING = 0x3
+    POSITION_CONTROLLING = 0x3,
+    STOPPED = 0x4
 };
