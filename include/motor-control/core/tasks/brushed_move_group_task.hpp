@@ -82,11 +82,15 @@ class MoveGroupMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, response);
     }
 
-    void handle(const can::messages::ClearAllMoveGroupsRequest& m) {
-        LOG("Received clear move groups request");
+    void clear_move_groups() {
         for (auto& group : move_groups) {
             group.clear();
         }
+    }
+
+    void handle(const can::messages::ClearAllMoveGroupsRequest& m) {
+        LOG("Received clear move groups request");
+        this->clear_move_groups();
         can_client.send_can_message(can::ids::NodeId::host,
                                     can::messages::ack_from_request(m));
     }
@@ -104,9 +108,7 @@ class MoveGroupMessageHandler {
 
     void handle(const can::messages::StopRequest& m) {
         LOG("Recieved StopRequest in MoveGroup");
-        auto clear_req =
-            can::messages::ClearAllMoveGroupsRequest{.message_index = 0};
-        this->handle(clear_req);
+        this->clear_move_groups();
         // pass the stop message to motion controller to kill pwm
         // and any running moves
         mc_client.send_brushed_motion_controller_queue(m);
