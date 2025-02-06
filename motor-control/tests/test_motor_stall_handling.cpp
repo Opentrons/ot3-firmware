@@ -364,14 +364,14 @@ SCENARIO("motor handler stall detection") {
         test_objs.hw.sim_set_encoder_pulses(0);
         test_objs.handler.set_current_position(0);
 
-
         WHEN("A move is commanded") {
             test_objs.queue.try_write(msg1);
             test_objs.handler.update_move();
             for (int i = 0; i < (int)msg1.duration; ++i) {
                 test_objs.handler.run_interrupt();
-                test_objs.hw.sim_set_encoder_pulses(i*velocity);
-                test_objs.handler.set_current_position(static_cast<uint64_t>(i*velocity) << 31);
+                test_objs.hw.sim_set_encoder_pulses(i * velocity);
+                test_objs.handler.set_current_position(
+                    static_cast<uint64_t>(i * velocity) << 31);
             }
             THEN("Move ends successfully.") {
                 REQUIRE(test_objs.hw.position_flags.check_flag(
@@ -387,7 +387,8 @@ SCENARIO("motor handler stall detection") {
                 THEN("an error is sent.") {
                     // should be 2 but idk why this runs more than once
                     REQUIRE(test_objs.reporter.messages.size() == 3);
-                    REQUIRE(!test_objs.hw.position_flags.check_flag(Flags::stepper_position_ok));
+                    REQUIRE(!test_objs.hw.position_flags.check_flag(
+                        Flags::stepper_position_ok));
                 }
             }
         }
