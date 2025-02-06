@@ -386,7 +386,7 @@ SCENARIO("motor handler stall detection") {
                 }
                 THEN("an error is sent.") {
                     // should be 2 but idk why this runs more than once
-                    REQUIRE(test_objs.reporter.messages.size() == 3);
+                    REQUIRE(test_objs.reporter.messages.size() == 2);
                     REQUIRE(!test_objs.hw.position_flags.check_flag(
                         Flags::stepper_position_ok));
                 }

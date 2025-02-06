@@ -547,7 +547,10 @@ class MotorInterruptHandler {
         _has_active_move = false;
         tick_count = 0x0;
         stall_handled = false;
-        if (buffered_move.stop_condition != 0 &&
+        if ((buffered_move.check_stop_condition(
+                 MoveStopCondition::limit_switch_backoff) ||
+             buffered_move.check_stop_condition(
+                 MoveStopCondition::limit_switch)) &&
             ack_msg_id == AckMessageId::complete_without_condition) {
             in_good_state = false;
         }
