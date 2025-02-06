@@ -91,25 +91,27 @@ class MotorInterruptHandler {
             hardware.unstep();
         } else {
             if (!_has_active_move && !has_move_messages()) {
-                printf("no move\n");
-                if (stall_detected()) {
-                    printf("stall\n");
-                    if (!stall_handled) {
-                        printf("stall not handled\n");
-                        if (stall_expected) {
-                            printf("It's ok its expected");
-                        } else {
-                            if (!hardware.position_flags.check_flag(MotorPositionStatus::Flags::encoder_position_ok)) {
-                                printf("all good we dont know where we are\n");
-                            } else {
-                                printf("steps %d encoder %d\n", hardware.get_step_tracker(), hardware.get_encoder_pulses());
-                                handle_stall_without_movement();
-                            }
-                        }
-                    }
+                if (check_for_idle_stall()) {
+                    handle_stall_without_movement();
                 }
             }
         }
+    }
+
+    auto check_for_idle_stall() -> bool {
+        // if were expecting to be in a good state check for a stall
+        // good state means:
+        // 1. We have an encoder position to check
+        // 2. We haven't already sent a stall detection
+        // 3. A previous move didn't already trigger a error by replying with
+        // the wrong stop condition
+        // 4. The previous move wasn't a "ignore stalls" move
+        if (in_good_state && !stall_expected && !stall_handled &&
+            hardware.position_flags.check_flag(
+                MotorPositionStatus::Flags::encoder_position_ok)) {
+            return stall_detected();
+        }
+        return false;
     }
 
     auto check_for_stall() -> bool {
@@ -122,11 +124,9 @@ class MotorInterruptHandler {
     }
 
     auto handle_stall_without_movement() -> void {
-        printf("sending error\n");
         hardware.position_flags.clear_flag(
-                MotorPositionStatus::Flags::stepper_position_ok);
+            MotorPositionStatus::Flags::stepper_position_ok);
         cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
-        printf("stall handled\n");
         stall_handled = true;
     }
 
@@ -546,7 +546,10 @@ class MotorInterruptHandler {
         _has_active_move = false;
         tick_count = 0x0;
         stall_handled = false;
-        printf("move finished stall not handled\n");
+        if (buffered_move.stop_condition != 0 &&
+            ack_msg_id == AckMessageId::complete_without_condition) {
+            in_good_state = false;
+        }
         build_and_send_ack(ack_msg_id);
         set_buffered_move(MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
@@ -554,7 +557,6 @@ class MotorInterruptHandler {
         if (!has_move_messages()) {
             stall_checker.reset_itr_counts(hardware.get_step_tracker());
         }
-        printf("move done \n");
     }
 
     void reset() {
@@ -572,7 +574,7 @@ class MotorInterruptHandler {
         stall_checker.reset_itr_counts(0);
         stall_handled = false;
         stall_expected = false;
-        printf("stall not handled reset\n");
+        in_good_state = true;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -729,6 +731,7 @@ class MotorInterruptHandler {
     bool clear_queue_until_empty = false;
     bool stall_handled = false;
     bool stall_expected = false;
+    bool in_good_state = true;
     bool in_estop = false;
     std::atomic_bool _has_active_move = false;
 };

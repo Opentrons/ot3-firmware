@@ -209,7 +209,6 @@ SCENARIO(
             REQUIRE(test_objs.handler.has_active_move());
 
             AND_WHEN("the limit switch has not been triggered") {
-                printf("running intterupt\n");
                 for (int i = 0; i < (int)msg1.duration; ++i) {
                     test_objs.handler.run_interrupt();
                 }
@@ -222,7 +221,6 @@ SCENARIO(
                 THEN(
                     "the move should be stopped with ack id = stopped without "
                     "condition") {
-                    printf("here's where we check\n");
                     REQUIRE(test_objs.reporter.messages.size() == 1);
                     Ack read_ack =
                         std::get<Ack>(test_objs.reporter.messages.front());

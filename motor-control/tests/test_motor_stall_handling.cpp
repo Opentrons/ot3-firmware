@@ -137,7 +137,6 @@ SCENARIO("motor handler stall detection") {
                     REQUIRE(ack_msg.message_index == 13);
                     test_objs.reporter.messages.clear();
                     WHEN("the interrupt runs again") {
-                        printf("running interrupt");
                         for (int i = 0; i < (int)msg2.duration; ++i) {
                             test_objs.handler.run_interrupt();
                         }
