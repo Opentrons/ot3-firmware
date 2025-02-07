@@ -37,7 +37,7 @@ jobs:
         run: |
           cmake --install ./build-cross
       - name: 'Upload application artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-applications-${{github.ref_name}}'
           path: |
@@ -53,31 +53,31 @@ jobs:
               popd
           done
       - name: 'Upload all-images artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-images-${{github.ref_name}}'
           path: |
             dist/images/*.hex
       - name: 'Upload robot-images artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-robot-images-${{github.ref_name}}'
           path: |
             dist/robot-images/*.hex
       - name: 'Upload pipette-images artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-pipette-images-${{github.ref_name}}'
           path: |
             dist/pipette-images/*.hex
       - name: 'Upload gripper-images artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-gripper-images-${{github.ref_name}}'
           path: |
             dist/gripper-images/*.hex
       - name: 'Upload hepa-uv-images artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 'firmware-hepa-uv-images-${{github.ref_name}}'
           path: |
@@ -90,7 +90,7 @@ jobs:
     if: github.ref_type == 'tag'
     steps:
       - name: 'Download artifacts'
-        uses: 'actions/download-artifact@v3'
+        uses: 'actions/download-artifact@v4'
         with:
           path: .
       - name: 'Create zips for each sub-artifact'
