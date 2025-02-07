@@ -61,7 +61,7 @@ jobs:
         run: lcov_cobertura build-host/lcov/data/capture/all_targets.info
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ot3-firmware/coverage.xml
           name: codecov-ot3-firmware

@@ -7,7 +7,7 @@ repository = "https://github.com/Opentrons/ot3-firmware"
 authors = ["Opentrons <engineering@opentrons.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "7.0.1"
