@@ -492,6 +492,30 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     auto operator==(const MoveCompleted& other) const -> bool = default;
 };
 
+struct MoveConditionMet : BaseMessage<MessageId::move_condition_met> {
+    uint32_t message_index;
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t current_position_um;
+    int32_t encoder_position_um;
+    uint8_t position_flags;
+    uint8_t ack_id;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(group_id, iter, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position_um, iter, limit);
+        iter = bit_utils::int_to_bytes(position_flags, iter, limit);
+        iter = bit_utils::int_to_bytes(ack_id, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const MoveConditionMet& other) const -> bool = default;
+};
+
 struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
     uint32_t message_index;
     uint32_t current_position;
@@ -1923,6 +1947,6 @@ using ResponseMessageType = std::variant<
     PushTipPresenceNotification, GetMotorUsageResponse, GripperJawStateResponse,
     GripperJawHoldoffResponse, HepaUVInfoResponse, GetHepaFanStateResponse,
     GetHepaUVStateResponse, MotorStatusResponse, GearMotorStatusResponse,
-    ReadMotorDriverErrorStatusResponse>;
+    ReadMotorDriverErrorStatusResponse, MoveConditionMet>;
 
 }  // namespace can::messages
