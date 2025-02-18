@@ -247,17 +247,6 @@ class MotorInterruptHandler {
         }
         if (buffered_move.check_stop_condition(MoveStopCondition::sync_line) &&
             sync_triggered()) {
-            if (buffered_move.check_stop_condition(
-                    MoveStopCondition::encoder_position_or_safe_stop)) {
-                // We add this stop condition flag to sync moves that operate at
-                // speeds higher than the discontinuity speed and have a
-                // acceleration value. this lets them send a response for when
-                // the condition is met, but still continue on the move so it
-                // can decelerate safely.
-                buffered_move.stop_condition =
-                    static_cast<uint8_t>(MoveStopCondition::none);
-                build_and_send_ack(AckMessageId::condition_met);
-            }
             return true;
         }
         return false;
@@ -354,8 +343,22 @@ class MotorInterruptHandler {
 
     auto sync_triggered() -> bool {
         if (hardware.check_sync_in()) {
-            finish_current_move(AckMessageId::stopped_by_condition);
-            return true;
+            if (buffered_move.check_stop_condition(
+                    MoveStopCondition::encoder_position_or_safe_stop)) {
+                printf("Do safe stop\n");
+                // We add this stop condition flag to sync moves that operate at
+                // speeds higher than the discontinuity speed and have a
+                // acceleration value. this lets them send a response for when
+                // the condition is met, but still continue on the move so it
+                // can decelerate safely.
+                buffered_move.stop_condition =
+                    static_cast<uint8_t>(MoveStopCondition::none);
+                build_and_send_ack(AckMessageId::condition_met);
+                return false;
+            } else {
+                finish_current_move(AckMessageId::stopped_by_condition);
+                return true;
+            }
         }
         return false;
     }
