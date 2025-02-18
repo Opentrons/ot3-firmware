@@ -51,6 +51,7 @@ enum class MessageId {
     home_request = 0x20,
     add_sensor_move_request = 0x23,
     move_completed = 0x13,
+    move_condition_met = 0x11,
     motor_position_request = 0x12,
     motor_position_response = 0x14,
     update_motor_position_estimation_request = 0x21,
@@ -201,7 +202,6 @@ enum class SensorType {
     pressure_temperature = 0x4,
     humidity = 0x5,
     temperature = 0x6,
-    UNUSED = 0x7,
 };
 
 /** Sensor IDs available.
@@ -222,7 +222,7 @@ enum class SensorOutputBinding {
     sync = 0x1,
     report = 0x2,
     max_threshold_sync = 0x4,
-    auto_baseline_report = 0x08,
+    auto_baseline_report = 0x8,
     multi_sensor_sync = 0x10,
 };
 
@@ -255,7 +255,7 @@ enum class MoveStopCondition {
     none = 0x0,
     limit_switch = 0x1,
     sync_line = 0x2,
-    encoder_position = 0x4,
+    encoder_position_or_safe_stop = 0x4,
     gripper_force = 0x8,
     stall = 0x10,
     ignore_stalls = 0x20,
