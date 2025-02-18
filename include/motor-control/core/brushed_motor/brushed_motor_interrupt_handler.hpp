@@ -101,7 +101,7 @@ class BrushedMotorInterruptHandler {
                 }
                 break;
             // linear move
-            case MoveStopCondition::encoder_position: {
+            case MoveStopCondition::encoder_position_or_safe_stop: {
                 int32_t move_delta = hardware.get_encoder_pulses() -
                                      buffered_move.encoder_position;
                 controlled_move_to(move_delta);
@@ -282,7 +282,7 @@ class BrushedMotorInterruptHandler {
                 tick = 0;
                 hardware.ungrip();
                 break;
-            case MoveStopCondition::encoder_position:
+            case MoveStopCondition::encoder_position_or_safe_stop:
                 hardware.set_motor_state(
                     BrushedMotorState::POSITION_CONTROLLING);
                 if (hardware.get_encoder_pulses() ==

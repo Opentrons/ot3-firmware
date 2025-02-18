@@ -40,7 +40,7 @@ auto constexpr move_msg =
                 .group_id = 0,
                 .seq_id = 0,
                 .encoder_position = 61054,  // ~1cm
-                .stop_condition = MoveStopCondition::encoder_position};
+                .stop_condition = MoveStopCondition::encoder_position_or_safe_stop};
 
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};
