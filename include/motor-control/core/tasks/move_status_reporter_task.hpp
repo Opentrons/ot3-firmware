@@ -76,7 +76,9 @@ class MoveStatusMessageHandler {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::MoveConditionMet::from_move_complete(
-                    msg, static_cast<uint8_t>(motor_messages::AckMessageId::stopped_by_condition)));
+                    msg,
+                    static_cast<uint8_t>(
+                        motor_messages::AckMessageId::stopped_by_condition)));
         } else {
             can_client.send_can_message(can::ids::NodeId::host, msg);
 

@@ -34,13 +34,13 @@ auto constexpr grip_msg =
                 .stay_engaged = 1,
                 .stop_condition = MoveStopCondition::none};
 
-auto constexpr move_msg =
-    BrushedMove{.duration = 5 * 32000,
-                .duty_cycle = 0,
-                .group_id = 0,
-                .seq_id = 0,
-                .encoder_position = 61054,  // ~1cm
-                .stop_condition = MoveStopCondition::encoder_position_or_safe_stop};
+auto constexpr move_msg = BrushedMove{
+    .duration = 5 * 32000,
+    .duty_cycle = 0,
+    .group_id = 0,
+    .seq_id = 0,
+    .encoder_position = 61054,  // ~1cm
+    .stop_condition = MoveStopCondition::encoder_position_or_safe_stop};
 
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};
