@@ -6,6 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
@@ -69,17 +70,27 @@ class MoveStatusMessageHandler {
             .encoder_position_um = end_position,
             .position_flags = message.position_flags,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
 
-        int32_t distance_traveled_um =
-            end_position - fixed_point_multiply(um_per_encoder_pulse,
-                                                message.start_encoder_position,
-                                                radix_offset_0{});
-        usage_client.send_usage_storage_queue(
-            usage_messages::IncreaseDistanceUsage{
-                .key = message.usage_key,
-                .distance_traveled_um =
-                    uint32_t(std::abs(distance_traveled_um))});
+        if (msg.ack_id ==
+            static_cast<uint8_t>(motor_messages::AckMessageId::condition_met)) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MoveConditionMet::from_move_complete(
+                    msg, static_cast<uint8_t>(motor_messages::AckMessageId::stopped_by_condition)));
+        } else {
+            can_client.send_can_message(can::ids::NodeId::host, msg);
+
+            int32_t distance_traveled_um =
+                end_position -
+                fixed_point_multiply(um_per_encoder_pulse,
+                                     message.start_encoder_position,
+                                     radix_offset_0{});
+            usage_client.send_usage_storage_queue(
+                usage_messages::IncreaseDistanceUsage{
+                    .key = message.usage_key,
+                    .distance_traveled_um =
+                        uint32_t(std::abs(distance_traveled_um))});
+        }
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {

@@ -513,6 +513,18 @@ struct MoveConditionMet : BaseMessage<MessageId::move_condition_met> {
         return iter - body;
     }
 
+    static auto from_move_complete(const MoveCompleted& msg, const uint8_t ack_id) -> MoveConditionMet {
+        return MoveConditionMet{
+            .message_index=msg.message_index,
+            .group_id=msg.group_id,
+            .seq_id=msg.seq_id,
+            .current_position_um=msg.current_position_um,
+            .encoder_position_um=msg.encoder_position_um,
+            .position_flags=msg.position_flags,
+            .ack_id=ack_id
+        };
+    }
+
     auto operator==(const MoveConditionMet& other) const -> bool = default;
 };
 
