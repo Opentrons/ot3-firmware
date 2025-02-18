@@ -49,6 +49,7 @@ typedef enum {
     can_messageid_home_request = 0x20,
     can_messageid_add_sensor_move_request = 0x23,
     can_messageid_move_completed = 0x13,
+    can_messageid_move_condition_met = 0x11,
     can_messageid_motor_position_request = 0x12,
     can_messageid_motor_position_response = 0x14,
     can_messageid_update_motor_position_estimation_request = 0x21,
@@ -62,6 +63,8 @@ typedef enum {
     can_messageid_write_motor_current_request = 0x33,
     can_messageid_read_motor_current_request = 0x34,
     can_messageid_read_motor_current_response = 0x35,
+    can_messageid_read_motor_driver_error_status_request = 0x36,
+    can_messageid_read_motor_driver_error_status_response = 0x37,
     can_messageid_set_brushed_motor_vref_request = 0x40,
     can_messageid_set_brushed_motor_pwm_request = 0x41,
     can_messageid_gripper_grip_request = 0x42,
@@ -103,6 +106,7 @@ typedef enum {
     can_messageid_gear_read_motor_driver_request = 0x507,
     can_messageid_max_sensor_value_request = 0x70,
     can_messageid_max_sensor_value_response = 0x71,
+    can_messageid_batch_read_sensor_response = 0x81,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,
@@ -167,6 +171,7 @@ typedef enum {
     can_errorcode_over_pressure = 0xd,
     can_errorcode_door_open = 0xe,
     can_errorcode_reed_open = 0xf,
+    can_errorcode_motor_driver_error_detected = 0x10,
     can_errorcode_safety_relay_inactive = 0x11,
 } CANErrorCode;
 
@@ -208,6 +213,7 @@ typedef enum {
     can_sensoroutputbinding_report = 0x2,
     can_sensoroutputbinding_max_threshold_sync = 0x4,
     can_sensoroutputbinding_auto_baseline_report = 0x8,
+    can_sensoroutputbinding_multi_sensor_sync = 0x10,
 } CANSensorOutputBinding;
 
 /** How a sensor's threshold should be interpreted. */
@@ -239,7 +245,7 @@ typedef enum {
     can_movestopcondition_none = 0x0,
     can_movestopcondition_limit_switch = 0x1,
     can_movestopcondition_sync_line = 0x2,
-    can_movestopcondition_encoder_position = 0x4,
+    can_movestopcondition_encoder_position_or_safe_stop = 0x4,
     can_movestopcondition_gripper_force = 0x8,
     can_movestopcondition_stall = 0x10,
     can_movestopcondition_ignore_stalls = 0x20,
