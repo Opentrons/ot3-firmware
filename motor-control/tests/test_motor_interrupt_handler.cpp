@@ -201,19 +201,18 @@ SCENARIO("negative position reset") {
 }
 
 SCENARIO("A safe stop move is sent") {
-
     MotorContainer test_objs{};
 
     GIVEN("A message to move, with safe stop") {
         uint64_t duration = 500;
         auto start_vel = 150;
         auto acceleration = -30;
-        uint8_t stop_condition = static_cast<uint8_t>(
-                            MoveStopCondition::sync_line) | static_cast<uint8_t>(
-                            MoveStopCondition::encoder_position_or_safe_stop);
+        uint8_t stop_condition =
+            static_cast<uint8_t>(MoveStopCondition::sync_line) |
+            static_cast<uint8_t>(
+                MoveStopCondition::encoder_position_or_safe_stop);
         printf("%x\n", stop_condition);
-        auto msg = Move{
-                        .message_index=123,
+        auto msg = Move{.message_index = 123,
                         .duration = duration,
                         .velocity = start_vel,
                         .acceleration = acceleration,
@@ -223,8 +222,9 @@ SCENARIO("A safe stop move is sent") {
         WHEN("Condition is met") {
             test_objs.hw.sim_set_encoder_pulses(0);
             test_objs.queue.try_write_isr(msg);
-            for (auto i = 0; i < int(duration/2); i++) {
-                test_objs.hw.sim_set_encoder_pulses(start_vel*i + 0.5*pow((acceleration/1000), 2.0));
+            for (auto i = 0; i < int(duration / 2); i++) {
+                test_objs.hw.sim_set_encoder_pulses(
+                    start_vel * i + 0.5 * pow((acceleration / 1000), 2.0));
                 test_objs.handler.run_interrupt();
             }
             test_objs.hw.set_mock_sync_line(true);
@@ -233,21 +233,23 @@ SCENARIO("A safe stop move is sent") {
 
             REQUIRE(test_objs.reporter.messages.size() == 1);
             auto resp = std::get<motor_messages::Ack>(
-                    test_objs.reporter.messages.front());
+                test_objs.reporter.messages.front());
             REQUIRE(resp.ack_id == motor_messages::AckMessageId::condition_met);
             REQUIRE(resp.message_index == 123);
             THEN("The move continues") {
-                for (auto i = duration/2; i < duration; i++) {
-                    test_objs.hw.sim_set_encoder_pulses(start_vel*i + 0.5*pow((acceleration/1000),2.0));
+                for (auto i = duration / 2; i < duration; i++) {
+                    test_objs.hw.sim_set_encoder_pulses(
+                        start_vel * i + 0.5 * pow((acceleration / 1000), 2.0));
                     test_objs.handler.run_interrupt();
                 }
                 REQUIRE(test_objs.reporter.messages.size() == 2);
                 auto resp = std::get<motor_messages::Ack>(
-                        test_objs.reporter.messages[1]);
-                REQUIRE(resp.ack_id == motor_messages::AckMessageId::complete_without_condition);
+                    test_objs.reporter.messages[1]);
+                REQUIRE(
+                    resp.ack_id ==
+                    motor_messages::AckMessageId::complete_without_condition);
                 REQUIRE(resp.message_index == 123);
             }
-
         }
     }
 }
