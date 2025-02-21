@@ -202,6 +202,8 @@ enum class SensorType {
     pressure_temperature = 0x4,
     humidity = 0x5,
     temperature = 0x6,
+    UNUSED = 0x7,
+
 };
 
 /** Sensor IDs available.

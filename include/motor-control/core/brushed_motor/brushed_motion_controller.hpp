@@ -82,7 +82,7 @@ class MotionController {
             .encoder_position =
                 int32_t(can_msg.encoder_position_um /
                         get_mechanical_config().get_encoder_um_per_pulse()),
-            .stop_condition = MoveStopCondition::encoder_position,
+            .stop_condition = MoveStopCondition::encoder_position_or_safe_stop,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
