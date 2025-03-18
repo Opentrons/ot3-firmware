@@ -133,7 +133,8 @@ uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t cle
 }
 
 void motor_hardware_delay(uint32_t delay) {
-    vTaskDelay(delay);
+    const TickType_t xDelay = delay * portTICK_PERIOD_MS;
+    vTaskDelay(xDelay);
 }
 
 
