@@ -18,16 +18,18 @@ void MotorHardware::activate_motor() {
     gpio::set(pins.enable);
     if (pins.ebrake.has_value()) {
         // allow time for the motor current to stablize before releasing the
-        // brake
+        // brake spec is < 1ms so this is plenty
         motor_hardware_delay(20);
         gpio::reset(pins.ebrake.value());
-        motor_hardware_delay(20);
+        // Brake spec is 50ms to engage/disengage
+        motor_hardware_delay(100);
     }
 }
 void MotorHardware::deactivate_motor() {
     if (pins.ebrake.has_value()) {
         gpio::set(pins.ebrake.value());
-        motor_hardware_delay(20);
+        // Brake spec is 50ms to engage/disengage
+        motor_hardware_delay(100);
     }
     gpio::reset(pins.enable);
 }
