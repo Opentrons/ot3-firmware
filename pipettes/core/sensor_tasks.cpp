@@ -3,6 +3,7 @@
 #include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/pipette_type.h"
+#include "pipettes/firmware/eeprom_keys.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
@@ -44,6 +45,9 @@ static auto tip_notification_task_builder_front =
 static auto sensor_board_reader_task_builder =
     freertos_task::TaskStarter<256, sensors::tasks::ReadSensorBoardTask>{};
 
+static auto usage_storage_task_builder =
+    freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};
+
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
     sensor_tasks::I2CClient& i2c3_task_client,
@@ -53,7 +57,9 @@ void sensor_tasks::start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
     sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     // Low throughput sensor task (single channel)
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -76,7 +82,7 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller,
-        queues, sensor_hardware_primary, sensor_buffer);
+        queues, sensor_hardware_primary, sensor_buffer, queues, OVERPRESSURE_COUNT_KEY_SM);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -87,12 +93,17 @@ void sensor_tasks::start_tasks(
     auto& read_sensor_board_task = sensor_board_reader_task_builder.start(
         5, "read sensor board", i2c3_task_client, version_wrapper);
 
+    auto& usage_storage_task = usage_storage_task_builder.start(
+        5, "usage storage", queues, queues,
+        tail_accessor);
+
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
     tasks.tip_notification_task_rear = &tip_notification_task_rear;
     tasks.read_sensor_board_task = &read_sensor_board_task;
+    tasks.usage_storage_task = &usage_storage_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
@@ -102,6 +113,7 @@ void sensor_tasks::start_tasks(
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
     queues.tip_notification_queue_rear =
         &tip_notification_task_rear.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
 }
 
 void sensor_tasks::start_tasks(
@@ -114,7 +126,9 @@ void sensor_tasks::start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
     sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
     can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     // High throughput sensor task (eight and ninety six channel)
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -139,6 +153,9 @@ void sensor_tasks::start_tasks(
     auto front_tip_presence_sensor =
         PIPETTE_TYPE == NINETY_SIX_CHANNEL ? true : false;
 
+    auto over_pressure_count_key = PIPETTE_TYPE == NINETY_SIX_CHANNEL
+                                  ? OVERPRESSURE_COUNT_KEY_96 : OVERPRESSURE_COUNT_KEY_SM;
+
     auto& eeprom_task = eeprom_task_builder.start(
         5, "eeprom", eeprom_i2c_client, eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
@@ -146,18 +163,19 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", primary_pressure_i2c_client,
         primary_pressure_i2c_poller, queues, sensor_hardware_primary,
-        sensor_buffer);
+        sensor_buffer, queues, over_pressure_count_key);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
         secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
 #ifdef USE_TWO_BUFFERS
-        sensor_buffer_front);
+        sensor_buffer_front,
 #else
         // we don't want to build a second buffer for the single channel, but if
         // we dont pass in the correct sized array here, compilation fails
         // this doesn't matter though cause single channels will never call this
-        sensor_buffer);
+        sensor_buffer,
 #endif
+        queues, over_pressure_count_key);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -168,6 +186,10 @@ void sensor_tasks::start_tasks(
     auto& read_sensor_board_task = sensor_board_reader_task_builder.start(
         5, "read sensor board", i2c3_task_client, version_wrapper);
 
+    auto& usage_storage_task = usage_storage_task_builder.start(
+        5, "usage storage", queues, sensor_tasks::get_queues(),
+        tail_accessor);
+
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
@@ -175,6 +197,7 @@ void sensor_tasks::start_tasks(
     tasks.tip_notification_task_rear = &tip_notification_task_rear;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
     tasks.read_sensor_board_task = &read_sensor_board_task;
+    tasks.usage_storage_task = &usage_storage_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
@@ -186,6 +209,7 @@ void sensor_tasks::start_tasks(
         &pressure_sensor_task_front.get_queue();
     queues.tip_notification_queue_rear =
         &tip_notification_task_rear.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     if (shared_cap_task) {
         // There is only one cap sensor on the eight channel and so the "front"
@@ -307,6 +331,12 @@ void sensor_tasks::QueueClient::send_tip_notification_queue_front(
         tip_notification_queue_front->try_write(m);
     }
 }
+
+void sensor_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
+}
+
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
 

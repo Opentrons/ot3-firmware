@@ -35,25 +35,6 @@ using I2CClient =
 using I2CPollerClient =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 
-void start_tasks(
-    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
-    I2CPollerClient& i2c1_poller_client,
-    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
-    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
-    can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
-
-void start_tasks(
-    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
-    I2CPollerClient& i2c1_poller_client,
-    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
-    sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
-    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
-    can::ids::NodeId id,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
-
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.
  */
@@ -83,6 +64,9 @@ struct Tasks {
         tip_notification_task_front{nullptr};
     sensors::tasks::ReadSensorBoardTask<
         freertos_message_queue::FreeRTOSMessageQueue>* read_sensor_board_task{
+        nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
         nullptr};
 };
 
@@ -123,6 +107,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_tip_notification_queue_front(
         const sensors::tip_presence::TaskMessage& m);
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
@@ -142,7 +127,32 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         sensors::tip_presence::TaskMessage>* tip_notification_queue_front{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
+
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    eeprom::dev_data::DevDataTailAccessor<QueueClient>&
+        tail_accessor);
+
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
+    sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
+    eeprom::dev_data::DevDataTailAccessor<QueueClient>&
+        tail_accessor);
 
 /**
  * Access to the sensor tasks singleton

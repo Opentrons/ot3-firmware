@@ -10,12 +10,14 @@
 #include "sensors/core/mmr920.hpp"
 #include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 
 namespace sensors {
 namespace tasks {
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          can::message_writer_task::TaskClient CanClient, class OwnQueue>
+          can::message_writer_task::TaskClient CanClient, class OwnQueue,
+          usage_storage_task::TaskClient UsageClient>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(
@@ -23,9 +25,10 @@ class PressureMessageHandler {
         CanClient &can_client, OwnQueue &own_queue,
         sensors::hardware::SensorHardwareBase &hardware,
         const can::ids::SensorId &id,
-        std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
+        std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer,
+        UsageClient& usage_client, uint16_t pres_err_key)
         : driver{i2c_writer, i2c_poller, can_client,   own_queue,
-                 hardware,   id,         sensor_buffer},
+                 hardware,   id,         sensor_buffer, usage_client, pres_err_key},
           sensor_id{id} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
@@ -192,7 +195,7 @@ class PressureMessageHandler {
         static_cast<void>(m);
     }
 
-    MMR920<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    MMR920<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue, UsageClient> driver;
     can::ids::SensorId sensor_id;
 };
 
@@ -216,15 +219,17 @@ class PressureSensorTask {
     /**
      * Task entry point.
      */
-    template <can::message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient,
+          usage_storage_task::TaskClient UsageClient>
     [[noreturn]] void operator()(
         i2c::writer::Writer<QueueImpl> *writer,
         i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,
         sensors::hardware::SensorHardwareBase *hardware,
-        std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer) {
+        std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer,
+        UsageClient *usage_client, uint16_t pres_err_key) {
         auto handler = PressureMessageHandler{
             *writer,   *poller,   *can_client,  get_queue(),
-            *hardware, sensor_id, sensor_buffer};
+            *hardware, sensor_id, sensor_buffer, *usage_client, pres_err_key};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

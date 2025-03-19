@@ -16,6 +16,7 @@
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 
 namespace sensors {
 
@@ -35,21 +36,25 @@ constexpr auto AUTO_BASELINE_START = 10;
 constexpr auto AUTO_BASELINE_END = 20;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          can::message_writer_task::TaskClient CanClient, class OwnQueue>
+          can::message_writer_task::TaskClient CanClient, class OwnQueue,
+          usage_storage_task::TaskClient UsageClient>
 class MMR920 {
   public:
     MMR920(I2CQueueWriter &writer, I2CQueuePoller &poller,
            CanClient &can_client, OwnQueue &own_queue,
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
-           std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer)
+           std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer,
+           UsageClient& usage_client, uint16_t pres_err_key)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
           sensor_id(id),
-          sensor_buffer(sensor_buffer) {}
+          sensor_buffer(sensor_buffer),
+          usage_client(usage_client),
+          pressure_error_key(pres_err_key) {}
 
     /**
      * @brief Check if the MMR92 has been initialized.
@@ -447,6 +452,7 @@ class MMR920 {
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::over_pressure});
+               increase_overpressure_count();
             } else if (!bind_sync) {
                 // if we're not using bind sync turn off the sync line
                 // we don't do this during bind sync because if it's triggering
@@ -599,6 +605,11 @@ class MMR920 {
         }
     }
 
+    void increase_overpressure_count() {
+        auto message = usage_messages::IncreaseErrorCount{.key=pressure_error_key};
+        usage_client.send_usage_storage_queue(message);
+    }
+
   private:
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
@@ -670,6 +681,8 @@ class MMR920 {
     uint16_t sensor_buffer_index_start = 0;
     uint16_t sensor_buffer_index_end = 0;
     bool crossed_buffer_index = false;
+    uint16_t pressure_error_key;
+    UsageClient& usage_client;
 };
 
 }  // namespace tasks
