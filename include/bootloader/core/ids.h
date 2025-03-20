@@ -105,6 +105,7 @@ typedef enum {
     can_messageid_gear_read_motor_driver_request = 0x507,
     can_messageid_max_sensor_value_request = 0x70,
     can_messageid_max_sensor_value_response = 0x71,
+    can_messageid_increase_evo_disp_count_request = 0x80,
     can_messageid_batch_read_sensor_response = 0x81,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
@@ -277,5 +278,6 @@ typedef enum {
     can_motorusagevaluetype_force_application_time = 0x3,
     can_motorusagevaluetype_total_error_count = 0x4,
     can_motorusagevaluetype_overpressure_error_count = 0x5,
+    can_motorusagevaluetype_resin_tip_dispense_count = 0x6,
 } CANMotorUsageValueType;
 
