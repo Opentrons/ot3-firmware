@@ -191,6 +191,7 @@ typedef enum {
     can_sensortype_pressure_temperature = 0x4,
     can_sensortype_humidity = 0x5,
     can_sensortype_temperature = 0x6,
+    can_sensortype_unused = 0x7,
 } CANSensorType;
 
 /** Sensor IDs available.
