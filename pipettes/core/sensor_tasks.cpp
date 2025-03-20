@@ -28,11 +28,17 @@ static auto capacitive_sensor_task_builder_front =
 
 static auto pressure_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId, uint16_t>(
+        can::ids::SensorId::S0, get_pipette_type() == NINETY_SIX_CHANNEL
+                                    ? OVERPRESSURE_COUNT_KEY_96
+                                    : OVERPRESSURE_COUNT_KEY_SM);
 
 static auto pressure_sensor_task_builder_front =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S1);
+                               can::ids::SensorId, uint16_t>(
+        can::ids::SensorId::S1, get_pipette_type() == NINETY_SIX_CHANNEL
+                                    ? OVERPRESSURE_COUNT_KEY_96
+                                    : OVERPRESSURE_COUNT_KEY_SM);
 
 static auto tip_notification_task_builder_rear =
     freertos_task::TaskStarter<256, sensors::tasks::TipPresenceNotificationTask,
@@ -82,7 +88,7 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller,
-        queues, sensor_hardware_primary, sensor_buffer, queues, OVERPRESSURE_COUNT_KEY_SM);
+        queues, sensor_hardware_primary, sensor_buffer, queues);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -94,8 +100,7 @@ void sensor_tasks::start_tasks(
         5, "read sensor board", i2c3_task_client, version_wrapper);
 
     auto& usage_storage_task = usage_storage_task_builder.start(
-        5, "usage storage", queues, queues,
-        tail_accessor);
+        5, "usage storage", queues, queues, tail_accessor);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
@@ -153,9 +158,6 @@ void sensor_tasks::start_tasks(
     auto front_tip_presence_sensor =
         PIPETTE_TYPE == NINETY_SIX_CHANNEL ? true : false;
 
-    auto over_pressure_count_key = PIPETTE_TYPE == NINETY_SIX_CHANNEL
-                                  ? OVERPRESSURE_COUNT_KEY_96 : OVERPRESSURE_COUNT_KEY_SM;
-
     auto& eeprom_task = eeprom_task_builder.start(
         5, "eeprom", eeprom_i2c_client, eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
@@ -163,7 +165,7 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s0", primary_pressure_i2c_client,
         primary_pressure_i2c_poller, queues, sensor_hardware_primary,
-        sensor_buffer, queues, over_pressure_count_key);
+        sensor_buffer, queues);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", secondary_pressure_i2c_client,
         secondary_pressure_i2c_poller, queues, sensor_hardware_secondary,
@@ -175,7 +177,7 @@ void sensor_tasks::start_tasks(
         // this doesn't matter though cause single channels will never call this
         sensor_buffer,
 #endif
-        queues, over_pressure_count_key);
+        queues);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -187,8 +189,7 @@ void sensor_tasks::start_tasks(
         5, "read sensor board", i2c3_task_client, version_wrapper);
 
     auto& usage_storage_task = usage_storage_task_builder.start(
-        5, "usage storage", queues, sensor_tasks::get_queues(),
-        tail_accessor);
+        5, "usage storage", queues, sensor_tasks::get_queues(), tail_accessor);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
@@ -336,7 +337,6 @@ void sensor_tasks::QueueClient::send_usage_storage_queue(
     const usage_storage_task::TaskMessage& m) {
     usage_storage_queue->try_write(m);
 }
-
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
 

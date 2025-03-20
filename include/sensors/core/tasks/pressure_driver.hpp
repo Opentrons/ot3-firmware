@@ -12,11 +12,11 @@
 #include "common/core/message_queue.hpp"
 #include "common/core/sensor_buffer.hpp"
 #include "i2c/core/messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "sensors/core/mmr920.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
-#include "motor-control/core/tasks/usage_storage_task.hpp"
 
 namespace sensors {
 
@@ -45,7 +45,7 @@ class MMR920 {
            sensors::hardware::SensorHardwareBase &hardware,
            const can::ids::SensorId &id,
            std::array<float, SENSOR_BUFFER_SIZE> *sensor_buffer,
-           UsageClient& usage_client, uint16_t pres_err_key)
+           UsageClient &usage_client, uint16_t pres_err_key)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -452,7 +452,7 @@ class MMR920 {
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::over_pressure});
-               increase_overpressure_count();
+                increase_overpressure_count();
             } else if (!bind_sync) {
                 // if we're not using bind sync turn off the sync line
                 // we don't do this during bind sync because if it's triggering
@@ -606,7 +606,8 @@ class MMR920 {
     }
 
     void increase_overpressure_count() {
-        auto message = usage_messages::IncreaseErrorCount{.key=pressure_error_key};
+        auto message =
+            usage_messages::IncreaseErrorCount{.key = pressure_error_key};
         usage_client.send_usage_storage_queue(message);
     }
 
@@ -681,8 +682,8 @@ class MMR920 {
     uint16_t sensor_buffer_index_start = 0;
     uint16_t sensor_buffer_index_end = 0;
     bool crossed_buffer_index = false;
+    UsageClient &usage_client;
     uint16_t pressure_error_key;
-    UsageClient& usage_client;
 };
 
 }  // namespace tasks

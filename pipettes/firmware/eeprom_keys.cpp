@@ -17,7 +17,6 @@ const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev2_sing_mult{
     .data_table = {std::make_pair(P_SM_ERROR_COUNT_KEY,
                                   usage_storage_task::error_count_usage_len)}};
 
-
 const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev3_sing_mult{
     .data_rev = 3,
     .data_table = {std::make_pair(OVERPRESSURE_COUNT_KEY_SM,

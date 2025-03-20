@@ -139,8 +139,7 @@ void start_tasks(
     sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
     can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
-    eeprom::dev_data::DevDataTailAccessor<QueueClient>&
-        tail_accessor);
+    eeprom::dev_data::DevDataTailAccessor<QueueClient>& tail_accessor);
 
 void start_tasks(
     CanWriterTask& can_writer, I2CClient& i2c3_task_client,
@@ -151,8 +150,7 @@ void start_tasks(
     sensors::hardware::SensorHardwareVersionSingleton& version_wrapper,
     can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
-    eeprom::dev_data::DevDataTailAccessor<QueueClient>&
-        tail_accessor);
+    eeprom::dev_data::DevDataTailAccessor<QueueClient>& tail_accessor);
 
 /**
  * Access to the sensor tasks singleton

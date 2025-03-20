@@ -191,7 +191,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_poller_client(),
                               sensor_hardware_container.primary,
                               sensor_hardware_container.secondary.value(),
-                              version_wrapper, id, eeprom_hardware_iface, tail_accessor);
+                              version_wrapper, id, eeprom_hardware_iface,
+                              tail_accessor);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -218,7 +219,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   sensor_hardware_container.primary,
                                   sensor_hardware_container.secondary.value(),
-                                  version_wrapper, id, eeprom_hardware_iface, tail_accessor);
+                                  version_wrapper, id, eeprom_hardware_iface,
+                                  tail_accessor);
     } else {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                   peripheral_tasks::get_i2c3_client(),
@@ -226,7 +228,8 @@ auto initialize_motor_tasks(
                                   peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   sensor_hardware_container.primary,
-                                  version_wrapper, id, eeprom_hardware_iface, tail_accessor);
+                                  version_wrapper, id, eeprom_hardware_iface,
+                                  tail_accessor);
     }
 
     initialize_linear_timer(plunger_callback);
