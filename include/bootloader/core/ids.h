@@ -62,6 +62,8 @@ typedef enum {
     can_messageid_write_motor_current_request = 0x33,
     can_messageid_read_motor_current_request = 0x34,
     can_messageid_read_motor_current_response = 0x35,
+    can_messageid_read_motor_driver_error_status_request = 0x36,
+    can_messageid_read_motor_driver_error_status_response = 0x37,
     can_messageid_set_brushed_motor_vref_request = 0x40,
     can_messageid_set_brushed_motor_pwm_request = 0x41,
     can_messageid_gripper_grip_request = 0x42,
@@ -103,6 +105,7 @@ typedef enum {
     can_messageid_gear_read_motor_driver_request = 0x507,
     can_messageid_max_sensor_value_request = 0x70,
     can_messageid_max_sensor_value_response = 0x71,
+    can_messageid_batch_read_sensor_response = 0x81,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,
@@ -167,6 +170,7 @@ typedef enum {
     can_errorcode_over_pressure = 0xd,
     can_errorcode_door_open = 0xe,
     can_errorcode_reed_open = 0xf,
+    can_errorcode_motor_driver_error_detected = 0x10,
     can_errorcode_safety_relay_inactive = 0x11,
 } CANErrorCode;
 
@@ -208,6 +212,7 @@ typedef enum {
     can_sensoroutputbinding_report = 0x2,
     can_sensoroutputbinding_max_threshold_sync = 0x4,
     can_sensoroutputbinding_auto_baseline_report = 0x8,
+    can_sensoroutputbinding_multi_sensor_sync = 0x10,
 } CANSensorOutputBinding;
 
 /** How a sensor's threshold should be interpreted. */
@@ -270,5 +275,6 @@ typedef enum {
     can_motorusagevaluetype_right_gear_motor_distance = 0x2,
     can_motorusagevaluetype_force_application_time = 0x3,
     can_motorusagevaluetype_total_error_count = 0x4,
+    can_motorusagevaluetype_overpressure_error_count = 0x5,
 } CANMotorUsageValueType;
 
