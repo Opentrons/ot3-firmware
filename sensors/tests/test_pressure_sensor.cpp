@@ -28,6 +28,13 @@ auto get_message(Queue& q) -> Message {
     q.try_read(&empty_msg);
     return std::get<Message>(empty_msg);
 }
+struct MockUsageClient {
+    std::deque<usage_storage_task::TaskMessage> queue{};
+    auto send_usage_storage_queue(const usage_storage_task::TaskMessage& m)
+        -> void {
+        queue.push_back(m);
+    }
+};
 
 constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t pressure_id =
@@ -35,6 +42,7 @@ constexpr uint8_t pressure_id =
 constexpr uint8_t pressure_temperature_id =
     static_cast<uint8_t>(can::ids::SensorType::pressure_temperature);
 constexpr uint8_t sensor_id_int = 0x0;
+constexpr uint16_t overpressure_eeprom_key = 123;
 
 static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer;
 
@@ -58,10 +66,10 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-
+    auto muc = MockUsageClient();
     auto sensor = sensors::tasks::PressureMessageHandler{
         writer,  poller,    queue_client,  response_queue,
-        mock_hw, sensor_id, &sensor_buffer};
+        mock_hw, sensor_id, &sensor_buffer, muc, overpressure_eeprom_key};
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();
