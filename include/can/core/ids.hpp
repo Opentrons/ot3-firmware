@@ -222,7 +222,7 @@ enum class SensorOutputBinding {
     sync = 0x1,
     report = 0x2,
     max_threshold_sync = 0x4,
-    auto_baseline_report = 0x08,
+    auto_baseline_report = 0x8,
     multi_sensor_sync = 0x10,
 };
 
@@ -277,6 +277,7 @@ enum class MotorUsageValueType {
     right_gear_motor_distance = 0x2,
     force_application_time = 0x3,
     total_error_count = 0x4,
+    overpressure_error_count = 0x5,
 };
 
 }  // namespace can::ids

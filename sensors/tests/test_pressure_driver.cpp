@@ -35,10 +35,17 @@ auto get_message(Queue& q) -> Message {
     q.try_read(&empty_msg);
     return std::get<Message>(empty_msg);
 }
-
+struct MockUsageClient {
+    std::deque<usage_storage_task::TaskMessage> queue{};
+    auto send_usage_storage_queue(const usage_storage_task::TaskMessage& m)
+        -> void {
+        queue.push_back(m);
+    }
+};
 constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
 static std::array<float, SENSOR_BUFFER_SIZE> sensor_buffer;
+constexpr uint16_t overpressure_eeprom_key = 123;
 
 SCENARIO("Testing the pressure sensor driver") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
@@ -61,8 +68,10 @@ SCENARIO("Testing the pressure sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
+    auto muc = MockUsageClient();
     sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
-                                  hardware, sensor_id, &sensor_buffer);
+                                  hardware, sensor_id, &sensor_buffer, muc,
+                                  overpressure_eeprom_key);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 
