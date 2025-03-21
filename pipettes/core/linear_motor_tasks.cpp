@@ -1,9 +1,9 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/firmware/eeprom_keys.hpp"
-#include "pipettes/core/pipette_type.h"
 
 static auto motion_tasks = linear_motor_tasks::Tasks{};
 static auto motion_queue_client = linear_motor_tasks::QueueClient{};
@@ -16,11 +16,10 @@ static auto tmc2160_tasks = linear_motor_tasks::tmc2160_driver::Tasks{};
 static auto tmc2160_queue_client =
     linear_motor_tasks::tmc2160_driver::QueueClient{};
 
-static auto mc_task_builder =
-    freertos_task::TaskStarter<256,
-                               motion_controller_task::MotionControllerTask, uint16_t>{get_pipette_type() == NINETY_SIX_CHANNEL
-                                    ? OVERPRESSURE_COUNT_KEY_96
-                                    : OVERPRESSURE_COUNT_KEY_SM};
+static auto mc_task_builder = freertos_task::TaskStarter<
+    256, motion_controller_task::MotionControllerTask, uint16_t>{
+    get_pipette_type() == NINETY_SIX_CHANNEL ? OVERPRESSURE_COUNT_KEY_96
+                                             : OVERPRESSURE_COUNT_KEY_SM};
 static auto tmc2130_driver_task_builder =
     freertos_task::TaskStarter<256, tmc2130::tasks::MotorDriverTask>{};
 static auto tmc2160_driver_task_builder =
