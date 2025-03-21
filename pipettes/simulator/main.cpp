@@ -155,13 +155,14 @@ auto initialize_motor_tasks(
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     interfaces::gear_motor::UnavailableGearHardwareTasks&) {
     if (get_pipette_type() == EIGHT_CHANNEL) {
-        sensor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_client(),
-            peripheral_tasks::get_i2c3_poller_client(),
-            peripheral_tasks::get_i2c1_client(),
-            peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw_primary,
-            fake_sensor_hw_secondary, version_wrapper, id, sim_eeprom, tail_accessor);
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c3_poller_client(),
+                                  peripheral_tasks::get_i2c1_client(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  fake_sensor_hw_primary,
+                                  fake_sensor_hw_secondary, version_wrapper, id,
+                                  sim_eeprom, tail_accessor);
 
     } else /* single channel */ {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,

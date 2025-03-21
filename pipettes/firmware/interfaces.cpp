@@ -80,20 +80,19 @@ struct motor_hardware::UsageEEpromConfig plunger_usage_config {
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
             .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
+                                  ? P_96_ERROR_COUNT_KEY
+                                  : P_SM_ERROR_COUNT_KEY,
+                .type_key =
+                    uint16_t(can::ids::MotorUsageValueType::total_error_count),
+                .length = usage_storage_task::error_count_usage_len},
             UsageRequestSet {
-            .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
-                              ? P_96_ERROR_COUNT_KEY
-                              : P_SM_ERROR_COUNT_KEY,
-            .type_key =
-                uint16_t(can::ids::MotorUsageValueType::total_error_count),
-            .length = usage_storage_task::error_count_usage_len
-        },
-        UsageRequestSet {
             .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
                               ? OVERPRESSURE_COUNT_KEY_96
                               : OVERPRESSURE_COUNT_KEY_SM,
-            .type_key =
-                uint16_t(can::ids::MotorUsageValueType::overpressure_error_count),
+            .type_key = uint16_t(
+                can::ids::MotorUsageValueType::overpressure_error_count),
             .length = usage_storage_task::error_count_usage_len
         }
     }

@@ -70,7 +70,8 @@ SCENARIO("Testing the pressure sensor driver") {
     poller.set_queue(&i2c_poll_queue);
     auto muc = MockUsageClient();
     sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
-                                  hardware, sensor_id, &sensor_buffer, muc, overpressure_eeprom_key);
+                                  hardware, sensor_id, &sensor_buffer, muc,
+                                  overpressure_eeprom_key);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 

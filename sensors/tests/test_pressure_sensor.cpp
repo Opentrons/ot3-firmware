@@ -68,8 +68,9 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     poller.set_queue(&i2c_poll_queue);
     auto muc = MockUsageClient();
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer,  poller,    queue_client,  response_queue,
-        mock_hw, sensor_id, &sensor_buffer, muc, overpressure_eeprom_key};
+        writer,         poller,  queue_client,
+        response_queue, mock_hw, sensor_id,
+        &sensor_buffer, muc,     overpressure_eeprom_key};
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();
