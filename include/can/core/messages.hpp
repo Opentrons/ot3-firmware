@@ -226,7 +226,8 @@ using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 
-using IncreaseEvoDispenseRequest = Empty<MessageId::increase_evo_disp_count_request>;
+using IncreaseEvoDispenseRequest =
+    Empty<MessageId::increase_evo_disp_count_request>;
 
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
