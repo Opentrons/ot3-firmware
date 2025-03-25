@@ -74,18 +74,25 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
 }
 
 struct motor_hardware::UsageEEpromConfig plunger_usage_config {
-    std::array<UsageRequestSet, 2> {
+    std::array<UsageRequestSet, 3> {
         UsageRequestSet{
             .eeprom_key = PLUNGER_MOTOR_STEP_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
             .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
+                                  ? P_96_ERROR_COUNT_KEY
+                                  : P_SM_ERROR_COUNT_KEY,
+                .type_key =
+                    uint16_t(can::ids::MotorUsageValueType::total_error_count),
+                .length = usage_storage_task::error_count_usage_len},
             UsageRequestSet {
             .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
-                              ? P_96_ERROR_COUNT_KEY
-                              : P_SM_ERROR_COUNT_KEY,
-            .type_key =
-                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+                              ? OVERPRESSURE_COUNT_KEY_96
+                              : OVERPRESSURE_COUNT_KEY_SM,
+            .type_key = uint16_t(
+                can::ids::MotorUsageValueType::overpressure_error_count),
             .length = usage_storage_task::error_count_usage_len
         }
     }
