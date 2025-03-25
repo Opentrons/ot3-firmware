@@ -18,8 +18,8 @@ static auto tmc2160_queue_client =
 
 static auto mc_task_builder = freertos_task::TaskStarter<
     256, motion_controller_task::MotionControllerTask, uint16_t>{
-    get_pipette_type() == NINETY_SIX_CHANNEL ? OVERPRESSURE_COUNT_KEY_96
-                                             : OVERPRESSURE_COUNT_KEY_SM};
+    get_pipette_type() == NINETY_SIX_CHANNEL ? EVOTIP_DISPENSE_COUNT_KEY_96
+                                             : EVOTIP_DISPENSE_COUNT_KEY_SM};
 static auto tmc2130_driver_task_builder =
     freertos_task::TaskStarter<256, tmc2130::tasks::MotorDriverTask>{};
 static auto tmc2160_driver_task_builder =
