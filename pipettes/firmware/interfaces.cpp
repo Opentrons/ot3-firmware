@@ -96,8 +96,8 @@ struct motor_hardware::UsageEEpromConfig plunger_usage_config {
                 .length = usage_storage_task::error_count_usage_len},
             UsageRequestSet {
             .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
-                              ? EVOTIP_DISPENSEC_COUNT_KEY_96
-                              : EVOTIP_DISPENSEC_COUNT_KEY_SM,
+                              ? EVOTIP_DISPENSE_COUNT_KEY_96
+                              : EVOTIP_DISPENSE_COUNT_KEY_SM,
             .type_key = uint16_t(
                 can::ids::MotorUsageValueType::resin_tip_dispense_count),
             .length = usage_storage_task::error_count_usage_len

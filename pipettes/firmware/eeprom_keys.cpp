@@ -24,7 +24,7 @@ const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev3_sing_mult{
 
 const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev4_sing_mult{
     .data_rev = 4,
-    .data_table = {std::make_pair(EVOTIP_DISPENSEC_COUNT_KEY_SM,
+    .data_table = {std::make_pair(EVOTIP_DISPENSE_COUNT_KEY_SM,
                                   usage_storage_task::error_count_usage_len)}};
 
 const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1_96ch{
@@ -53,7 +53,7 @@ const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev3_96ch{
 
 const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev4_96ch{
     .data_rev = 4,
-    .data_table = {std::make_pair(EVOTIP_DISPENSEC_COUNT_KEY_96,
+    .data_table = {std::make_pair(EVOTIP_DISPENSE_COUNT_KEY_96,
                                   usage_storage_task::error_count_usage_len)}};
 
 const std::vector<eeprom::data_rev_task::DataTableUpdateMessage> table_updater =
