@@ -147,8 +147,6 @@ class MotionControllerMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
-
-
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
