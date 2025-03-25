@@ -135,10 +135,8 @@ class MotionControllerMessageHandler {
             controller.move(m);
         }
     }
-
+#endif
     void handle(const can::messages::IncreaseEvoDispenseRequest& m) {
-        // We should never have a key = 0 if we're in this define but just in
-        // case
         if (evo_disp_count_key == 0) {
             return;
         }
@@ -149,7 +147,7 @@ class MotionControllerMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
-#endif
+
 
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
