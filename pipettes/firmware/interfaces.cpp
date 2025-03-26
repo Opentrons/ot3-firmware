@@ -74,7 +74,7 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
 }
 
 struct motor_hardware::UsageEEpromConfig plunger_usage_config {
-    std::array<UsageRequestSet, 3> {
+    std::array<UsageRequestSet, 4> {
         UsageRequestSet{
             .eeprom_key = PLUNGER_MOTOR_STEP_KEY,
             .type_key =
@@ -87,12 +87,19 @@ struct motor_hardware::UsageEEpromConfig plunger_usage_config {
                 .type_key =
                     uint16_t(can::ids::MotorUsageValueType::total_error_count),
                 .length = usage_storage_task::error_count_usage_len},
+            UsageRequestSet{
+                .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
+                                  ? OVERPRESSURE_COUNT_KEY_96
+                                  : OVERPRESSURE_COUNT_KEY_SM,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::overpressure_error_count),
+                .length = usage_storage_task::error_count_usage_len},
             UsageRequestSet {
             .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
-                              ? OVERPRESSURE_COUNT_KEY_96
-                              : OVERPRESSURE_COUNT_KEY_SM,
+                              ? EVOTIP_DISPENSE_COUNT_KEY_96
+                              : EVOTIP_DISPENSE_COUNT_KEY_SM,
             .type_key = uint16_t(
-                can::ids::MotorUsageValueType::overpressure_error_count),
+                can::ids::MotorUsageValueType::resin_tip_dispense_count),
             .length = usage_storage_task::error_count_usage_len
         }
     }

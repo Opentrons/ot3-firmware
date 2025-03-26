@@ -24,10 +24,12 @@ class MotionControllerMessageHandler {
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client,
-                                   UsageClient& usage_client)
+                                   UsageClient& usage_client,
+                                   uint16_t evo_disp_count_key)
         : controller{controller},
           can_client{can_client},
-          usage_client{usage_client} {}
+          usage_client{usage_client},
+          evo_disp_count_key{evo_disp_count_key} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -134,6 +136,16 @@ class MotionControllerMessageHandler {
         }
     }
 #endif
+    void handle(const can::messages::IncreaseEvoDispenseRequest& m) {
+        if (evo_disp_count_key == 0) {
+            return;
+        }
+        auto message =
+            usage_messages::IncreaseErrorCount{.key = evo_disp_count_key};
+        usage_client.send_usage_storage_queue(message);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
+    }
 
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
@@ -200,6 +212,7 @@ class MotionControllerMessageHandler {
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
+    uint16_t evo_disp_count_key;
 };
 
 /**
@@ -211,7 +224,10 @@ class MotionControllerTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    MotionControllerTask(QueueType& queue) : queue{queue} {}
+    MotionControllerTask(QueueType& queue, uint16_t evo_disp_count_key)
+        : queue{queue}, evo_disp_count_key{evo_disp_count_key} {}
+    MotionControllerTask(QueueType& queue)
+        : queue{queue}, evo_disp_count_key{0} {}
     MotionControllerTask(const MotionControllerTask& c) = delete;
     MotionControllerTask(const MotionControllerTask&& c) = delete;
     auto operator=(const MotionControllerTask& c) = delete;
@@ -227,8 +243,8 @@ class MotionControllerTask {
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
         CanClient* can_client, UsageClient* usage_client) {
-        auto handler = MotionControllerMessageHandler{*controller, *can_client,
-                                                      *usage_client};
+        auto handler = MotionControllerMessageHandler{
+            *controller, *can_client, *usage_client, evo_disp_count_key};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -246,6 +262,7 @@ class MotionControllerTask {
 
   private:
     QueueType& queue;
+    uint16_t evo_disp_count_key;
 };
 
 /**

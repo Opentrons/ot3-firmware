@@ -16,7 +16,8 @@ using MotionControlTaskMessage = std::variant<
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
     can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest,
-    can::messages::AddSensorMoveRequest>;
+    can::messages::AddSensorMoveRequest,
+    can::messages::IncreaseEvoDispenseRequest>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,
@@ -34,7 +35,8 @@ using MotionControlTaskMessage = std::variant<
     can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest,
+    can::messages::IncreaseEvoDispenseRequest>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,

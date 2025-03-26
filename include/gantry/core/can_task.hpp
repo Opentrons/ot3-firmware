@@ -37,7 +37,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::MotorStatusRequest,
+    can::messages::IncreaseEvoDispenseRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gantry::queues::QueueClient>,
