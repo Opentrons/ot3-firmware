@@ -24,7 +24,7 @@ set(REVISIONS rear-panel-rev1)
 # The default revision that you'll get if you use targets not qualified
 # by revision (i.e. if you do cmake --build --preset=rear-panel --target rear-panel
 # rather than cmake --build --preset=rear-panel --target rear-panel-proto)
-set(DEFAULT_REVISION rear-panel-rev1)
+set(DEFAULT_REVISION d1)
 
 # Add source files that should be checked by clang-tidy here
 set(REAR_PANEL_FW_LINTABLE_SRCS
