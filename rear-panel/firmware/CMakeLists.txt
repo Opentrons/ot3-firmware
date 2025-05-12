@@ -24,7 +24,7 @@ set(REVISIONS rear-panel-rev1)
 # The default revision that you'll get if you use targets not qualified
 # by revision (i.e. if you do cmake --build --preset=rear-panel --target rear-panel
 # rather than cmake --build --preset=rear-panel --target rear-panel-proto)
-set(DEFAULT_REVISION rear-panel-rev1)
+set(DEFAULT_REVISION d1)
 
 # Add source files that should be checked by clang-tidy here
 set(REAR_PANEL_FW_LINTABLE_SRCS
@@ -250,8 +250,8 @@ macro(rearpanel_loop)
 endmacro()
 
 foreach_revision(PROJECT_NAME rear-panel
-  REVISIONS b1 b2 c1
-  SOURCES rearpanel_b1_srcs rearpanel_b1_srcs rearpanel_b1_srcs
+  REVISIONS b1 b2 c1 d1
+  SOURCES rearpanel_b1_srcs rearpanel_b1_srcs rearpanel_b1_srcs rearpanel_b1_srcs
   CALL_FOREACH_REV rearpanel_loop
   NO_CREATE_IMAGE_HEX
   NO_CREATE_APPLICATION_HEX
