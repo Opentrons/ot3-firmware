@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   build-cross:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     timeout-minutes: 20
     strategy:
       matrix:
@@ -59,7 +59,7 @@ jobs:
         run: cmake --build --preset=${{ matrix.target }} --target ${{ matrix.target }}-images ${{ matrix.target }}-applications
 
   format:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     timeout-minutes: 20
     name: Formatting
     steps:
@@ -88,7 +88,7 @@ jobs:
         run: cmake --build ./build-cross --target format-ci
 
   lint:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     timeout-minutes: 20
     name: ${{ matrix.target }} lint
     strategy:
