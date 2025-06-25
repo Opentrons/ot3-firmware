@@ -1,5 +1,5 @@
 ---
-Checks:          '-*,clang-analyzer-*,bugprone-*,-bugprone-branch-clone,cppcoreguidelines-*,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,misc-*,-misc-non-private-member-variables-in-classes,-misc-unused-parameters,modernize-*,readability-*,-readability-magic-numbers,performance-*,-performance-no-int-to-ptr,-readability-named-parameter,-readability-static-accessed-through-instance,-misc-include-cleaner,-bugprone-easily-swappable-parameters,-unused-command-line-argument'
+Checks:          '-*,clang-analyzer-*,bugprone-*,-bugprone-branch-clone,cppcoreguidelines-*,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,misc-*,-misc-non-private-member-variables-in-classes,-misc-unused-parameters,modernize-*,readability-*,-readability-magic-numbers,performance-*,-performance-no-int-to-ptr,-readability-named-parameter,-readability-static-accessed-through-instance,-misc-include-cleaner,-bugprone-easily-swappable-parameters,-unused-command-line-argument,-modernize-use-constraints'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*/.*hpp'
 FormatStyle:     none
