@@ -62,7 +62,6 @@ macro(add_clang_tidy_target)
   # This helps with clang accepting what GCC accepts around the implementations of the message queue
   list(APPEND _actt_clang_extra_args_${_actt_TARGET_NAME} "--extra-arg=-frelaxed-template-template-args")
   # This helps with modern clang-tidy not liking the gcc specs setting for cross builds
-  list(APPEND _actt_clang_extra_args_${_actt_TARGET_NAME}  "-Wno-unused-command-line-argument")
   list(APPEND _actt_clang_extra_args_${_actt_TARGET_NAME}  "-Wno-error=unused-command-line-argument")
   add_custom_target(${_actt_TARGET_NAME}
     ALL
