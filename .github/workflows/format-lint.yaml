@@ -1,4 +1,4 @@
-name: "cross-compile all targets"
+name: "format/lint all targets"
 on:
   push:
     branches:
@@ -15,24 +15,10 @@ defaults:
     working-directory: ot3-firmware
 
 jobs:
-  build-cross:
+  format:
     runs-on: "ubuntu-latest"
     timeout-minutes: 20
-    strategy:
-      matrix:
-        target: [
-          gantry-x,
-          gantry-y,
-          gripper,
-          head,
-          hepa-uv,
-          pipettes-single,
-          pipettes-multi,
-          pipettes-96,
-          rear-panel
-        ]
-      fail-fast: false
-    name: Build ${{ matrix.target }}
+    name: Formatting
     steps:
       - name: Checkout ot3-firmware repo
         uses: actions/checkout@v4
@@ -55,5 +41,45 @@ jobs:
       - name: Configure
         run: cmake --preset=cross .
 
-      - name: Build all STM32G4 applications
-        run: cmake --build --preset=${{ matrix.target }} --target ${{ matrix.target }}-images ${{ matrix.target }}-applications
+      - name: Format
+        run: cmake --build ./build-cross --target format-ci
+
+  lint:
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 20
+    name: ${{ matrix.target }} lint
+    strategy:
+      matrix:
+        target: [
+          bootloader,
+          gantry,
+          gripper,
+          head,
+          hepa-uv,
+          pipettes,
+          rear-panel
+        ]
+    steps:
+      - name: Checkout ot3-firmware repo
+        uses: actions/checkout@v4
+        with:
+          path: ot3-firmware
+
+      - name: Checkout github actions directory
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+          sparse-checkout-cone-mode: false
+          path: actions
+
+      - name: Setup main
+        uses: ./actions/.github/actions/main-setup
+        with:
+          cache-version: ${{ secrets.CACHE_VERSION }}
+
+      - name: Configure
+        run: cmake --preset=cross .
+
+      - name: Format
+        run: cmake --build ./build-cross --target ${{ matrix.target }}-lint

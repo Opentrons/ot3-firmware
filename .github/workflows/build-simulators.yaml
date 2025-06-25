@@ -29,7 +29,7 @@ jobs:
           pipettes-96,
         ]
     name: ${{ matrix.target }} simulator
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     timeout-minutes: 10
     steps:
       - name: Checkout ot3-firmware repo

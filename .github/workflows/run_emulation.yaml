@@ -10,7 +10,7 @@ env:
 
 jobs:
   ot3-emulator:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     name: OT-3 Emulator
     steps:
 
