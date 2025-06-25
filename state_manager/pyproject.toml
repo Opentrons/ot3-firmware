@@ -27,7 +27,7 @@ mdformat_footnote = "^0.1.1"
 
 # Expects the monorepo (opentrons) to be a sibling of this repo
 opentrons = { path = "../../opentrons/api", develop = true}
-opentrons-shared-data = { path = "../../opentrons/shared-data/python", develop = true }
+opentrons-shared-data = { path = "../../opentrons/shared-data", develop = true }
 header_generation_utils = { path = "../header_generation_utils", develop = true}
 
 [tool.poetry.scripts]
