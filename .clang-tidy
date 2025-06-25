@@ -2,7 +2,6 @@
 Checks:          '-*,clang-analyzer-*,bugprone-*,-bugprone-branch-clone,cppcoreguidelines-*,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,misc-*,-misc-non-private-member-variables-in-classes,-misc-unused-parameters,modernize-*,readability-*,-readability-magic-numbers,performance-*,-performance-no-int-to-ptr,-readability-named-parameter,-readability-static-accessed-through-instance'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*/.*hpp'
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
 CheckOptions:
   - key:             bugprone-argument-comment.CommentBoolLiterals
