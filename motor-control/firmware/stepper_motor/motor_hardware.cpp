@@ -21,15 +21,15 @@ void MotorHardware::activate_motor() {
         // brake spec is < 1ms so this is plenty
         motor_hardware_delay(20);
         gpio::reset(pins.ebrake.value());
-        // Brake spec is 50ms to engage/disengage
-        motor_hardware_delay(100);
+        // carriage z needs 80ms and gripper z needs 120, so 120 it is.
+        motor_hardware_delay(120);
     }
 }
 void MotorHardware::deactivate_motor() {
     if (pins.ebrake.has_value()) {
         gpio::set(pins.ebrake.value());
-        // Brake spec is 50ms to engage/disengage
-        motor_hardware_delay(100);
+        // carriage z needs 80ms and gripper z needs 120, so 120 it is.
+        motor_hardware_delay(120);
     }
     gpio::reset(pins.enable);
 }
