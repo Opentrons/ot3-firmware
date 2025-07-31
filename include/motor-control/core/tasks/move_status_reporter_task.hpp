@@ -5,11 +5,11 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
-#include "common/core/hardware_delay.hpp"
 
 namespace move_status_reporter_task {
 
