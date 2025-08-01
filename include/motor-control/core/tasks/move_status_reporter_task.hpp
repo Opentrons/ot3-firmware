@@ -5,6 +5,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/hardware_delay.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
@@ -46,7 +47,9 @@ class MoveStatusMessageHandler {
     void handle_message(std::monostate&) {}
 
     void handle_message(const can::messages::ErrorMessage& msg) {
-        can_client.send_can_message(can::ids::NodeId::host, msg);
+        while (!can_client.send_can_message(can::ids::NodeId::host, msg)) {
+            vtask_hardware_delay(1);
+        }
     }
 
     void handle_message(const can::messages::StopRequest& msg) {
@@ -69,7 +72,9 @@ class MoveStatusMessageHandler {
             .encoder_position_um = end_position,
             .position_flags = message.position_flags,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
+        while (!can_client.send_can_message(can::ids::NodeId::host, msg)) {
+            vtask_hardware_delay(1);
+        }
 
         int32_t distance_traveled_um =
             end_position - fixed_point_multiply(um_per_encoder_pulse,
@@ -90,7 +95,9 @@ class MoveStatusMessageHandler {
             .encoder_position = fixed_point_multiply(
                 um_per_encoder_pulse, message.encoder_pulses, radix_offset_0{}),
             .position_flags = message.position_flags};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
+        while (!can_client.send_can_message(can::ids::NodeId::host, msg)) {
+            vtask_hardware_delay(1);
+        }
     }
 
     void handle_message(const usage_messages::IncreaseForceTimeUsage& message) {
