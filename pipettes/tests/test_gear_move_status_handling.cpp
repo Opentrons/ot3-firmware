@@ -19,8 +19,9 @@ struct MockCanClient {
     std::deque<std::pair<can::ids::NodeId, can::messages::ResponseMessageType>>
         queue{};
     auto send_can_message(can::ids::NodeId node_id,
-                          const can::messages::ResponseMessageType& m) -> void {
+                          const can::messages::ResponseMessageType& m) -> bool {
         queue.push_back(std::make_pair(node_id, m));
+        return true;
     }
 };
 struct MockUsageClient {
