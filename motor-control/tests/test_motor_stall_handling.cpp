@@ -306,7 +306,7 @@ SCENARIO("motor handler stall detection") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
                 THEN("move completed and no error was raised") {
-                    REQUIRE(test_objs.reporter.messages.size() == 6);
+                    REQUIRE(test_objs.reporter.messages.size() == 5);
                     for (auto& element : test_objs.reporter.messages) {
                         printf("%ld\n", element.index());
                     }
@@ -349,6 +349,104 @@ SCENARIO("motor handler stall detection") {
                         std::get<Ack>(test_objs.reporter.messages.front());
                     REQUIRE(ack_msg.ack_id ==
                             AckMessageId::complete_without_condition);
+                }
+            }
+        }
+    }
+
+    GIVEN("A stall when a motor is not in motion.") {
+        auto velocity = 5;
+        auto cond =
+            GENERATE(Stops::none, Stops::sync_line, Stops::sensor_report);
+        auto msg1 = Move{.message_index = 101,
+                         .duration = 23,
+                         .velocity = velocity,
+                         .stop_condition = static_cast<uint8_t>(cond)};
+        test_objs.hw.sim_set_encoder_pulses(0);
+        test_objs.handler.set_current_position(0);
+
+        WHEN("A move is commanded") {
+            test_objs.queue.try_write(msg1);
+            test_objs.handler.update_move();
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+                test_objs.hw.sim_set_encoder_pulses(i * velocity);
+                test_objs.handler.set_current_position(
+                    static_cast<uint64_t>(i * velocity) << 31);
+            }
+            THEN("Move ends successfully.") {
+                REQUIRE(test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                REQUIRE(test_objs.reporter.messages.size() == 1);
+            }
+            AND_WHEN("Motion happens after the move.") {
+                test_objs.hw.sim_set_encoder_pulses(0);
+                test_objs.reporter.messages.clear();
+                for (int i = 0; i < 10; ++i) {
+                    test_objs.handler.run_interrupt();
+                }
+                THEN("an error is sent.") {
+                    REQUIRE(test_objs.reporter.messages.size() == 2);
+                    REQUIRE(!test_objs.hw.position_flags.check_flag(
+                        Flags::stepper_position_ok));
+                }
+            }
+        }
+    }
+    GIVEN(
+        "A stall when a motor is not in motion but after a stall based move.") {
+        Move msg1 = Move{.message_index = 101,
+                         .duration = 23,
+                         .velocity = default_velocity,
+                         .stop_condition = static_cast<uint8_t>(Stops::stall)};
+        constexpr Move msg2 =
+            Move{.duration = 20, .velocity = default_velocity};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 3);
+        test_objs.handler.update_move();
+        WHEN("encoder doesn't update with the motor") {
+            while (test_objs.queue.has_message_isr()) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected but it is expected") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                THEN(
+                    "all the moves are cleared and only a stopped by condition "
+                    "ack message is sent") {
+                    REQUIRE(test_objs.queue.get_size() == 0);
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    Ack ack_msg =
+                        std::get<Ack>(test_objs.reporter.messages.front());
+                    REQUIRE(ack_msg.message_index == 101);
+                    REQUIRE(ack_msg.ack_id ==
+                            AckMessageId::stopped_by_condition);
+                }
+                THEN("an update motor position message") {
+                    auto update_msg =
+                        can::messages::UpdateMotorPositionEstimationRequest{
+                            .message_index = 123};
+                    test_objs.update_position_queue.try_write(update_msg);
+                    test_objs.handler.run_interrupt();
+                    THEN("a response is received") {
+                        REQUIRE(test_objs.reporter.messages.size() == 2);
+                        UpdatePositionResponse ack_msg =
+                            std::get<UpdatePositionResponse>(
+                                test_objs.reporter.messages.back());
+                        REQUIRE(ack_msg.message_index == 123);
+                    }
+                }
+            }
+            AND_WHEN("Motion happens after the move.") {
+                test_objs.hw.sim_set_encoder_pulses(200);
+                test_objs.reporter.messages.clear();
+                for (int i = 0; i < 10; ++i) {
+                    test_objs.handler.run_interrupt();
+                }
+                THEN("No error is sent.") {
+                    REQUIRE(test_objs.reporter.messages.size() == 0);
                 }
             }
         }

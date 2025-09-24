@@ -89,7 +89,29 @@ class MotorInterruptHandler {
                 }
             }
             hardware.unstep();
+        } else {
+            if (!_has_active_move && !has_move_messages()) {
+                if (check_for_idle_stall()) {
+                    handle_stall_without_movement();
+                }
+            }
         }
+    }
+
+    auto check_for_idle_stall() -> bool {
+        // if were expecting to be in a good state check for a stall
+        // good state means:
+        // 1. We have an encoder position to check
+        // 2. We haven't already sent a stall detection
+        // 3. A previous move didn't already trigger a error by replying with
+        // the wrong stop condition
+        // 4. The previous move wasn't a "ignore stalls" move
+        if (in_good_state && !stall_expected && !stall_handled &&
+            hardware.position_flags.check_flag(
+                MotorPositionStatus::Flags::encoder_position_ok)) {
+            return stall_detected();
+        }
+        return false;
     }
 
     auto check_for_stall() -> bool {
@@ -101,12 +123,20 @@ class MotorInterruptHandler {
         return false;
     }
 
+    auto handle_stall_without_movement() -> void {
+        hardware.position_flags.clear_flag(
+            MotorPositionStatus::Flags::stepper_position_ok);
+        cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+        stall_handled = true;
+    }
+
     auto handle_stall_during_movement() -> void {
         if (!_has_active_move or
             hardware.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok) or
             buffered_move.check_stop_condition(
                 MoveStopCondition::limit_switch_backoff)) {
+            stall_expected = true;
             return;
         }
         if (buffered_move.check_stop_condition(
@@ -128,6 +158,7 @@ class MotorInterruptHandler {
             // update
             finish_current_move(AckMessageId::stopped_by_condition);
             clear_queue_until_empty = true;
+            stall_expected = true;
         } else if (buffered_move.check_stop_condition(
                        MoveStopCondition::ignore_stalls)) {
             if (stall_handled) {
@@ -143,6 +174,7 @@ class MotorInterruptHandler {
                 usage_messages::IncreaseErrorCount{
                     .key = hardware.get_usage_eeprom_config()
                                .get_error_count_key()});
+            stall_expected = true;
         } else {
             cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
         }
@@ -480,7 +512,8 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
-        if (err_code == can::ids::ErrorCode::collision_detected) {
+        if (err_code == can::ids::ErrorCode::collision_detected &&
+            _has_active_move) {
             build_and_send_ack(AckMessageId::position_error);
         }
         status_queue_client.send_move_status_reporter_queue(
@@ -514,6 +547,13 @@ class MotorInterruptHandler {
         _has_active_move = false;
         tick_count = 0x0;
         stall_handled = false;
+        if ((buffered_move.check_stop_condition(
+                 MoveStopCondition::limit_switch_backoff) ||
+             buffered_move.check_stop_condition(
+                 MoveStopCondition::limit_switch)) &&
+            ack_msg_id == AckMessageId::complete_without_condition) {
+            in_good_state = false;
+        }
         build_and_send_ack(ack_msg_id);
         set_buffered_move(MotorMoveMessage{});
         // update the stall check ideal encoder counts based on
@@ -537,6 +577,8 @@ class MotorInterruptHandler {
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
         stall_handled = false;
+        stall_expected = false;
+        in_good_state = true;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -692,6 +734,8 @@ class MotorInterruptHandler {
     MotorMoveMessage buffered_move = MotorMoveMessage{};
     bool clear_queue_until_empty = false;
     bool stall_handled = false;
+    bool stall_expected = false;
+    bool in_good_state = true;
     bool in_estop = false;
     std::atomic_bool _has_active_move = false;
 };
