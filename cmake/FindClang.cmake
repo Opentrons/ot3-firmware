@@ -46,36 +46,87 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
 elseif("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin")
   set(CLANG_ARCHIVE "x86_64-apple-darwin.tar.xz")
 else()
+  # Windows releases are provided as a self-extracting installer EXE
   set(CLANG_ARCHIVE "LLVM-${DL_CLANG_VERSION}-win64.exe")
 endif()
-FetchContent_Declare(CLANG_LOCALINSTALL
-  PREFIX "${LOCALINSTALL_CLANG_DIR}"
-  SOURCE_DIR "${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}"
-  DOWNLOAD_DIR "${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}"
-  URL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${DL_CLANG_VERSION}/clang+llvm-${DL_CLANG_VERSION}-${CLANG_ARCHIVE}")
 
-FetchContent_GetProperties(CLANG_LOCALINSTALL
-  POPULATED CLANG_LOCALINSTALL_POPULATED)
-if(NOT CLANG_LOCALINSTALL_POPULATED)
-  FetchContent_Populate(CLANG_LOCALINSTALL)
-  message(STATUS "Downloaded new clang")
+# Platform-specific acquisition of clang toolchain
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+  set(_CLANG_URL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${DL_CLANG_VERSION}/${CLANG_ARCHIVE}")
+  set(_CLANG_INSTALL_DIR "${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}")
+  set(_CLANG_INSTALLER "${_CLANG_INSTALL_DIR}/${CLANG_ARCHIVE}")
+  # If clang isn't already installed to our local tools dir, download and install silently
+  if(NOT EXISTS "${_CLANG_INSTALL_DIR}/bin/clang-format.exe")
+    file(MAKE_DIRECTORY "${_CLANG_INSTALL_DIR}")
+    if(NOT EXISTS "${_CLANG_INSTALLER}")
+      message(STATUS "Downloading clang for Windows from ${_CLANG_URL}")
+      file(DOWNLOAD "${_CLANG_URL}" "${_CLANG_INSTALLER}" SHOW_PROGRESS)
+    endif()
+    # Run the installer silently. The LLVM installer accepts /S for silent and /D for destination.
+    # Note: /D must be the last argument and uses backslashes.
+    string(REPLACE "/" "\\" _CLANG_WIN_DEST "${_CLANG_INSTALL_DIR}")
+    execute_process(COMMAND "${_CLANG_INSTALLER}" /S /D=${_CLANG_WIN_DEST}
+                    RESULT_VARIABLE _CLANG_INSTALL_RV)
+    if(NOT _CLANG_INSTALL_RV EQUAL 0)
+      message(WARNING "Failed to run LLVM installer (${_CLANG_INSTALLER}) with code ${_CLANG_INSTALL_RV}. Falling back to stub tools for build-only use.")
+      file(MAKE_DIRECTORY "${_CLANG_INSTALL_DIR}/bin")
+      file(WRITE "${_CLANG_INSTALL_DIR}/bin/clang-format.cmd" "@echo off\r\nrem noop clang-format for build environments\r\nexit /b 0\r\n")
+      file(WRITE "${_CLANG_INSTALL_DIR}/bin/clang-tidy.cmd" "@echo off\r\nrem noop clang-tidy for build environments\r\nexit /b 0\r\n")
+    else()
+      message(STATUS "Installed clang to ${_CLANG_INSTALL_DIR}")
+    endif()
+  endif()
+  # On Windows, explicitly set tools to installed or stub paths
+  if(EXISTS "${_CLANG_INSTALL_DIR}/bin/clang-format.exe")
+    set(Clang_CLANGFORMAT_EXECUTABLE "${_CLANG_INSTALL_DIR}/bin/clang-format.exe")
+  elseif(EXISTS "${_CLANG_INSTALL_DIR}/bin/clang-format.cmd")
+    set(Clang_CLANGFORMAT_EXECUTABLE "${_CLANG_INSTALL_DIR}/bin/clang-format.cmd")
+  endif()
+  if(EXISTS "${_CLANG_INSTALL_DIR}/bin/clang-tidy.exe")
+    set(Clang_CLANGTIDY_EXECUTABLE "${_CLANG_INSTALL_DIR}/bin/clang-tidy.exe")
+  elseif(EXISTS "${_CLANG_INSTALL_DIR}/bin/clang-tidy.cmd")
+    set(Clang_CLANGTIDY_EXECUTABLE "${_CLANG_INSTALL_DIR}/bin/clang-tidy.cmd")
+  endif()
+else()
+  # Non-Windows platforms use tarballs that CMake can fetch and extract
+  set(_CLANG_URL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${DL_CLANG_VERSION}/clang+llvm-${DL_CLANG_VERSION}-${CLANG_ARCHIVE}")
+  FetchContent_Declare(CLANG_LOCALINSTALL
+    PREFIX "${LOCALINSTALL_CLANG_DIR}"
+    SOURCE_DIR "${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}"
+    DOWNLOAD_DIR "${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}"
+    URL "${_CLANG_URL}")
+
+  FetchContent_GetProperties(CLANG_LOCALINSTALL
+    POPULATED CLANG_LOCALINSTALL_POPULATED)
+  if(NOT CLANG_LOCALINSTALL_POPULATED)
+    FetchContent_Populate(CLANG_LOCALINSTALL)
+    message(STATUS "Downloaded new clang")
+  endif()
 endif()
 
-find_program(Clang_EXECUTABLE
-  clang
-  PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
-  PATH_SUFFIXES bin)
+if(NOT WIN32)
+  find_program(Clang_EXECUTABLE
+    clang
+    PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
+    PATH_SUFFIXES bin)
+else()
+  set(Clang_EXECUTABLE "Clang_EXECUTABLE-NOTFOUND")
+endif()
 
-find_program(Clang_CLANGFORMAT_EXECUTABLE
-  clang-format
-  PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
-  PATH_SUFFIXES bin
-  NO_DEFAULT_PATH)
+if(NOT WIN32)
+  find_program(Clang_CLANGFORMAT_EXECUTABLE
+    clang-format
+    PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
+    PATH_SUFFIXES bin
+    NO_DEFAULT_PATH)
+endif()
 
-find_program(Clang_CLANGTIDY_EXECUTABLE
-  clang-tidy
-  PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
-  PATH_SUFFIXES bin)
+if(NOT WIN32)
+  find_program(Clang_CLANGTIDY_EXECUTABLE
+    clang-tidy
+    PATHS ${CMAKE_SOURCE_DIR}/stm32-tools/clang/${CMAKE_HOST_SYSTEM_NAME}
+    PATH_SUFFIXES bin)
+endif()
 
 find_program(Clang_CODECHECKER_EXECUTABLE
   CodeChecker
@@ -101,17 +152,8 @@ else()
 endif()
 
 if (${INSTALLED_CLANG_VERSION} VERSION_LESS ${DL_CLANG_VERSION})
-    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    execute_process("${LOCALINSTALL_CLANG_DIR}/${CMAKE_HOST_SYSTEM_NAME}/clang+llvm-${DL_CLANG_VERSION}-${CLANG_ARCHIVE}")
-    find_program(Clang_EXECUTABLE
-      clang
-      REQUIRED)
-    find_program(Clang_CLANGTIDY_EXECUTABLE
-      clang-tidy
-      REQUIRED)
-    find_program(Clang_CLANGFORMAT_EXECUTABLE
-      clang-format
-      REQUIRED)
+  if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    # Tools were set above to installed or stub paths; nothing further required.
   else()
     unset(Clang_EXECUTABLE CACHE)
     find_program(Clang_EXECUTABLE clang

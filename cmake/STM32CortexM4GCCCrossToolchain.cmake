@@ -16,9 +16,16 @@ find_package(CrossGCC)
 set(CMAKE_SYSTEM_NAME "Generic")
 set(CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../vendor")
 set(CMAKE_SYSROOT "${CrossGCC_DIR}/${CrossGCC_TRIPLE}")
-set(CMAKE_C_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-gcc")
-set(CMAKE_ASM_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-gcc")
-set(CMAKE_CXX_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-g++")
+# Ensure CMake can locate the Windows executables by appending .exe when needed
+if(WIN32)
+  set(_CROSS_EXE ".exe")
+else()
+  set(_CROSS_EXE "")
+endif()
+
+set(CMAKE_C_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-gcc${_CROSS_EXE}")
+set(CMAKE_ASM_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-gcc${_CROSS_EXE}")
+set(CMAKE_CXX_COMPILER "${CrossGCC_BINDIR}/${CrossGCC_TRIPLE}-g++${_CROSS_EXE}")
 
 set(GCC_CROSS_BASE_FLAGS
   "-mthumb -mcpu=cortex-m4 -mfloat-abi=hard -specs=nosys.specs -specs=nano.specs -fpic -ffunction-sections -fdata-sections -fno-lto")
