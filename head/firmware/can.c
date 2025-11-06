@@ -17,7 +17,7 @@ HAL_StatusTypeDef MX_FDCAN1_Init(
     handle->Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
     handle->Init.Mode = FDCAN_MODE_NORMAL;
     handle->Init.AutoRetransmission = ENABLE;
-    handle->Init.TransmitPause = ENABLE;
+    handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
     handle->Init.NominalPrescaler = clock_divider;
     handle->Init.NominalSyncJumpWidth = max_sync_jump_width;
