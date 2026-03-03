@@ -1,6 +1,8 @@
 #pragma once
 
 #include "types.hpp"
+#include "messages.hpp"
+#include "common/core/bit_utils.hpp"
 
 namespace eeprom {
 namespace addresses {
@@ -11,7 +13,7 @@ namespace addresses {
  *
  * [20 bytes]    [4 bytes] [4 bytes]    [2 bytes]      [2 bytes]
  *
- * [                   32 bytes                       ]
+ * [                         32 bytes                          ]
  *
  * overall eeprom organization
  * [header] [lookup table] [unallocated] [data]
@@ -82,8 +84,13 @@ constexpr types::address revision_address_begin = serial_number_address_end;
 constexpr types::address revision_address_end =
     revision_address_begin + revision_length;
 
-constexpr types::data_length reserved_length = 4;
-constexpr types::address reserved_address_begin = revision_address_end;
+constexpr types::data_length boundary_address_length = 2;
+constexpr types::address boundary_address_begin = revision_address_end;
+constexpr types::address boundary_address_end =
+    boundary_address_begin + boundary_address_length;
+
+constexpr types::data_length reserved_length = 2;
+constexpr types::address reserved_address_begin = boundary_address_end;
 constexpr types::address reserved_address_end =
     reserved_address_begin + reserved_length;
 
@@ -97,7 +104,54 @@ constexpr types::address lookup_table_tail_begin = data_revision_address_end;
 constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
-constexpr types::address data_address_begin = lookup_table_tail_end;
+/*
+ *Wrapper class for ot_library_end and ot_library_begin
+ *included here because there we need a way to enforce
+ *that ot_library addresses can only be written to once
+ *
+ *NOTE: ot_library_begin and ot_library_end WILL BE NULL VALUES until
+ *set_data_boundary is called.
+ */
+class DataAddressWrapper {
+    public:
+        static const auto& get_data_address_begin() {return _data_address_begin;}
+        static const auto& get_ot_library_begin() {return _ot_library_begin;}
+        static const auto& get_ot_library_end() {return _ot_library_end;}
+
+        //sets the ot_library boundary with old data
+        static void set_data_boundary(types::address _boundary_address,
+            TaskClient& eeprom_client) {
+            // if either these have been written to, don't do anything
+            if (_ot_library_end || _ot_library_begin) {
+                return;
+            }
+
+            // reassign everything
+            _ot_library_begin = _data_address_begin;
+            _ot_library_end = _boundary_address;
+            _data_address_begin = _boundary_address;
+
+            // TODO: Ask Ryan if this would even work
+            message::WriteEepromMessage write;
+            write.memory_address = boundary_address_begin;
+            write.length = boundary_address_length;
+            auto* write_iter = write.data.begin();
+            write_iter = bit_utils::int_to_bytes(
+                _boundary_address, write_iter, write_iter + write.length);
+        }
+
+    //TODO: make sure this aligns to the first page (modulo math?)
+
+    private:
+        static inline types::address _data_address_begin = lookup_table_tail_begin;
+        static inline std::optional<types::address> _ot_library_begin;
+        static inline std::optional<types::address> _ot_library_end;
+};
+
+// create ot_library variables
+const auto& data_address_begin = DataAddressWrapper::get_data_address_begin();
+const auto& ot_library_begin = DataAddressWrapper::get_ot_library_begin();
+const auto& ot_library_end = DataAddressWrapper::get_ot_library_end();
 
 }  // namespace addresses
 }  // namespace eeprom

@@ -347,6 +347,20 @@ class DevDataAccessor
         return table_ready() && tail_accessor.data_rev_complete();
     }
 
+	/*
+	OT-Library Methods
+	*/
+
+	// Migration
+    auto find_data_end(uint16_t key, uint16_t len) -> types::address {
+		// find address of current key
+		types::address current_key_start_address = calculate_table_entry_start(key);
+
+        types::address current_key_end_address = current_key_start_address + len;
+
+        return current_key_end_address;
+	}
+
   private:
     DevDataTailAccessor<EEPromTaskClient>& tail_accessor;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
