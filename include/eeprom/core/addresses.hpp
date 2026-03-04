@@ -3,6 +3,7 @@
 #include "types.hpp"
 #include "messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "task.hpp"
 
 namespace eeprom {
 namespace addresses {
@@ -104,6 +105,8 @@ constexpr types::address lookup_table_tail_begin = data_revision_address_end;
 constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
+constexpr types::address data_address_begin = lookup_table_tail_end;
+
 /*
  *Wrapper class for ot_library_end and ot_library_begin
  *included here because there we need a way to enforce
@@ -112,46 +115,49 @@ constexpr types::address lookup_table_tail_end =
  *NOTE: ot_library_begin and ot_library_end WILL BE NULL VALUES until
  *set_data_boundary is called.
  */
+//template <task::TaskClient EEpromClient>
 class DataAddressWrapper {
     public:
-        static const auto& get_data_address_begin() {return _data_address_begin;}
         static const auto& get_ot_library_begin() {return _ot_library_begin;}
         static const auto& get_ot_library_end() {return _ot_library_end;}
 
         //sets the ot_library boundary with old data
         static void set_data_boundary(types::address _boundary_address,
-            TaskClient& eeprom_client) {
+            auto& eeprom_client) {
             // if either these have been written to, don't do anything
             if (_ot_library_end || _ot_library_begin) {
                 return;
             }
 
             // reassign everything
-            _ot_library_begin = _data_address_begin;
+            _ot_library_begin = data_address_begin;
             _ot_library_end = _boundary_address;
-            _data_address_begin = _boundary_address;
 
             // TODO: Ask Ryan if this would even work
             message::WriteEepromMessage write;
             write.memory_address = boundary_address_begin;
             write.length = boundary_address_length;
+
+            // Where does this data come from? it's currently stored in RAM,
+            // we never tell the computer where to find it.
+            // Ask Ryan for clarification when he gets back
             auto* write_iter = write.data.begin();
             write_iter = bit_utils::int_to_bytes(
                 _boundary_address, write_iter, write_iter + write.length);
+
+            eeprom_client.send_eeprom_queue(write);
         }
 
     //TODO: make sure this aligns to the first page (modulo math?)
 
     private:
-        static inline types::address _data_address_begin = lookup_table_tail_begin;
         static inline std::optional<types::address> _ot_library_begin;
         static inline std::optional<types::address> _ot_library_end;
 };
 
 // create ot_library variables
-const auto& data_address_begin = DataAddressWrapper::get_data_address_begin();
-const auto& ot_library_begin = DataAddressWrapper::get_ot_library_begin();
-const auto& ot_library_end = DataAddressWrapper::get_ot_library_end();
+static const auto& ot_library_begin = DataAddressWrapper::get_ot_library_begin();
+static const auto& ot_library_end = DataAddressWrapper::get_ot_library_end();
 
 }  // namespace addresses
 }  // namespace eeprom

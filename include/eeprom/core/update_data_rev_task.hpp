@@ -5,7 +5,6 @@
 #include "common/core/bit_utils.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
-#include "eeprom/core/ot_library.hpp"
 #include "eeprom/core/task.hpp"
 
 namespace eeprom {
@@ -40,7 +39,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
-          data_rev_accessor{eeprom_client, *this, data_rev_backing} {
+          data_rev_accessor{eeprom_client, *this, data_rev_backing},
+          eeprom_client(eeprom_client) {
         data_rev_accessor.start_read(0);
     }
 
@@ -89,18 +89,19 @@ class UpdateDataRevHandler : accessor::ReadListener {
             // update the "tail" of ot_library (through ot_library_end address)
             // to end of previous data
             addresses::DataAddressWrapper::set_data_boundary(
-                table_creator.find_data_end(key, length));
+                table_creator.find_data_end(key, length), eeprom_client);
 
             // TODO: Make an OTLibraryAccessor
 
-            for (const auto& i : m.data_table) {
+            /*for (const auto& i : m.data_table) {
                 // TODO: add a table_creator method to migrate data
                 // 1. get value here
                 // 2. move to same index in new_location
                 // in DevDataAccessor you can just say "the tail of the last
                 // data is the beginning of our new data".
                 // Since table_creator seems to be what actually writes the data
-            }
+            }*/
+
             std::ignore = bit_utils::int_to_bytes(
                 m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);
@@ -109,7 +110,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void visit(const OTLibraryUpdateMessage& m) {
-        if (m.data_rev == current_data_rev + 1) {
+        /*if (m.data_rev == current_data_rev + 1) {
             for (const auto& i : m.ot_library_table) {
                 // create new table_creator method to handle the new file system
                 // TODO: add a table_creator method to add data in new format
@@ -119,7 +120,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
                 m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);
             current_data_rev = m.data_rev;
-        }
+        }*/
+        // placeholder for now
+        std::ignore = m;
     }
 
     void read_complete(uint32_t) final {
@@ -146,6 +149,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     data_revision::DataRevisionType data_rev_backing =
         data_revision::DataRevisionType{};
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;
+    EEPromClient& eeprom_client;
 };
 
 /**
