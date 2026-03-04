@@ -122,11 +122,19 @@ class DataAddressWrapper {
         static const auto& get_ot_library_end() {return _ot_library_end;}
 
         //sets the ot_library boundary with old data
+        // FYI: this _boundary_address is the actual address that will be stored at the location of the
+        // above boundary_address
+        // Basicalsy _boundary_address = value
+        //            boundary_address = header location that contains _boundary_address
         static void set_data_boundary(types::address _boundary_address,
             auto& eeprom_client) {
             // if either these have been written to, don't do anything
             if (_ot_library_end || _ot_library_begin) {
                 return;
+            }
+
+            if (_boundary_address % 64 != 0) {
+                _boundary_address += 64 - (_boundary_address % 64);
             }
 
             // reassign everything
