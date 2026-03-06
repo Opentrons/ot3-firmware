@@ -92,5 +92,5 @@ template <typename RegType>
 [[nodiscard]] inline constexpr auto reg_from_id(uint32_t id) -> RegType {
     return static_cast<RegType>(static_cast<uint8_t>((id >> 8) & 0xff));
 }
-};  // namespace utils
-};  // namespace sensors
+}  // namespace utils
+}  // namespace sensors

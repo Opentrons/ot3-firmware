@@ -29,10 +29,18 @@ struct table_entry_action {
  *
  * @tparam EEPromTaskClient client of eeprom task
  **/
+// intermediate base class for DevDataTailAccessor
+struct DevDataTailIntermediate {
+    protected:
+        DataTailType data_tail_buff = DataTailType{};
+};
+
+
 // helper class to handle reading writing the data_tail value
 template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient,
+    : DevDataTailIntermediate,
+        public accessor::EEPromAccessor<EEPromTaskClient,
                                       addresses::lookup_table_tail_begin>,
       accessor::ReadListener {
     using accessor::EEPromAccessor<
@@ -142,7 +150,6 @@ class DevDataTailAccessor
         self->increase_tail_callback(msg);
     }
 
-    DataTailType data_tail_buff = DataTailType{};
     types::address data_tail = 0;
     bool tail_updated{false};
     bool config_updated{false};

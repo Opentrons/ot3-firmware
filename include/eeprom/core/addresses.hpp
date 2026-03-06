@@ -156,8 +156,6 @@ class DataAddressWrapper {
             eeprom_client.send_eeprom_queue(write);
         }
 
-    //TODO: make sure this aligns to the first page (modulo math?)
-
     private:
         static inline std::optional<types::address> _ot_library_begin;
         static inline std::optional<types::address> _ot_library_end;

@@ -369,5 +369,5 @@ using RegisterSerializedType = uint8_t;
 // Command Registers are all 8 bits
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint8_t;
-};  // namespace mmr920
-};  // namespace sensors
+}  // namespace mmr920
+}  // namespace sensors
