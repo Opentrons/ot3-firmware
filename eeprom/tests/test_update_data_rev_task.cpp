@@ -40,5 +40,31 @@ SCENARIO("Sending migrate data message") {
             REQUIRE(addresses::ot_library_begin == addresses::data_address_begin);
             REQUIRE(addresses::ot_library_end == 64);
         }
-    }
+
+        const std::optional<types::address> end_address = addresses::ot_library_end;
+
+        const std::vector<std::pair<types::address, types::data_length>>  additional= {
+            {4, 8},
+            {5, 8},
+            {6, 8},
+            {7, 8},
+            {8, 8},
+            {9, 8}
+        };
+
+        data.insert(data.end(), additional.begin(), additional.end());
+
+        const data_rev_task::MigrateDataMessage dummy_data_message{
+        .data_rev = data_revision+1,
+        .data_table = data
+        };
+
+        data_rev_handler.handle_message(dummy_data_message);
+
+        // The lock should hold, the value embedded within shouldn't change
+        // the value
+        THEN("The data address lock should hold") {
+            REQUIRE(addresses::ot_library_end == end_address);
+        }
+   }
 }
