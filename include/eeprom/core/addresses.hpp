@@ -146,9 +146,7 @@ class DataAddressWrapper {
             write.memory_address = boundary_address_begin;
             write.length = boundary_address_length;
 
-            // Where does this data come from? it's currently stored in RAM,
-            // we never tell the computer where to find it.
-            // Ask Ryan for clarification when he gets back
+
             auto* write_iter = write.data.begin();
             write_iter = bit_utils::int_to_bytes(
                 _boundary_address, write_iter, write_iter + write.length);
