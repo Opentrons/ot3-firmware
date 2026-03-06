@@ -1,15 +1,15 @@
 #include <cstring>
-#include "../../include/eeprom/core/dev_data.hpp"
+#include "eeprom/core/dev_data.hpp"
 
 extern "C" {
     void vTaskDelay(const int x) {std::ignore = x;}
     void vTaskDelete(void* x) {std::ignore = x;}
 }
 
-#include "../../include/eeprom/core/types.hpp"
-#include "../../include/eeprom/core/update_data_rev_task.hpp"
-#include "../../include/eeprom/tests/mock_eeprom_task_client.hpp"
-#include "../../stm32-tools/catch2/src/single_include/catch2/catch.hpp"
+#include "eeprom/core/types.hpp"
+#include "eeprom/core/update_data_rev_task.hpp"
+#include "eeprom/tests/mock_eeprom_task_client.hpp"
+#include "catch2/catch.hpp"
 
 using namespace eeprom;
 
