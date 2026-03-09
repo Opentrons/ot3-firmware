@@ -31,16 +31,15 @@ struct table_entry_action {
  **/
 // intermediate base class for DevDataTailAccessor
 struct DevDataTailIntermediate {
-    protected:
-        DataTailType data_tail_buff = DataTailType{};
+  protected:
+    DataTailType data_tail_buff = DataTailType{};
 };
-
 
 // helper class to handle reading writing the data_tail value
 template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
     : DevDataTailIntermediate,
-        public accessor::EEPromAccessor<EEPromTaskClient,
+      public accessor::EEPromAccessor<EEPromTaskClient,
                                       addresses::lookup_table_tail_begin>,
       accessor::ReadListener {
     using accessor::EEPromAccessor<
@@ -354,19 +353,21 @@ class DevDataAccessor
         return table_ready() && tail_accessor.data_rev_complete();
     }
 
-	/*
-	OT-Library Methods
-	*/
+    /*
+    OT-Library Methods
+    */
 
-	// Migration
+    // Migration
     auto find_data_end(uint16_t key, uint16_t len) -> types::address {
-		// find address of current key
-		types::address current_key_start_address = calculate_table_entry_start(key);
+        // find address of current key
+        types::address current_key_start_address =
+            calculate_table_entry_start(key);
 
-        types::address current_key_end_address = current_key_start_address + len;
+        types::address current_key_end_address =
+            current_key_start_address - len;
 
         return current_key_end_address;
-	}
+    }
 
   private:
     DevDataTailAccessor<EEPromTaskClient>& tail_accessor;
