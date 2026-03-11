@@ -2,15 +2,14 @@
 #include <cstring>
 #include <iostream>
 
-#include "eeprom/core/dev_data.hpp"
-#include "eeprom/core/hardware_iface.hpp"
-
 extern "C" {
 void vTaskDelay(const int x) { std::ignore = x; }
 void vTaskDelete(void* x) { std::ignore = x; }
 }
 
 #include "catch2/catch.hpp"
+#include "eeprom/core/dev_data.hpp"
+#include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
 #include "eeprom/core/update_data_rev_task.hpp"
 
@@ -94,5 +93,4 @@ SCENARIO("Sending migrate data message") {
             THEN("The data address lock should hold") {
                 REQUIRE(addresses::ot_library_end == end_address);
             }*/
-}
 }
