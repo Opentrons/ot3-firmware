@@ -6,6 +6,7 @@
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
+#include "eeprom/core/types.hpp"
 
 namespace eeprom {
 namespace data_rev_task {
@@ -74,32 +75,14 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void visit(MigrateDataMessage& m) {
-
         if (m.data_rev == current_data_rev + 1) {
-            // sort the data table to make sure keys are properly ordered
-            auto data_table_length = m.data_table.size();
-            std::sort(m.data_table.begin(), m.data_table.end());
-
-            // access final pair of data table and extract contents
-            std::pair<types::address, types::data_length> data_end =
-                m.data_table[data_table_length - 1];
-            types::address key = data_end.first;
-            types::data_length length = data_end.second;
-
-            // update the "tail" of ot_library (through ot_library_end address)
-            // to end of previous data
-            addresses::DataAddressWrapper::set_data_boundary(
-                table_creator.find_data_end(key, length), eeprom_client);
-
+            set_ot_library_boundary(m);
             // TODO: Make an OTLibraryAccessor
 
             /*for (const auto& i : m.data_table) {
                 // TODO: add a table_creator method to migrate data
                 // 1. get value here
                 // 2. move to same index in new_location
-                // in DevDataAccessor you can just say "the tail of the last
-                // data is the beginning of our new data".
-                // Since table_creator seems to be what actually writes the data
             }*/
 
             std::ignore = bit_utils::int_to_bytes(
@@ -107,6 +90,23 @@ class UpdateDataRevHandler : accessor::ReadListener {
             data_rev_accessor.write(data_rev_backing, 0);
             current_data_rev = m.data_rev;
         }
+    }
+
+    void set_ot_library_boundary(MigrateDataMessage& m) {
+        // sort the data table to make sure keys are properly ordered
+        auto data_table_length = m.data_table.size();
+        std::sort(m.data_table.begin(), m.data_table.end());
+
+        // access final pair of data table and extract contents
+        std::pair<types::address, types::data_length> data_end =
+            m.data_table[data_table_length - 1];
+        types::address key = data_end.first;
+        types::data_length length = data_end.second;
+
+        // update the "tail" of ot_library (through ot_library_end address)
+        // to end of previous data
+        addresses::DataAddressWrapper::set_data_boundary(
+            table_creator.find_data_end(key, length), eeprom_client);
     }
 
     void visit(const OTLibraryUpdateMessage& m) {
@@ -156,7 +156,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;

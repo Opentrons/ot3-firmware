@@ -1,6 +1,6 @@
 #pragma once
-
 #include <array>
+#include <iostream>
 
 #include "accessor.hpp"
 #include "addresses.hpp"
@@ -363,10 +363,14 @@ class DevDataAccessor
         types::address current_key_start_address =
             calculate_table_entry_start(key);
 
-        types::address current_key_end_address =
-            current_key_start_address - len;
+        types::address key_end_address = current_key_start_address + len;
 
-        return current_key_end_address;
+        types::address true_key_end_address =
+            static_cast<types::address>(
+                hardware_iface::EEpromMemorySize::ST_16_KBYTE) -
+            key_end_address;
+
+        return true_key_end_address;
     }
 
   private:

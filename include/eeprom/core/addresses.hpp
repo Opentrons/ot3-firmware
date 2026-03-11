@@ -1,9 +1,10 @@
 #pragma once
+#include <iostream>
 
-#include "types.hpp"
-#include "messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "messages.hpp"
 #include "task.hpp"
+#include "types.hpp"
 
 namespace eeprom {
 namespace addresses {
@@ -107,61 +108,73 @@ constexpr types::address lookup_table_tail_end =
 
 constexpr types::address data_address_begin = lookup_table_tail_end;
 
+// create ot_library variables
+constexpr types::address ot_library_begin = 192;
+constexpr types::address ot_library_end =
+    static_cast<types::address>(hardware_iface::EEpromMemorySize::ST_16_KBYTE) -
+    64;
+
 /*
  *Wrapper class for ot_library_end and ot_library_begin
  *included here because there we need a way to enforce
  *that ot_library addresses can only be written to once
  *
+ *NOTE This is no longer necessary for the ot_library implementation
+ See confluence "Ot-Library Migration" docs for more information
  *NOTE: ot_library_begin and ot_library_end WILL BE NULL VALUES until
  *set_data_boundary is called.
  */
-//template <task::TaskClient EEpromClient>
+// template <task::TaskClient EEpromClient>
 class DataAddressWrapper {
-    public:
-        static const auto& get_ot_library_begin() {return _ot_library_begin;}
-        static const auto& get_ot_library_end() {return _ot_library_end;}
+  public:
+    static auto get_ot_library_begin() -> types::address {
+        return _ot_library_begin.value();
+    }
+    static auto get_ot_library_end() -> types::address {
+        return _ot_library_end.value();
+    }
 
-        //sets the ot_library boundary with old data
-        // FYI: this _boundary_address is the actual address that will be stored at the location of the
-        // above boundary_address
-        // Basicalsy _boundary_address = value
-        //            boundary_address = header location that contains _boundary_address
-        static void set_data_boundary(types::address _boundary_address,
-            auto& eeprom_client) {
-            // if either these have been written to, don't do anything
-            if (_ot_library_end || _ot_library_begin) {
-                return;
-            }
-
-            if (_boundary_address % 64 != 0) {
-                _boundary_address += 64 - (_boundary_address % 64);
-            }
-
-            // reassign everything
-            _ot_library_begin = data_address_begin;
-            _ot_library_end = _boundary_address;
-
-            // TODO: Ask Ryan if this would even work
-            message::WriteEepromMessage write;
-            write.memory_address = boundary_address_begin;
-            write.length = boundary_address_length;
-
-
-            auto* write_iter = write.data.begin();
-            write_iter = bit_utils::int_to_bytes(
-                _boundary_address, write_iter, write_iter + write.length);
-
-            eeprom_client.send_eeprom_queue(write);
+    // sets the ot_library boundary with old data
+    //  FYI: this _boundary_address is the actual address that will be stored at
+    //  the location of the above boundary_address Basicalsy _boundary_address =
+    //  value
+    //             boundary_address = header location that contains
+    //             _boundary_address
+    static void set_data_boundary(types::address _boundary_address,
+                                  auto& eeprom_client) {
+        // if either these have been written to, don't do anything
+        if (_ot_library_end || _ot_library_begin) {
+            return;
         }
 
-    private:
-        static inline std::optional<types::address> _ot_library_begin;
-        static inline std::optional<types::address> _ot_library_end;
-};
+        if (_boundary_address % 64 != 0) {
+            uint16_t divided = _boundary_address / 64;
+            uint16_t page_aligned = divided * 64;
 
-// create ot_library variables
-static const auto& ot_library_begin = DataAddressWrapper::get_ot_library_begin();
-static const auto& ot_library_end = DataAddressWrapper::get_ot_library_end();
+            _boundary_address -= _boundary_address - page_aligned;
+        }
+
+        // reassign everything
+        // _ot_library_begin is set to 192 to give the lookup table enough room
+        // to grow It amounts to 3 pages at the beginning of the eeprom
+        _ot_library_begin = 192;
+        _ot_library_end = _boundary_address;
+
+        message::WriteEepromMessage write;
+        write.memory_address = boundary_address_begin;
+        write.length = boundary_address_length;
+
+        auto* write_iter = write.data.begin();
+        write_iter = bit_utils::int_to_bytes(_boundary_address, write_iter,
+                                             write_iter + write.length);
+
+        eeprom_client.send_eeprom_queue(write);
+    }
+
+  private:
+    static inline std::optional<types::address> _ot_library_begin;
+    static inline std::optional<types::address> _ot_library_end;
+};
 
 }  // namespace addresses
 }  // namespace eeprom
