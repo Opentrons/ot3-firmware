@@ -59,37 +59,37 @@ SCENARIO("Sending migrate data message") {
     auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{eeprom_client};
     auto data_rev_handler =
         data_rev_task::UpdateDataRevHandler{eeprom_client, tail_accessor};
+    /* IF BOUNDARY SETTING IS EVER REACTIVATED, UNCOMMENT
+        GIVEN("Finding boundary of old data") {
+            types::address eeprom_length = static_cast<types::address>(
+                hardware_iface::EEpromMemorySize::ST_16_KBYTE);
 
-    GIVEN("Finding boundary of old data") {
-        types::address eeprom_length = static_cast<types::address>(
-            hardware_iface::EEpromMemorySize::ST_16_KBYTE);
+            data_rev_handler.handle_message(mock_data_message);
 
-        data_rev_handler.handle_message(mock_data_message);
+            types::address end_address = eeprom_length - 64;
 
-        types::address end_address = eeprom_length - 64;
+            THEN("address should have updated to reflect the new location") {
+                REQUIRE(addresses::DataAddressWrapper::get_ot_library_begin() ==
+                        192);
+                REQUIRE(
+                    eeprom::addresses::DataAddressWrapper::get_ot_library_end()
+       == end_address);
+            }
 
-        THEN("address should have updated to reflect the new location") {
-            REQUIRE(addresses::DataAddressWrapper::get_ot_library_begin() ==
-                    192);
-            REQUIRE(
-                eeprom::addresses::DataAddressWrapper::get_ot_library_end() ==
-                end_address);
-        }
+            const std::vector<std::pair<types::address, types::data_length>>
+                additional = {{4, 8}, {5, 8}, {6, 8}, {7, 8}, {8, 8}, {9, 8}};
 
-        const std::vector<std::pair<types::address, types::data_length>>
-            additional = {{4, 8}, {5, 8}, {6, 8}, {7, 8}, {8, 8}, {9, 8}};
+            data.insert(data.end(), additional.begin(), additional.end());
 
-        data.insert(data.end(), additional.begin(), additional.end());
+            const data_rev_task::MigrateDataMessage dummy_data_message{
+                .data_rev = data_revision + 1, .data_table = data};
 
-        const data_rev_task::MigrateDataMessage dummy_data_message{
-            .data_rev = data_revision + 1, .data_table = data};
+            data_rev_handler.handle_message(dummy_data_message);
 
-        data_rev_handler.handle_message(dummy_data_message);
-
-        // The lock should hold, the value embedded within shouldn't change
-        // the value
-        THEN("The data address lock should hold") {
-            REQUIRE(addresses::ot_library_end == end_address);
-        }
-    }
+            // The lock should hold, the value embedded within shouldn't change
+            // the value
+            THEN("The data address lock should hold") {
+                REQUIRE(addresses::ot_library_end == end_address);
+            }*/
+}
 }

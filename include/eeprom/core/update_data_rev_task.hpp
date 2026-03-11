@@ -76,8 +76,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     void visit(MigrateDataMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
-            set_ot_library_boundary(m);
-            // TODO: Make an OTLibraryAccessor
+            // set_ot_library_boundary(m);
+            //  TODO: Make an OTLibraryAccessor
 
             /*for (const auto& i : m.data_table) {
                 // TODO: add a table_creator method to migrate data
