@@ -66,12 +66,15 @@ SCENARIO("Sending migrate data message") {
 
             data_rev_handler.handle_message(mock_data_message);
 
+            // The end address is set to this value because the program should
+       successfully exclude the
+            // final page of data (64 bytes)
             types::address end_address = eeprom_length - 64;
 
             THEN("address should have updated to reflect the new location") {
                 REQUIRE(addresses::DataAddressWrapper::get_ot_library_begin() ==
-                        192);
-                REQUIRE(
+                        192); // 192 to reflect the 3 pages now reserved for the
+       lookup table and header REQUIRE(
                     eeprom::addresses::DataAddressWrapper::get_ot_library_end()
        == end_address);
             }

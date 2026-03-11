@@ -147,7 +147,9 @@ class DataAddressWrapper {
             return;
         }
 
-        if (_boundary_address % 64 != 0) {
+        uint8_t byte_size = 64;
+
+        if (_boundary_address % byte_size != 0) {
             uint16_t divided = _boundary_address / 64;
             uint16_t page_aligned = divided * 64;
 
