@@ -1,6 +1,5 @@
 #pragma once
 #include <array>
-#include <iostream>
 
 #include "accessor.hpp"
 #include "addresses.hpp"

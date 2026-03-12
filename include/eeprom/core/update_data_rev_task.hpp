@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "common/core/bit_utils.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
