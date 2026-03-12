@@ -1,5 +1,4 @@
 #pragma once
-
 #include <array>
 
 #include "accessor.hpp"
@@ -29,10 +28,17 @@ struct table_entry_action {
  *
  * @tparam EEPromTaskClient client of eeprom task
  **/
+// intermediate base class for DevDataTailAccessor
+struct DevDataTailIntermediate {
+  protected:
+    DataTailType data_tail_buff = DataTailType{};
+};
+
 // helper class to handle reading writing the data_tail value
 template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient,
+    : DevDataTailIntermediate,
+      public accessor::EEPromAccessor<EEPromTaskClient,
                                       addresses::lookup_table_tail_begin>,
       accessor::ReadListener {
     using accessor::EEPromAccessor<
@@ -142,7 +148,6 @@ class DevDataTailAccessor
         self->increase_tail_callback(msg);
     }
 
-    DataTailType data_tail_buff = DataTailType{};
     types::address data_tail = 0;
     bool tail_updated{false};
     bool config_updated{false};
@@ -345,6 +350,26 @@ class DevDataAccessor
 
     auto read_write_ready() -> bool {
         return table_ready() && tail_accessor.data_rev_complete();
+    }
+
+    /*
+    OT-Library Methods
+    */
+
+    // Migration
+    auto find_data_end(uint16_t key, uint16_t len) -> types::address {
+        // find address of current key
+        types::address current_key_start_address =
+            calculate_table_entry_start(key);
+
+        types::address key_end_address = current_key_start_address + len;
+
+        types::address true_key_end_address =
+            static_cast<types::address>(
+                hardware_iface::EEpromMemorySize::ST_16_KBYTE) -
+            key_end_address;
+
+        return true_key_end_address;
     }
 
   private:

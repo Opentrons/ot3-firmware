@@ -73,4 +73,4 @@ struct VariantCat<std::variant<VariantAContents...>,
     using type = std::variant<VariantAContents..., VariantBContents...>;
 };
 
-};  // namespace utils
+}  // namespace utils

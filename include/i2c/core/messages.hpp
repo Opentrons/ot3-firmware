@@ -189,5 +189,5 @@ struct ConfigureMultiRegisterContinuousPolling {
     ResponseWriter response_writer;
 };
 
-};  // namespace messages
-};  // namespace i2c
+}  // namespace messages
+}  // namespace i2c

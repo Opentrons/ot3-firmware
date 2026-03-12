@@ -6,6 +6,9 @@ namespace types {
 // 0-65535
 using address = uint16_t;
 
+// 0-64
+using book_address = uint8_t;
+
 // 0-8
 using data_length = uint16_t;
 

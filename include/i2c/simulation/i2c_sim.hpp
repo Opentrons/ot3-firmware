@@ -35,5 +35,5 @@ class SimI2C : public I2CBase {
     std::vector<uint8_t> next_receive{};
     uint16_t last_receive_length = 0;
 };
-};  // namespace hardware
+}  // namespace hardware
 }  // namespace i2c

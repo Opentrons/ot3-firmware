@@ -34,6 +34,6 @@ class I2CBase {
         -> bool = 0;
 };
 
-};  // namespace hardware
+}  // namespace hardware
 
-};  // namespace i2c
+}  // namespace i2c

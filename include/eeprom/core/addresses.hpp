@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/core/bit_utils.hpp"
+#include "messages.hpp"
 #include "types.hpp"
 
 namespace eeprom {
@@ -11,7 +13,7 @@ namespace addresses {
  *
  * [20 bytes]    [4 bytes] [4 bytes]    [2 bytes]      [2 bytes]
  *
- * [                   32 bytes                       ]
+ * [                         32 bytes                          ]
  *
  * overall eeprom organization
  * [header] [lookup table] [unallocated] [data]
@@ -82,8 +84,13 @@ constexpr types::address revision_address_begin = serial_number_address_end;
 constexpr types::address revision_address_end =
     revision_address_begin + revision_length;
 
-constexpr types::data_length reserved_length = 4;
-constexpr types::address reserved_address_begin = revision_address_end;
+constexpr types::data_length boundary_address_length = 2;
+constexpr types::address boundary_address_begin = revision_address_end;
+constexpr types::address boundary_address_end =
+    boundary_address_begin + boundary_address_length;
+
+constexpr types::data_length reserved_length = 2;
+constexpr types::address reserved_address_begin = boundary_address_end;
 constexpr types::address reserved_address_end =
     reserved_address_begin + reserved_length;
 
@@ -98,6 +105,76 @@ constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
 constexpr types::address data_address_begin = lookup_table_tail_end;
+
+// create ot_library variables
+constexpr types::address ot_library_begin = 192;
+constexpr types::address ot_library_end =
+    static_cast<types::address>(hardware_iface::EEpromMemorySize::ST_16_KBYTE) -
+    64;
+
+/*
+ *Wrapper class for ot_library_end and ot_library_begin
+ *included here because there we need a way to enforce
+ *that ot_library addresses can only be written to once
+ *
+ *NOTE This is no longer necessary for the ot_library implementation
+ See confluence "Ot-Library Migration" docs for more information
+ *NOTE: ot_library_begin and ot_library_end WILL BE NULL VALUES until
+ *set_data_boundary is called.
+ */
+// template <task::TaskClient EEpromClient>
+class DataAddressWrapper {
+  public:
+    static auto get_ot_library_begin() -> types::address {
+        return _ot_library_begin.value();
+    }
+    static auto get_ot_library_end() -> types::address {
+        return _ot_library_end.value();
+    }
+
+    // sets the ot_library boundary with old data
+    //  FYI: this _boundary_address is the actual address that will be stored at
+    //  the location of the above boundary_address Basicalsy _boundary_address =
+    //  value
+    //             boundary_address = header location that contains
+    //             _boundary_address
+    static void set_data_boundary(types::address _boundary_address,
+                                  auto& eeprom_client) {
+        // if either these have been written to, don't do anything
+        if (_ot_library_end || _ot_library_begin) {
+            return;
+        }
+
+        uint8_t byte_size = 64;
+
+        if (_boundary_address % byte_size != 0) {
+            uint16_t divided = _boundary_address / 64;
+            uint16_t page_aligned = divided * 64;
+
+            _boundary_address -= _boundary_address - page_aligned;
+        }
+
+        // reassign everything
+        // _ot_library_begin is set to 192 to give the lookup table enough room
+        // to grow It amounts to 3 pages at the beginning of the eeprom
+        _ot_library_begin = 192;
+        _ot_library_end = _boundary_address;
+
+        message::WriteEepromMessage write;
+        write.memory_address = boundary_address_begin;
+        write.length = boundary_address_length;
+
+        auto* write_iter = write.data.begin();
+        write_iter = bit_utils::int_to_bytes(_boundary_address, write_iter,
+                                             write_iter + write.length);
+
+        eeprom_client.send_eeprom_queue(write);
+    }
+
+  private:
+    static inline std::optional<types::address> _ot_library_begin;
+    static inline std::optional<types::address> _ot_library_end;
+};
 
 }  // namespace addresses
 }  // namespace eeprom

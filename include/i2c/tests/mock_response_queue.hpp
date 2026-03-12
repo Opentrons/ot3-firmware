@@ -70,4 +70,4 @@ inline auto launder_response(Message& msg, Queue& q,
     return get_response(q);
 }
 
-};  // namespace test_mocks
+}  // namespace test_mocks

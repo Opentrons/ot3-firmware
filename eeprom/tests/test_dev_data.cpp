@@ -39,7 +39,7 @@ SCENARIO("initalizing a data accessor") {
         auto data = types::EepromData{};
         // 256 byte chips have a zeroed out memory
         data.fill(0x00);
-        THEN("accessor recieves config from task") {
+        THEN("accessor receives config from task") {
             // make sure the second message is a config request
             REQUIRE(std::get_if<message::ConfigRequestMessage>(
                         &queue_client.messages[0]) != nullptr);
