@@ -1,6 +1,9 @@
 #include <cstdint>
 #include <cstring>
-#include <tuple>
+#include <iostream>
+
+#include "eeprom/core/dev_data.hpp"
+#include "eeprom/core/hardware_iface.hpp"
 
 extern "C" {
 void vTaskDelay(const int x) { std::ignore = x; }
@@ -8,8 +11,6 @@ void vTaskDelete(void* x) { std::ignore = x; }
 }
 
 #include "catch2/catch.hpp"
-#include "eeprom/core/dev_data.hpp"
-#include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
 #include "eeprom/core/update_data_rev_task.hpp"
 
@@ -65,15 +66,12 @@ SCENARIO("Sending migrate data message") {
 
             data_rev_handler.handle_message(mock_data_message);
 
-            // The end address is set to this value because the program should
-       successfully exclude the
-            // final page of data (64 bytes)
             types::address end_address = eeprom_length - 64;
 
             THEN("address should have updated to reflect the new location") {
                 REQUIRE(addresses::DataAddressWrapper::get_ot_library_begin() ==
-                        192); // 192 to reflect the 3 pages now reserved for the
-       lookup table and header REQUIRE(
+                        192);
+                REQUIRE(
                     eeprom::addresses::DataAddressWrapper::get_ot_library_end()
        == end_address);
             }
@@ -92,5 +90,6 @@ SCENARIO("Sending migrate data message") {
             // the value
             THEN("The data address lock should hold") {
                 REQUIRE(addresses::ot_library_end == end_address);
-            }*/
+            }
+}*/
 }

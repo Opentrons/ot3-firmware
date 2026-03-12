@@ -1,9 +1,7 @@
 #pragma once
-#include <iostream>
 
 #include "common/core/bit_utils.hpp"
 #include "messages.hpp"
-#include "task.hpp"
 #include "types.hpp"
 
 namespace eeprom {
