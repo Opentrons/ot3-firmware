@@ -1,5 +1,5 @@
 #pragma once
-#include <iterator>
+#include <cstdint>
 #include <queue>
 
 #include "accessor.hpp"
@@ -14,7 +14,8 @@ using DataTailType =
     std::array<uint8_t, eeprom::addresses::lookup_table_tail_length>;
 
 /**OTLibraryAccessor**/
-template <task::TaskClient EEpromTaskClient, eeprom::types::address data_begin>
+template <task::TaskClient EEpromTaskClient,
+          eeprom::types::address ot_library_begin>
 class OTLibraryAccessor
     : public eeprom::accessor::EEPromAccessor<EEpromTaskClient, data_begin> {
   public:
@@ -29,14 +30,13 @@ class OTLibraryAccessor
                   eeprom_client, readListener,
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())){};
 
-    enum class AccessOptions { Initalize, AddBook };
-
-    void execute(AccessOptions method) { std::ignore = method; }
+    void write_data(uint16_t key, uint16_t len) { std::ignore = key, len; }
 
   private:
-    std::queue<AccessOptions> execution_queue;
-    types::address self_end = addresses::ot_library_end;
-    types::address self_begin = addresses::ot_library_begin;
+    auto calculate_crc(uint16_t data) -> uint16_t {
+        // TODO: figure out how to make a CRC
+        std::ignore = data;
+    }
 };
 }  // namespace ot_library_accessor
 }  // namespace eeprom
