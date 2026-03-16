@@ -39,13 +39,12 @@ class OTLibraryAccessor
   public:
     template <std::size_t SIZE>
     explicit OTLibraryAccessor(EEpromTaskClient& eeprom_client,
-                               accessor::ReadListener& readListener,
+                               accessor::ReadListener& read_listener,
                                DataBufferType<SIZE>& buffer)
-
         : accessor::EEPromAccessor<EEpromTaskClient,
-                                   addresses::data_address_begin>::
+                                   addresses::ot_library_begin>::
               EEPromAccessor(
-                  eeprom_client, readListener,
+                  eeprom_client, read_listener,
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())){};
 
     template <size_t SIZE>
@@ -73,6 +72,15 @@ class OTLibraryAccessor
 template <task::TaskClient EEpromTaskClient>
 class BookAccessor
     : public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
-                                              addresses::ot_library_begin> {};
+                                              addresses::ot_library_begin> {
+  public:
+    template <size_t SIZE>
+    explicit BookAccessor(EEpromTaskClient& eeprom_client,
+                          accessor::ReadListener& read_listener,
+                          DataBufferType<SIZE>& buffer)
+        : accessor::EEPromAccessor<eeprom_client, addresses::ot_library_begin>(
+              eeprom_client, read_listener,
+              accessor::AccessorBuffer(buffer.begin(), buffer.end())){};
+};
 }  // namespace ot_library_accessor
 }  // namespace eeprom
