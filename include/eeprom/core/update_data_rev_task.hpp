@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "eeprom/core/book_accessor.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
