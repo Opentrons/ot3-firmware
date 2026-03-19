@@ -22,7 +22,7 @@ using DataTailType =
  * */
 template <size_t SIZE>
 struct PageType {
-    uint16_t crc;
+    std::array<std::byte, 2> crc;
     uint8_t length;
     DataBufferType<SIZE> data;
 
