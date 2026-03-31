@@ -225,6 +225,17 @@ class BookAccessor
         return bits;
     }
 
+    auto check_crc(std::array<std::byte, 64> bytes) -> bool {
+        // Grab CRC from byte array
+        std::array<std::byte, 2> given_CRC = std::span(bytes).first(2);
+
+        // calculate the CRC from the given data
+        std::array<std::byte, 56> given_data = std::span(bytes).last(56);
+        std::array<std::byte, 2> calculated_crc = calc_crc(given_data);
+
+        return (calculated_crc == given_CRC);
+    }
+
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
         long read_00 = 0;
@@ -245,29 +256,37 @@ class BookAccessor
 
         if (action_cmd_m.action == TableAction::READ) {
             std::array<std::byte, 56> data_for_return{};
+            auto returned_data = std::span(check_read.reads);
+            bool crc_valid = true;
 
             if (max == read_00) {
-                auto returned_data = std::span(check_read.reads)[0].last(56);
+                returned_data = std::span(check_read.reads)[0].last(56);
+                crc_valid = check_crc(check_read.reads[0]);
 
-                std::copy_n(returned_data.begin(), size_of(returned_data),
-                            this->buffer);
             } else if (max == read_01) {
-                auto returned_data = std::span(check_read.reads)[1].last(56);
+                returned_data = std::span(check_read.reads)[1].last(56);
+                crc_valid = check_crc(check_read.reads[0]);
 
-                std::copy_n(returned_data.begin(), size_of(returned_data),
-                            this->buffer);
             } else if (max == read_11) {
-                auto returned_data = std::span(check_read.reads)[2].last(56);
+                returned_data = std::span(check_read.reads)[2].last(56);
+                crc_valid = check_crc(check_read.reads[0]);
 
-                std::copy_n(returned_data.begin(), size_of(returned_data),
-                            this->buffer);
             } else if (max == read_10) {
-                auto returned_data = std::span(check_read.reads)[3].last(56);
-
-                std::copy_n(returned_data.begin(), size_of(returned_data),
-                            this->buffer);
+                returned_data = std::span(check_read.reads)[3].last(56);
+                crc_valid = check_crc(check_read.reads[0]);
             }
 
+            if (crc_valid) {
+                std::copy_n(returned_data.begin(), sizeof(returned_data),
+                            this->buffer);
+            } else {
+                // TODO change to read most recent
+                std::string error = "CRC DIDN'T MATCH";
+
+                std::copy_n(error.begin(), error.size(), this->buffer);
+            }
+
+            // TODO: use the result of check_crc as a "gateway" for now
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
         } else if (action_cmd_m.action == TableAction::WRITE) {
