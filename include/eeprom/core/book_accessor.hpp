@@ -2,6 +2,8 @@
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <span>
 #include <vector>
 
 #include "accessor.hpp"
@@ -95,8 +97,6 @@ class BookAccessor
 
             // call a read to the table entry so we know where
             // to read the data
-            //
-            // MAKE A READ CALLBACK
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = table_location,
@@ -116,7 +116,7 @@ class BookAccessor
 
     void read_complete(uint32_t message_index) override {
         // 1. save what's in buffer to FullRead.reads
-        std::copy_n(buffer.begin(), buffer.size(),
+        std::copy_n(intermediate_buffer.begin(), intermediate_buffer.size(),
                     check_read.reads[check_read.book_index]);
         // increment check_read
         check_read.book_index += 1;
@@ -130,21 +130,21 @@ class BookAccessor
             types::address page_relative = 0;
 
             // move the address to read different pages inside book
-            switch (check_read) {
+            switch (check_read.book_index) {
                 case 1:
                     page_relative = 0b0000000001000000;
                 case 2:
                     page_relative = 0b0000000010000000;
                 case 3:
-                    page_relative = 0b0000000011000000;
+                    page_relative = 0b0000000001000000;
             }
-            read_address &= page_relative;
+            read_address |= page_relative;
 
             this->start_read_at_offset(read_address, read_address + 64,
                                        message_index);
+        } else {
+            read_final(message_index);
         }
-        // 3. if yes, call new method "read_final"
-        // 4. if no, initiate another read at next page address
     }
 
     // GET_DATA CONVENIENCE METHODS
@@ -163,6 +163,7 @@ class BookAccessor
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     DataBufferType<SIZE> buffer;
+
     FullRead check_read;
 
     auto calc_crc(std::array<std::byte, SIZE> data)
@@ -225,8 +226,54 @@ class BookAccessor
     }
 
     void read_final(uint16_t message_index) {
-        // TODO: find most current value
-        read_listener.read_complete(message_index);
+        // create variables representing read page addresses
+        long read_00 = 0;
+        long read_01 = 0;
+        long read_11 = 0;
+        long read_10 = 0;
+
+        // convert counter from bytes to longs
+        size_t counter_end = sizeof(std::byte) * 2;
+
+        std::memcpy(&read_00, check_read.reads[0][2], sizeof(std::byte) * 2);
+        std::memcpy(&read_01, check_read.reads[1][2], sizeof(std::byte) * 2);
+        std::memcpy(&read_11, check_read.reads[2][2], sizeof(std::byte) * 2);
+        std::memcpy(&read_10, check_read.reads[3][2], sizeof(std::byte) * 2);
+
+        // find maximum value
+        long max = std::max({read_00, read_01, read_11, read_10});
+
+        if (action_cmd_m.action == TableAction::READ) {
+            std::array<std::byte, 56> data_for_return{};
+
+            if (max == read_00) {
+                auto returned_data = std::span(check_read.reads)[0].last(56);
+
+                std::copy_n(returned_data.begin(), size_of(returned_data),
+                            this->buffer);
+            } else if (max == read_01) {
+                auto returned_data = std::span(check_read.reads)[1].last(56);
+
+                std::copy_n(returned_data.begin(), size_of(returned_data),
+                            this->buffer);
+            } else if (max == read_11) {
+                auto returned_data = std::span(check_read.reads)[2].last(56);
+
+                std::copy_n(returned_data.begin(), size_of(returned_data),
+                            this->buffer);
+            } else if (max == read_10) {
+                auto returned_data = std::span(check_read.reads)[3].last(56);
+
+                std::copy_n(returned_data.begin(), size_of(returned_data),
+                            this->buffer);
+            }
+
+            // tell object that called the read that the read is avaiable
+            read_listener.read_complete(message_index);
+        } else if (action_cmd_m.action == TableAction::WRITE) {
+            // TODO: finish this when writing
+            return;
+        }
     }
 
     // convert bitset to bytes
@@ -273,11 +320,11 @@ class BookAccessor
         types::address addr = 0;
         if (config_updated) {
             addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
-        }  // todo else
+        }
         return addr;
     }
 
-    void table_entry_action(const message::EepromMessage& m) {
+    void table_action_callback(const message::EepromMessage& m) {
         const auto* data_iter = m.data.begin();
         types::address data_addr = 0;
         types::data_length data_len = 0;
@@ -301,8 +348,8 @@ class BookAccessor
                 [[fallthrough]];
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
-                // if the read action has length 0, read the whole value else
-                // only read as much as requested
+                // if the read action has length 0, read the whole value
+                // else only read as much as requested
                 if (action_cmd_m.len != 0) {
                     data_len = action_cmd_m.len;
                 }
