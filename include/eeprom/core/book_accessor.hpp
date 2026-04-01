@@ -252,41 +252,57 @@ class BookAccessor
         std::memcpy(&read_10, check_read.reads[3][2], sizeof(std::byte) * 2);
 
         // find maximum value
-        long max = std::max({read_00, read_01, read_11, read_10});
+        long most_recent_valid = std::max({read_00, read_01, read_11, read_10});
 
         if (action_cmd_m.action == TableAction::READ) {
             std::array<std::byte, 56> data_for_return{};
             auto returned_data = std::span(check_read.reads);
-            bool crc_valid = true;
+            bool crc_valid = false;
 
-            if (max == read_00) {
-                returned_data = std::span(check_read.reads)[0].last(56);
-                crc_valid = check_crc(check_read.reads[0]);
+            uint16_t attempts = 0;
 
-            } else if (max == read_01) {
-                returned_data = std::span(check_read.reads)[1].last(56);
-                crc_valid = check_crc(check_read.reads[0]);
+            while (!crc_valid) {
+                // This while loop will keep looping through pages read until it
+                // finds one whose written CRC matches the one calcluated
+                attempts++;
+                // breaks if it has tried more than 4 times (the number of pages
+                // in a book)
+                if (attempts > 4) {
+                    std::string error = "CRC DIDN'T MATCH";
+                    // writes an error to the buffer
+                    // TODO ? maybe come up with a way to recover the data when
+                    // this happens?
 
-            } else if (max == read_11) {
-                returned_data = std::span(check_read.reads)[2].last(56);
-                crc_valid = check_crc(check_read.reads[0]);
+                    std::copy_n(error.begin(), error.size(), this->buffer);
 
-            } else if (max == read_10) {
-                returned_data = std::span(check_read.reads)[3].last(56);
-                crc_valid = check_crc(check_read.reads[0]);
+                    return;
+                }
+
+                if (most_recent_valid == read_00) {
+                    returned_data = std::span(check_read.reads)[0].last(56);
+                    crc_valid = check_crc(check_read.reads[0]);
+                    most_recent_valid = read_10;
+
+                } else if (most_recent_valid == read_01) {
+                    returned_data = std::span(check_read.reads)[1].last(56);
+                    crc_valid = check_crc(check_read.reads[1]);
+                    most_recent_valid = read_00;
+
+                } else if (most_recent_valid == read_11) {
+                    returned_data = std::span(check_read.reads)[2].last(56);
+                    crc_valid = check_crc(check_read.reads[2]);
+                    most_recent_valid = read_10;
+
+                } else if (most_recent_valid == read_10) {
+                    returned_data = std::span(check_read.reads)[3].last(56);
+                    crc_valid = check_crc(check_read.reads[3]);
+                    most_recent_valid = read_11;
+                }
             }
 
-            if (crc_valid) {
-                std::copy_n(returned_data.begin(), sizeof(returned_data),
-                            this->buffer);
-            } else {
-                // TODO change to read most recent
-                std::string error = "CRC DIDN'T MATCH";
+            std::copy_n(returned_data.begin(), sizeof(returned_data),
+                        this->buffer);
 
-                std::copy_n(error.begin(), error.size(), this->buffer);
-            }
-
-            // TODO: use the result of check_crc as a "gateway" for now
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
         } else if (action_cmd_m.action == TableAction::WRITE) {
