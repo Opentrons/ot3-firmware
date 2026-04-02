@@ -43,7 +43,7 @@ struct PageType {
 
 struct BookAccessorIntermediate {
   protected:
-    DataBufferType<64> intermediate_buffer;
+    DataBufferType<256> intermediate_buffer;
 };
 
 /* Addresses are taken as Bit Arrays, Make sure these arrays are BigEngdian*/
@@ -115,36 +115,15 @@ class BookAccessor
     }
 
     void read_complete(uint32_t message_index) override {
+      // split big read into 4 pages
+      for (uint8_t i = 0; i < 4; i++) {
         // 1. save what's in buffer to FullRead.reads
-        std::copy_n(intermediate_buffer.begin(), intermediate_buffer.size(),
+        std::copy_n((intermediate_buffer.begin() + (types::page_length * i)), types::page_length,
                     check_read.reads[check_read.book_index]);
-        // increment check_read
-        check_read.book_index += 1;
-        // 2. check if reads length >= 4
-        //
-        if (check_read.book_index < 4) {
-            // turn a book address into a regular address
-            auto read_address =
-                static_cast<types::address>(check_read.book_address) << 8;
 
-            types::address page_relative = 0;
-
-            // move the address to read different pages inside book
-            switch (check_read.book_index) {
-                case 1:
-                    page_relative = 0b0000000001000000;
-                case 2:
-                    page_relative = 0b0000000010000000;
-                case 3:
-                    page_relative = 0b0000000001000000;
-            }
-            read_address |= page_relative;
-
-            this->start_read_at_offset(read_address, read_address + 64,
-                                       message_index);
-        } else {
-            read_final(message_index);
-        }
+        check_read.book_index++;
+      }
+      read_final(message_index);
     }
 
     // GET_DATA CONVENIENCE METHODS
@@ -238,25 +217,28 @@ class BookAccessor
 
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
-        long read_00 = 0;
-        long read_01 = 0;
-        long read_11 = 0;
-        long read_10 = 0;
+        uint16_t read_00 = 0;
+        uint16_t read_01 = 0;
+        uint16_t read_11 = 0;
+        uint16_t read_10 = 0;
 
         // convert counter from bytes to longs
         size_t counter_end = sizeof(std::byte) * 2;
 
-        std::memcpy(&read_00, check_read.reads[0][2], sizeof(std::byte) * 2);
-        std::memcpy(&read_01, check_read.reads[1][2], sizeof(std::byte) * 2);
-        std::memcpy(&read_11, check_read.reads[2][2], sizeof(std::byte) * 2);
-        std::memcpy(&read_10, check_read.reads[3][2], sizeof(std::byte) * 2);
+        std::memcpy(&read_00, check_read.reads[0][2], sizeof(read_00));
+        std::memcpy(&read_01, check_read.reads[1][2], sizeof(read_01));
+        std::memcpy(&read_11, check_read.reads[2][2], sizeof(read_11));
+        std::memcpy(&read_10, check_read.reads[3][2], sizeof(read_10));
 
         // find maximum value
-        long most_recent_valid = std::max({read_00, read_01, read_11, read_10});
+        // TODO implement counter wraparound
+        uint16_t most_recent_valid =
+            std::max({read_00, read_01, read_11, read_10});
 
         if (action_cmd_m.action == TableAction::READ) {
-            std::array<std::byte, 56> data_for_return{};
+            // std::array<std::byte, 56> data_for_return{};
             auto returned_data = std::span(check_read.reads);
+            types::data_length returned_data_len = action_cmd_m.len;
             bool crc_valid = false;
 
             uint16_t attempts = 0;
@@ -279,22 +261,26 @@ class BookAccessor
                 }
 
                 if (most_recent_valid == read_00) {
-                    returned_data = std::span(check_read.reads)[0].last(56);
+                    returned_data =
+                        std::span(check_read.reads)[0].last(returned_data_len);
                     crc_valid = check_crc(check_read.reads[0]);
                     most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_01) {
-                    returned_data = std::span(check_read.reads)[1].last(56);
+                    returned_data =
+                        std::span(check_read.reads)[1].last(returned_data_len);
                     crc_valid = check_crc(check_read.reads[1]);
                     most_recent_valid = read_00;
 
                 } else if (most_recent_valid == read_11) {
-                    returned_data = std::span(check_read.reads)[2].last(56);
+                    returned_data =
+                        std::span(check_read.reads)[2].last(returned_data_len);
                     crc_valid = check_crc(check_read.reads[2]);
                     most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_10) {
-                    returned_data = std::span(check_read.reads)[3].last(56);
+                    returned_data =
+                        std::span(check_read.reads)[3].last(returned_data_len);
                     crc_valid = check_crc(check_read.reads[3]);
                     most_recent_valid = read_11;
                 }
@@ -383,12 +369,9 @@ class BookAccessor
                 [[fallthrough]];
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
-                // if the read action has length 0, read the whole value
-                // else only read as much as requested
-                if (action_cmd_m.len != 0) {
-                    data_len = action_cmd_m.len;
-                }
-                this->start_read_at_offset(data_addr, data_addr + 64,
+                // read all 4 whole pages at the same time
+                this->start_read_at_offset(data_addr,
+                                           data_addr + (types::page_length * 4),
                                            m.message_index);
                 break;
         }
