@@ -19,7 +19,8 @@ struct MockEEPromTaskClient {
     void send_eeprom_message(const task::TaskMessage& m) {
         if (const auto* read_message =
                 std::get_if<eeprom::message::ReadEepromMessage>(&m)) {
-            const callback = read_message->callback;
+            const message::ReadResponseCallback callback =
+                read_message->callback;
         }
     }
 };
