@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <tuple>
 
 extern "C" {
@@ -20,10 +19,7 @@ struct MockEEPromTaskClient {
     void send_eeprom_message(const task::TaskMessage& m) {
         if (const auto* read_message =
                 std::get_if<eeprom::message::ReadEepromMessage>(&m)) {
-            // switch (read_counter) {
-            //   // correct data to be read
-            //   case 0:
-            //
+            const callback = read_message->callback;
         }
     }
 };
