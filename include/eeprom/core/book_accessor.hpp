@@ -70,16 +70,16 @@ class BookAccessor
             message::ConfigRequestMessage{config_req_callback, this});
     }
 
-    void create_new_data_part(uint8_t key, uint16_t len,
-                              std::array<std::byte, SIZE> data) {
-        std::ignore = key, len, data;
-    }
-
-    void write_data(uint8_t key, uint16_t len,
-                    std::array<std::byte, SIZE> data) {
-        std::ignore = key, len, data;
-    }
-
+    // void create_new_data_part(uint8_t key, uint16_t len,
+    //                           std::array<std::byte, SIZE> data) {
+    //     std::ignore = key, len, data;
+    // }
+    //
+    // void write_data(uint8_t key, uint16_t len,
+    //                 std::array<std::byte, SIZE> data) {
+    //     std::ignore = key, len, data;
+    // }
+    //
     // write WRITE_DATA CONVENIENCE METHODS
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
@@ -115,15 +115,16 @@ class BookAccessor
     }
 
     void read_complete(uint32_t message_index) override {
-      // split big read into 4 pages
-      for (uint8_t i = 0; i < 4; i++) {
-        // 1. save what's in buffer to FullRead.reads
-        std::copy_n((intermediate_buffer.begin() + (types::page_length * i)), types::page_length,
-                    check_read.reads[check_read.book_index]);
+        // split big read into 4 pages
+        for (uint8_t i = 0; i < 4; i++) {
+            // 1. save what's in buffer to FullRead.reads
+            std::copy_n(
+                (intermediate_buffer.begin() + (types::page_length * i)),
+                types::page_length, check_read.reads[check_read.book_index]);
 
-        check_read.book_index++;
-      }
-      read_final(message_index);
+            check_read.book_index++;
+        }
+        read_final(message_index);
     }
 
     // GET_DATA CONVENIENCE METHODS
@@ -144,6 +145,45 @@ class BookAccessor
     DataBufferType<SIZE> buffer;
 
     FullRead check_read;
+
+    // convert bitset to bytes
+    template <size_t numbytes>
+    auto bitsettobytes(std::bitset<numbytes> bits)
+        -> std::array<std::byte, numbytes / 8> {
+        std::array<std::byte, numbytes / 8> output{};
+
+        for (int i = numbytes - 1; i >= 0; i--) {
+            std::byte& cur = output[output.size() - 1 - (i / 8)];
+
+            if (bits.test(i)) {
+                cur |= static_cast<std::byte>(1 << (i % 8));
+            }
+        }
+
+        return output;
+    }
+
+    // convert bytes to bitset
+    template <size_t numbytes>
+    auto bytestobitset(std::array<std::byte, numbytes> data)
+        -> std::bitset<8 * numbytes> {
+        std::bitset<numbytes * 8> bits;
+
+        for (int i = 0; i < numbytes; ++i) {
+            std::byte cur = data[i];
+            int offset = ((numbytes - i) * 8) - 1;
+
+            for (int bit = 1; bit <= 8; ++bit) {
+                auto mask = static_cast<std::byte>(1 << (8 - bit));
+                bool is_set = (cur & mask) != std::byte{0};
+
+                bits[offset] = is_set;
+                --offset;  // move to next bit in b
+            }
+        }
+
+        return bits;
+    }
 
     auto calc_crc(std::array<std::byte, SIZE> data)
         -> std::array<std::byte, 2> {
@@ -182,34 +222,16 @@ class BookAccessor
         return crc_byte;
     }
 
-    // convert bytes to bitset
-    template <size_t numbytes>
-    auto bytestobitset(std::array<std::byte, numbytes> data)
-        -> std::bitset<8 * numbytes> {
-        std::bitset<numbytes * 8> bits;
-
-        for (int i = 0; i < numbytes; ++i) {
-            std::byte cur = data[i];
-            int offset = ((numbytes - i) * 8) - 1;
-
-            for (int bit = 1; bit <= 8; ++bit) {
-                auto mask = static_cast<std::byte>(1 << (8 - bit));
-                bool is_set = (cur & mask) != std::byte{0};
-
-                bits[offset] = is_set;
-                --offset;  // move to next bit in b
-            }
-        }
-
-        return bits;
-    }
-
     auto check_crc(std::array<std::byte, 64> bytes) -> bool {
         // Grab CRC from byte array
-        std::array<std::byte, 2> given_CRC = std::span(bytes).first(2);
+        std::array<std::byte, 2> given_CRC{};
+        std::copy_n(bytes.begin(), 2, given_CRC.begin());
 
         // calculate the CRC from the given data
-        std::array<std::byte, 56> given_data = std::span(bytes).last(56);
+        std::array<std::byte, 2> given_data{};
+        std::copy_n(bytes.begin() + types::book_header_length,
+                    types::book_data_length, given_data.begin());
+
         std::array<std::byte, 2> calculated_crc = calc_crc(given_data);
 
         return (calculated_crc == given_CRC);
@@ -223,7 +245,6 @@ class BookAccessor
         uint16_t read_10 = 0;
 
         // convert counter from bytes to longs
-        size_t counter_end = sizeof(std::byte) * 2;
 
         std::memcpy(&read_00, check_read.reads[0][2], sizeof(read_00));
         std::memcpy(&read_01, check_read.reads[1][2], sizeof(read_01));
@@ -297,27 +318,11 @@ class BookAccessor
         }
     }
 
-    // convert bitset to bytes
-    auto bitsettobytes(std::bitset<SIZE> bits)
-        -> std::array<std::byte, SIZE / 8> {
-        std::array<std::byte, SIZE / 8> output{};
-
-        for (int i = SIZE - 1; i >= 0; i--) {
-            std::byte& cur = output[output.size() - 1 - (i / 8)];
-
-            if (bits.test(i)) {
-                cur |= static_cast<std::byte>(1 << (i % 8));
-            }
-        }
-
-        return output;
-    }
-
-    void write_callback(uint8_t key, uint16_t len,
-                        std::array<std::byte, SIZE> data) {
-        std::ignore = data;
-    }
-
+    // void write_callback(uint8_t key, uint16_t len,
+    //                     std::array<std::byte, SIZE> data) {
+    //     std::ignore = data;
+    // }
+    //
     // Methods from DevDataAccessor
 
     // callbacks

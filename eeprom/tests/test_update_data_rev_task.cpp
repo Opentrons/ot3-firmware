@@ -1,6 +1,5 @@
 #include <cstdint>
 #include <cstring>
-#include <iostream>
 
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/hardware_iface.hpp"
