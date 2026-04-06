@@ -46,7 +46,8 @@ struct BookAccessorIntermediate {
     DataBufferType<256> intermediate_buffer;
 };
 
-/* Addresses are taken as Bit Arrays, Make sure these arrays are BigEngdian*/
+/*Accessor for OT Library. Takes byte arrays as data. Ensure they are in Little
+ * Endian (in accordance with STM32 Architecture)*/
 template <task::TaskClient EEpromTaskClient, size_t SIZE>
 class BookAccessor
     : public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
@@ -130,7 +131,6 @@ class BookAccessor
     // GET_DATA CONVENIENCE METHODS
   private:
     struct FullRead {
-        types::book_address book{};
         uint8_t book_index = 0;
         std::array<std::array<std::byte, SIZE>, 4> reads;
     };
@@ -147,13 +147,13 @@ class BookAccessor
     FullRead check_read;
 
     // convert bitset to bytes
-    template <size_t numbytes>
-    auto bitsettobytes(std::bitset<numbytes> bits)
-        -> std::array<std::byte, numbytes / 8> {
-        std::array<std::byte, numbytes / 8> output{};
+    template <uint16_t numbits>
+    auto bitsettobytes(std::bitset<numbits> bits)
+        -> std::array<std::byte, numbits / 8> {
+        std::array<std::byte, numbits / 8> output{};
 
-        for (int i = numbytes - 1; i >= 0; i--) {
-            std::byte& cur = output[output.size() - 1 - (i / 8)];
+        for (int i = 0; i < numbits; i++) {
+            std::byte& cur = output[i / 8];
 
             if (bits.test(i)) {
                 cur |= static_cast<std::byte>(1 << (i % 8));
@@ -171,24 +171,24 @@ class BookAccessor
 
         for (int i = 0; i < numbytes; ++i) {
             std::byte cur = data[i];
-            int offset = ((numbytes - i) * 8) - 1;
+            int offset = i * 8;
 
             for (int bit = 1; bit <= 8; ++bit) {
                 auto mask = static_cast<std::byte>(1 << (8 - bit));
                 bool is_set = (cur & mask) != std::byte{0};
 
-                bits[offset] = is_set;
-                --offset;  // move to next bit in b
+                bits[offset + (8 - bit)] = is_set;
             }
         }
 
         return bits;
     }
 
-    auto calc_crc(std::array<std::byte, SIZE> data)
+    template <size_t num_bytes>
+    auto calc_crc(std::array<std::byte, num_bytes> data)
         -> std::array<std::byte, 2> {
         // convert data array into a bitset, to make bit manipulation easier
-        auto data_bitset = bytestobitset<SIZE>(data);
+        auto data_bitset = bytestobitset<num_bytes>(data);
         std::bitset<17> generator(0b10001000000100001);
         const uint16_t generator_position = 16;
 
@@ -222,15 +222,16 @@ class BookAccessor
         return crc_byte;
     }
 
-    auto check_crc(std::array<std::byte, 64> bytes) -> bool {
+    auto check_crc(std::array<std::byte, types::page_length> bytes) -> bool {
         // Grab CRC from byte array
         std::array<std::byte, 2> given_CRC{};
         std::copy_n(bytes.begin(), 2, given_CRC.begin());
 
         // calculate the CRC from the given data
+        // Note: only the used bytes will be used in CRC caluclations
         std::array<std::byte, 2> given_data{};
-        std::copy_n(bytes.begin() + types::book_header_length,
-                    types::book_data_length, given_data.begin());
+        std::copy_n(bytes.begin() + types::book_header_length, action_cmd_m.len,
+                    given_data.begin());
 
         std::array<std::byte, 2> calculated_crc = calc_crc(given_data);
 
@@ -282,26 +283,30 @@ class BookAccessor
                 }
 
                 if (most_recent_valid == read_00) {
-                    returned_data =
-                        std::span(check_read.reads)[0].last(returned_data_len);
+                    returned_data = std::span(check_read.reads[0])
+                                        .subspan(types::book_header_length + 1,
+                                                 returned_data_len);
                     crc_valid = check_crc(check_read.reads[0]);
                     most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_01) {
-                    returned_data =
-                        std::span(check_read.reads)[1].last(returned_data_len);
+                    returned_data = std::span(check_read.reads[1])
+                                        .subspan(types::book_header_length + 1,
+                                                 returned_data_len);
                     crc_valid = check_crc(check_read.reads[1]);
                     most_recent_valid = read_00;
 
                 } else if (most_recent_valid == read_11) {
-                    returned_data =
-                        std::span(check_read.reads)[2].last(returned_data_len);
+                    returned_data = std::span(check_read.reads[2])
+                                        .subspan(types::book_header_length + 1,
+                                                 returned_data_len);
                     crc_valid = check_crc(check_read.reads[2]);
                     most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_10) {
-                    returned_data =
-                        std::span(check_read.reads)[3].last(returned_data_len);
+                    returned_data = std::span(check_read.reads[3])
+                                        .subspan(types::book_header_length + 1,
+                                                 returned_data_len);
                     crc_valid = check_crc(check_read.reads[3]);
                     most_recent_valid = read_11;
                 }

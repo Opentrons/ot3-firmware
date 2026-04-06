@@ -2,6 +2,8 @@
 
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
+#include "hardware_iface.hpp"
+#include "types.hpp"
 namespace eeprom {
 namespace message {
 
@@ -55,5 +57,30 @@ struct ConfigRequestMessage {
     void* callback_param;
 };
 
+// EEpromMessage to OT Library
+
+template <types::DataSize SIZE>
+struct OTLibraryMessage {
+    uint32_t message_index;
+    eeprom::types::address memory_address;
+    eeprom::types::data_length length;
+    eeprom::types::OTLibraryData<SIZE> data;
+
+    auto operator==(const OTLibraryMessage<SIZE>&) const -> bool = default;
+};
+
+template <types::DataSize SIZE>
+using OTLibraryReadCallback = void (*)(const OTLibraryMessage<SIZE>&, void*);
+
+// template <types::DataSize SIZE>
+struct OTLibraryReadMessage {
+    uint32_t message_index;
+    eeprom::types::address memory_address;
+    eeprom::types::data_length length;
+    OTLibraryReadCallback<types::DataSize::BOOK>
+        callback;  // For now, there is no other use case for OTLibrary Reads,
+                   // so we can leave this like this for now
+    void* callback_param;
+};
 }  // namespace message
 }  // namespace eeprom
