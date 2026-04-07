@@ -395,14 +395,14 @@ class EEPromMessageHandler {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
 
-        auto transaction = i2c::messages::Transaction{
-            .message_index = m.message_index,
-            .address = hw_iface.get_eeprom_address(),
-            .bytes_to_read = m.length,
-            .bytes_to_write =
-                static_cast<std::size_t>(iter - write_buffer.begin()),
-            .write_buffer{write_buffer}};
-        // The transaction identifier uses the token returned from id_map.add
+        // auto transaction = i2c::messages::Transaction{
+        //     .message_index = m.message_index,
+        //     .address = hw_iface.get_eeprom_address(),
+        //     .bytes_to_read = m.length,
+        //     .bytes_to_write =
+        //         static_cast<std::size_t>(iter - write_buffer.begin()),
+        //     .write_buffer{write_buffer}};
+        // // The transaction identifier uses the token returned from id_map.add
         // auto transaction_id =
         //     i2c::messages::TransactionIdentifier{.token = token.value()};
 
