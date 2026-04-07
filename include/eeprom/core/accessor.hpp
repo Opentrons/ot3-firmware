@@ -5,6 +5,7 @@
 
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
+#include "messages.hpp"
 #include "task.hpp"
 #include "types.hpp"
 
@@ -154,12 +155,13 @@ class EEPromAccessor {
         begin_read_addr = read_addr;
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::max_data_length);
-            eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
-                .message_index = message_index,
-                .memory_address = read_addr,
-                .length = amount_to_read,
-                .callback = callback,
-                .callback_param = this});
+            eeprom_client.send_eeprom_queue(
+                eeprom::message::OTLibraryReadMessage{
+                    .message_index = message_index,
+                    .memory_address = read_addr,
+                    .length = amount_to_read,
+                    .callback = callback,
+                    .callback_param = this});
             bytes_remain -= amount_to_read;
             read_addr += amount_to_read;
         }
@@ -170,16 +172,20 @@ class EEPromAccessor {
      * Handle a completed read.
      * @param msg The message
      */
-    void callback(const eeprom::message::EepromMessage& msg) {
-        // TODO (ryan 07-18-22) handle errors in response
-        auto* buffer_ptr =
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            (type_data.begin() + (msg.memory_address - begin_read_addr));
-        std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
-        bytes_recieved += msg.length;
-        if (bytes_recieved == bytes_to_read) {
-            read_listener.read_complete(msg.message_index);
-        }
+    void callback(const eeprom::message::EepromDataMessage& msg) {
+        std::visit(
+            [this](auto& m) {
+                // TODO (ryan 07-18-22) handle errors in response
+                auto* buffer_ptr =
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    (type_data.begin() + (m.memory_address - begin_read_addr));
+                std::copy_n(m.data.cbegin(), m.length, buffer_ptr);
+                bytes_recieved += m.length;
+                if (bytes_recieved == bytes_to_read) {
+                    read_listener.read_complete(m.message_index);
+                }
+            },
+            msg);
     }
 
     /**
@@ -187,7 +193,7 @@ class EEPromAccessor {
      * @param msg The message
      * @param param This pointer.
      */
-    static void callback(const eeprom::message::EepromMessage& msg,
+    static void callback(const eeprom::message::EepromDataMessage& msg,
                          void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)

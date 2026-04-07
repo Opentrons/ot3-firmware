@@ -18,7 +18,7 @@ namespace eeprom {
 namespace ot_library_accessor {
 
 template <size_t SIZE>
-using DataBufferType = std::array<std::byte, SIZE>;
+using DataBufferType = std::array<uint8_t, SIZE>;
 using DataTailType =
     std::array<uint8_t, eeprom::addresses::lookup_table_tail_length>;
 using TableAction = dev_data::TableAction;
@@ -30,7 +30,7 @@ using table_entry_action = dev_data::table_entry_action;
  * */
 template <size_t SIZE>
 struct PageType {
-    std::array<std::byte, 2> crc;
+    std::array<uint8_t, 2> crc;
     uint8_t length;
     DataBufferType<SIZE> data;
     uint16_t counter;
@@ -72,12 +72,12 @@ class BookAccessor
     }
 
     // void create_new_data_part(uint8_t key, uint16_t len,
-    //                           std::array<std::byte, SIZE> data) {
+    //                           std::array<uint8_t, SIZE> data) {
     //     std::ignore = key, len, data;
     // }
     //
     // void write_data(uint8_t key, uint16_t len,
-    //                 std::array<std::byte, SIZE> data) {
+    //                 std::array<uint8_t, SIZE> data) {
     //     std::ignore = key, len, data;
     // }
     //
@@ -132,7 +132,7 @@ class BookAccessor
   private:
     struct FullRead {
         uint8_t book_index = 0;
-        std::array<std::array<std::byte, SIZE>, 4> reads;
+        std::array<std::array<uint8_t, SIZE>, 4> reads;
     };
 
     // fields, decide what they are
@@ -149,14 +149,14 @@ class BookAccessor
     // convert bitset to bytes
     template <uint16_t numbits>
     auto bitsettobytes(std::bitset<numbits> bits)
-        -> std::array<std::byte, numbits / 8> {
-        std::array<std::byte, numbits / 8> output{};
+        -> std::array<uint8_t, numbits / 8> {
+        std::array<uint8_t, numbits / 8> output{};
 
         for (int i = 0; i < numbits; i++) {
-            std::byte& cur = output[i / 8];
+            uint8_t& cur = output[i / 8];
 
             if (bits.test(i)) {
-                cur |= static_cast<std::byte>(1 << (i % 8));
+                cur |= 1 << (i % 8);
             }
         }
 
@@ -165,17 +165,17 @@ class BookAccessor
 
     // convert bytes to bitset
     template <size_t numbytes>
-    auto bytestobitset(std::array<std::byte, numbytes> data)
+    auto bytestobitset(std::array<uint8_t, numbytes> data)
         -> std::bitset<8 * numbytes> {
         std::bitset<numbytes * 8> bits;
 
         for (int i = 0; i < numbytes; ++i) {
-            std::byte cur = data[i];
+            uint8_t cur = data[i];
             int offset = i * 8;
 
             for (int bit = 1; bit <= 8; ++bit) {
-                auto mask = static_cast<std::byte>(1 << (8 - bit));
-                bool is_set = (cur & mask) != std::byte{0};
+                auto mask = 1 << (8 - bit);
+                bool is_set = (cur & mask) != 0;
 
                 bits[offset + (8 - bit)] = is_set;
             }
@@ -185,8 +185,8 @@ class BookAccessor
     }
 
     template <size_t num_bytes>
-    auto calc_crc(std::array<std::byte, num_bytes> data)
-        -> std::array<std::byte, 2> {
+    auto calc_crc(std::array<uint8_t, num_bytes> data)
+        -> std::array<uint8_t, 2> {
         // convert data array into a bitset, to make bit manipulation easier
         auto data_bitset = bytestobitset<num_bytes>(data);
         std::bitset<17> generator(0b10001000000100001);
@@ -218,22 +218,22 @@ class BookAccessor
         }
 
         // convert crc bitset back into byte array
-        std::array<std::byte, 2> crc_byte = bitsettobytes<16>(crc);
+        std::array<uint8_t, 2> crc_byte = bitsettobytes<16>(crc);
         return crc_byte;
     }
 
-    auto check_crc(std::array<std::byte, types::page_length> bytes) -> bool {
+    auto check_crc(std::array<uint8_t, types::page_length> bytes) -> bool {
         // Grab CRC from byte array
-        std::array<std::byte, 2> given_CRC{};
+        std::array<uint8_t, 2> given_CRC{};
         std::copy_n(bytes.begin(), 2, given_CRC.begin());
 
         // calculate the CRC from the given data
         // Note: only the used bytes will be used in CRC caluclations
-        std::array<std::byte, 2> given_data{};
+        std::array<uint8_t, 2> given_data{};
         std::copy_n(bytes.begin() + types::book_header_length, action_cmd_m.len,
                     given_data.begin());
 
-        std::array<std::byte, 2> calculated_crc = calc_crc(given_data);
+        std::array<uint8_t, 2> calculated_crc = calc_crc(given_data);
 
         return (calculated_crc == given_CRC);
     }
@@ -258,7 +258,7 @@ class BookAccessor
             std::max({read_00, read_01, read_11, read_10});
 
         if (action_cmd_m.action == TableAction::READ) {
-            // std::array<std::byte, 56> data_for_return{};
+            // std::array<uint8_t, 56> data_for_return{};
             auto returned_data = std::span(check_read.reads);
             types::data_length returned_data_len = action_cmd_m.len;
             bool crc_valid = false;
@@ -324,7 +324,7 @@ class BookAccessor
     }
 
     // void write_callback(uint8_t key, uint16_t len,
-    //                     std::array<std::byte, SIZE> data) {
+    //                     std::array<uint8_t, SIZE> data) {
     //     std::ignore = data;
     // }
     //

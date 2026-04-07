@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
 #include "hardware_iface.hpp"
@@ -58,29 +60,38 @@ struct ConfigRequestMessage {
 };
 
 // EEpromMessage to OT Library
-
-template <types::DataSize SIZE>
-struct OTLibraryMessage {
+// Write messages
+struct OTLibraryBookMessage {
     uint32_t message_index;
     eeprom::types::address memory_address;
     eeprom::types::data_length length;
-    eeprom::types::OTLibraryData<SIZE> data;
+    eeprom::types::OTLibraryData<types::DataSize::BOOK> data;
 
-    auto operator==(const OTLibraryMessage<SIZE>&) const -> bool = default;
+    auto operator==(const OTLibraryBookMessage&) const -> bool = default;
 };
 
-template <types::DataSize SIZE>
-using OTLibraryReadCallback = void (*)(const OTLibraryMessage<SIZE>&, void*);
+struct OTLibraryPageMessage {
+    uint32_t message_index;
+    eeprom::types::address memory_address;
+    eeprom::types::data_length length;
+    eeprom::types::OTLibraryData<types::DataSize::PAGE> data;
 
-// template <types::DataSize SIZE>
+    auto operator==(const OTLibraryPageMessage&) const -> bool = default;
+};
+
+using EepromDataMessage =
+    std::variant<EepromMessage, OTLibraryBookMessage, OTLibraryPageMessage>;
+
+// Read Messages
+using OTReadResponseCallback = void (*)(const EepromDataMessage&, void*);
+
 struct OTLibraryReadMessage {
     uint32_t message_index;
     eeprom::types::address memory_address;
     eeprom::types::data_length length;
-    OTLibraryReadCallback<types::DataSize::BOOK>
-        callback;  // For now, there is no other use case for OTLibrary Reads,
-                   // so we can leave this like this for now
+    OTReadResponseCallback callback;
     void* callback_param;
 };
+
 }  // namespace message
 }  // namespace eeprom

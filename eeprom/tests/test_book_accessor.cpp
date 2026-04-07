@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <tuple>
 
 extern "C" {
@@ -20,14 +21,14 @@ struct MockEEPromTaskClient {
         if (const auto* read_message =
                 std::get_if<eeprom::message::ReadEepromMessage>(&m)) {
             // structure return message
-            message::OTLibraryMessage to_be_sent =
-                eeprom::message::OTLibraryMessage<types::DataSize::BOOK>{};
+            message::OTLibraryBookMessage to_be_sent =
+                eeprom::message::OTLibraryBookMessage{};
             to_be_sent.memory_address = read_message->memory_address;
             to_be_sent.length = read_message->mem_size;
             to_be_sent.message_index = 0;
 
-            auto data_to_be_sent =
-                std::array<std::bytes, types::DataSize::BOOK>{};
+            auto data_to_be_sent = std::array < uint8_t,
+                 std::static_cast<size_t>(types::DataSize::BOOK > {});
 
             // TODO Make Data that will be sent back from "EEPROM"
             // generate arrays that aren't the valid one
@@ -55,10 +56,10 @@ struct MockEEPromTaskClient {
 
             to_be_sent.data = data_to_be_sent;
 
-            // const message::ReadResponseCallback callback =
-            //     read_message->callback<types::DataSize::BOOK>;
+            const message::ReadResponseCallback callback =
+                read_message->callback;
 
-            // callback(to_be_sent, read_message->callback_param);
+            callback(to_be_sent, read_message->callback_param);
         }
     }
 };
