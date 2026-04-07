@@ -1,10 +1,4 @@
 #include <cstdint>
-#include <tuple>
-
-extern "C" {
-void vTaskDelay(const int x) { std::ignore = x; }
-void vTaskDelete(void* x) { std::ignore = x; }
-}
 
 #include "catch2/catch.hpp"
 #include "eeprom/core/book_accessor.hpp"
@@ -19,16 +13,17 @@ struct MockEEPromTaskClient {
 
     void send_eeprom_message(const task::TaskMessage& m) {
         if (const auto* read_message =
-                std::get_if<eeprom::message::ReadEepromMessage>(&m)) {
+                std::get_if<message::OTLibraryReadMessage>(&m)) {
             // structure return message
             message::OTLibraryBookMessage to_be_sent =
                 eeprom::message::OTLibraryBookMessage{};
             to_be_sent.memory_address = read_message->memory_address;
-            to_be_sent.length = read_message->mem_size;
+            to_be_sent.length = read_message->length;
             to_be_sent.message_index = 0;
 
-            auto data_to_be_sent = std::array < uint8_t,
-                 std::static_cast<size_t>(types::DataSize::BOOK > {});
+            auto data_to_be_sent =
+                std::array<uint8_t,
+                           static_cast<size_t>(types::DataSize::BOOK)>{};
 
             // TODO Make Data that will be sent back from "EEPROM"
             // generate arrays that aren't the valid one
@@ -56,7 +51,7 @@ struct MockEEPromTaskClient {
 
             to_be_sent.data = data_to_be_sent;
 
-            const message::ReadResponseCallback callback =
+            const message::OTReadResponseCallback callback =
                 read_message->callback;
 
             callback(to_be_sent, read_message->callback_param);

@@ -3,6 +3,7 @@
 #include <variant>
 
 #include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/messages.hpp"
 #include "eeprom/core/types.hpp"
 #include "hardware_iface.hpp"
 #include "types.hpp"
