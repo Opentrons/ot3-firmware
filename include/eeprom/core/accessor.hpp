@@ -16,8 +16,9 @@ class AccessorBuffer {
   public:
     AccessorBuffer() = default;
     template <typename B_ITER, typename L_ITER>
-    requires bit_utils::ByteIterator<B_ITER> &&
-        std::sentinel_for<B_ITER, L_ITER> && std::contiguous_iterator<B_ITER>
+        requires bit_utils::ByteIterator<B_ITER> &&
+                     std::sentinel_for<B_ITER, L_ITER> &&
+                     std::contiguous_iterator<B_ITER>
     explicit AccessorBuffer(B_ITER begin, L_ITER limit)
         : buffer_start(begin), buffer_limit(limit) {}
     auto size() -> size_t { return buffer_limit - buffer_start; }
@@ -258,7 +259,7 @@ class EEPromAccessor {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             reinterpret_cast<EEPromAccessor<EEPromTaskClient, data_begin>*>(
                 param);
-        self->callback(msg);
+        self->OT_callback(msg);
     }
 };
 

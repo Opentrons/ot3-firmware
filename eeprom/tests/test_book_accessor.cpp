@@ -5,13 +5,14 @@
 #include "eeprom/core/messages.hpp"
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/types.hpp"
+#include "eeprom/tests/mock_eeprom_listener.hpp"
 
 using namespace eeprom;
 
 struct MockEEPromTaskClient {
     uint16_t read_counter = 0;
 
-    void send_eeprom_message(const task::TaskMessage& m) {
+    void send_eeprom_queue(const task::TaskMessage& m) {
         if (const auto* read_message =
                 std::get_if<message::OTLibraryReadMessage>(&m)) {
             // structure return message
@@ -58,3 +59,25 @@ struct MockEEPromTaskClient {
         }
     }
 };
+
+SCENARIO("Book Accessor can read data from EEPROM") {
+    auto mock_client = MockEEPromTaskClient{};
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<1>();
+    auto tail_accessor =
+        eeprom::dev_data::DevDataTailAccessor<MockEEPromTaskClient>{
+            mock_client};
+    auto test_book_accessor =
+        book_accessor::BookAccessor<MockEEPromTaskClient, 1>{
+            mock_client, mock_listener, buffer, tail_accessor};
+
+    uint16_t key = 0;
+    uint16_t len = 1;
+    uint16_t offset = 0;
+    uint32_t message_index = 0;
+
+    test_book_accessor.get_data(key, len, offset, message_index);
+
+    // check that the value read is correct
+    REQUIRE(buffer[0] == 0b00000100);
+}

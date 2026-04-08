@@ -15,7 +15,7 @@
 #include "types.hpp"
 
 namespace eeprom {
-namespace ot_library_accessor {
+namespace book_accessor {
 
 template <size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
@@ -43,11 +43,15 @@ struct PageType {
 
 struct BookAccessorIntermediate {
   protected:
-    DataBufferType<256> intermediate_buffer;
+    static inline DataBufferType<static_cast<size_t>(types::page_length * 4)>
+        intermediate_buffer;
 };
 
 /*Accessor for OT Library. Takes byte arrays as data. Ensure they are in Little
- * Endian (in accordance with STM32 Architecture)*/
+ * Endian (in accordance with STM32 Architecture)
+ *
+ * SIZE is the size of the buffer*/
+
 template <task::TaskClient EEpromTaskClient, size_t SIZE>
 class BookAccessor
     : public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
@@ -55,18 +59,18 @@ class BookAccessor
       eeprom::accessor::ReadListener,
       BookAccessorIntermediate {
   public:
-    explicit BookAccessor(EEpromTaskClient& eeprom_client,
-                          accessor::ReadListener& read_listener,
-                          DataBufferType<SIZE>& buffer)
-        : read_listener(read_listener),
-          buffer(buffer),
-          BookAccessorIntermediate(),
-          accessor::EEPromAccessor<EEpromTaskClient,
+    explicit BookAccessor(
+        EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
+        DataBufferType<SIZE>& buffer,
+        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
+        : accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
               eeprom_client, *this,
               accessor::AccessorBuffer(intermediate_buffer.begin(),
-                                       intermediate_buffer.end())) {
-        ;
+                                       intermediate_buffer.end())),
+          tail_accessor(tail_accessor),
+          read_listener(read_listener),
+          buffer(buffer) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
     }
@@ -119,9 +123,10 @@ class BookAccessor
         // split big read into 4 pages
         for (uint8_t i = 0; i < 4; i++) {
             // 1. save what's in buffer to FullRead.reads
-            std::copy_n(
-                (intermediate_buffer.begin() + (types::page_length * i)),
-                types::page_length, check_read.reads[check_read.book_index]);
+            std::copy_n((intermediate_buffer.begin() +
+                         (static_cast<ptrdiff_t>(types::page_length * i))),
+                        types::page_length,
+                        check_read.reads[check_read.book_index].begin());
 
             check_read.book_index++;
         }
@@ -132,7 +137,7 @@ class BookAccessor
   private:
     struct FullRead {
         uint8_t book_index = 0;
-        std::array<std::array<uint8_t, SIZE>, 4> reads;
+        std::array<std::array<uint8_t, types::page_length>, 4> reads;
     };
 
     // fields, decide what they are
@@ -142,7 +147,7 @@ class BookAccessor
     bool config_updated{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
-    DataBufferType<SIZE> buffer;
+    DataBufferType<SIZE>& buffer;
 
     FullRead check_read;
 
@@ -169,7 +174,7 @@ class BookAccessor
         -> std::bitset<8 * numbytes> {
         std::bitset<numbytes * 8> bits;
 
-        for (int i = 0; i < numbytes; ++i) {
+        for (int i = 0; i < static_cast<int>(numbytes); ++i) {
             uint8_t cur = data[i];
             int offset = i * 8;
 
@@ -190,11 +195,12 @@ class BookAccessor
         // convert data array into a bitset, to make bit manipulation easier
         auto data_bitset = bytestobitset<num_bytes>(data);
         std::bitset<17> generator(0b10001000000100001);
-        const uint16_t generator_position = 16;
+        constexpr uint16_t generator_position = 16;
 
         // left shit data to accomadate crc
-        std::bitset<data_bitset.size() + generator_position> bit_data(
-            data_bitset << generator_position);
+        std::bitset<(num_bytes * 8) + static_cast<size_t>(generator_position)>
+            bit_data(data_bitset.to_ullong());
+        bit_data << generator_position;
         uint16_t data_position = bit_data.size() - 1;
 
         while (data_position >= generator_position) {
@@ -204,7 +210,9 @@ class BookAccessor
             }
 
             uint16_t difference = data_position - generator_position;
-            std::bitset<bit_data.size()> divisor(generator);
+            std::bitset<(num_bytes * 8) +
+                        static_cast<size_t>(generator_position)>
+                divisor(generator.to_ullong());
             divisor <<= difference;
             bit_data ^= divisor;
             // data_position--;
@@ -247,10 +255,10 @@ class BookAccessor
 
         // convert counter from bytes to longs
 
-        std::memcpy(&read_00, check_read.reads[0][2], sizeof(read_00));
-        std::memcpy(&read_01, check_read.reads[1][2], sizeof(read_01));
-        std::memcpy(&read_11, check_read.reads[2][2], sizeof(read_11));
-        std::memcpy(&read_10, check_read.reads[3][2], sizeof(read_10));
+        std::memcpy(&read_00, &check_read.reads[0][2], sizeof(read_00));
+        std::memcpy(&read_01, &check_read.reads[1][2], sizeof(read_01));
+        std::memcpy(&read_11, &check_read.reads[2][2], sizeof(read_11));
+        std::memcpy(&read_10, &check_read.reads[3][2], sizeof(read_10));
 
         // find maximum value
         // TODO implement counter wraparound
@@ -259,8 +267,10 @@ class BookAccessor
 
         if (action_cmd_m.action == TableAction::READ) {
             // std::array<uint8_t, 56> data_for_return{};
-            auto returned_data = std::span(check_read.reads);
             types::data_length returned_data_len = action_cmd_m.len;
+            auto returned_data =
+                std::span(check_read.reads[0])
+                    .subspan(types::book_header_length + 1, returned_data_len);
             bool crc_valid = false;
 
             uint16_t attempts = 0;
@@ -277,7 +287,8 @@ class BookAccessor
                     // TODO ? maybe come up with a way to recover the data when
                     // this happens?
 
-                    std::copy_n(error.begin(), error.size(), this->buffer);
+                    std::copy_n(error.begin(), error.size(),
+                                this->buffer.begin());
 
                     return;
                 }
@@ -313,7 +324,7 @@ class BookAccessor
             }
 
             std::copy_n(returned_data.begin(), sizeof(returned_data),
-                        this->buffer);
+                        this->buffer.begin());
 
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
@@ -342,8 +353,8 @@ class BookAccessor
                                     void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<dev_data::DevDataAccessor<EEpromTaskClient>*>(
-                param);
+            reinterpret_cast<
+                book_accessor::BookAccessor<EEpromTaskClient, SIZE>*>(param);
         self->config_req_callback(m);
     }
     // Calculates data's location on the lookup table
@@ -386,7 +397,14 @@ class BookAccessor
                 break;
         }
     }
+
+    static auto table_action_callback(const message::EepromMessage& m,
+                                      void* param) -> void {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        auto* self = reinterpret_cast<BookAccessor*>(param);
+        self->table_action_callback(m);
+    }
 };
 
-}  // namespace ot_library_accessor
+}  // namespace book_accessor
 }  // namespace eeprom
