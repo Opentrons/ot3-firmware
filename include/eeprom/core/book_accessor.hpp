@@ -380,9 +380,9 @@ class BookAccessor
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
                 // read all 4 whole pages at the same time
-                this->start_read_at_offset(data_addr,
-                                           data_addr + (types::page_length * 4),
-                                           m.message_index);
+                this->OT_start_read_at_offset(
+                    data_addr, data_addr + (types::page_length * 4),
+                    m.message_index);
                 break;
         }
     }

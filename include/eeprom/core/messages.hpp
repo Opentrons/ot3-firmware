@@ -3,7 +3,6 @@
 #include <variant>
 
 #include "eeprom/core/hardware_iface.hpp"
-#include "eeprom/core/messages.hpp"
 #include "eeprom/core/types.hpp"
 #include "hardware_iface.hpp"
 #include "types.hpp"
@@ -81,7 +80,7 @@ struct OTLibraryPageMessage {
 };
 
 using EepromDataMessage =
-    std::variant<EepromMessage, OTLibraryBookMessage, OTLibraryPageMessage>;
+    std::variant<OTLibraryBookMessage, OTLibraryPageMessage>;
 
 // Read Messages
 using OTReadResponseCallback = void (*)(const EepromDataMessage&, void*);
