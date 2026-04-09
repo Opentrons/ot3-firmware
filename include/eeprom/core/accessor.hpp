@@ -216,6 +216,7 @@ class EEPromAccessor {
     }
 
     void OT_callback(const eeprom::message::EepromDataMessage& msg) {
+        printf("ot callback\n");
         std::visit(
             [this](auto& m) {
                 // TODO (ryan 07-18-22) handle errors in response
@@ -225,6 +226,7 @@ class EEPromAccessor {
                 std::copy_n(m.data.cbegin(), m.length, buffer_ptr);
                 bytes_recieved += m.length;
                 if (bytes_recieved == bytes_to_read) {
+                    printf("calling read complete.");
                     read_listener.read_complete(m.message_index);
                 }
             },

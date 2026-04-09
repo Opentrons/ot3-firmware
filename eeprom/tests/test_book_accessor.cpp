@@ -13,8 +13,10 @@ struct MockEEPromTaskClient {
     uint16_t read_counter = 0;
 
     void send_eeprom_queue(const task::TaskMessage& m) {
+        printf("Got message\n");
         if (const auto* read_message =
                 std::get_if<message::OTLibraryReadMessage>(&m)) {
+            printf("ot read message.\n");
             // structure return message
             message::OTLibraryBookMessage to_be_sent =
                 eeprom::message::OTLibraryBookMessage{};
@@ -56,6 +58,13 @@ struct MockEEPromTaskClient {
                 read_message->callback;
 
             callback(to_be_sent, read_message->callback_param);
+        }
+        else if (const auto* read_message =
+                std::get_if<message::ReadEepromMessage>(&m)) {
+
+            auto resp = message::EepromMessage{};
+            resp.data.fill(0);
+            read_message->callback(resp, read_message->callback_param);
         }
     }
 };
