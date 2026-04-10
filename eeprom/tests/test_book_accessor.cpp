@@ -34,15 +34,11 @@ struct MockEEPromTaskClient {
                 case 0:
                     data_to_be_sent[2] = 0b00000010;  // counter
                     data_to_be_sent[9] = 0b00000010;  // value
-                    printf("first page read, counter value: %u\n",
-                           data_to_be_sent[2]);
                     break;
                     // second page in book, counter value 3
                 case 1:
                     data_to_be_sent[2] = 0b00000011;
                     data_to_be_sent[9] = 0b00000011;
-                    printf("second page read, counter value: %u\n",
-                           data_to_be_sent[2]);
                     break;
                     // third (current) page in book, counter value 4
                 case 2:
@@ -50,19 +46,12 @@ struct MockEEPromTaskClient {
                     data_to_be_sent[0] = 0b10000100;  // CRC
                     data_to_be_sent[1] = 0b01000000;  // still CRC
                     data_to_be_sent[9] = 0b00000100;
-                    printf("third page read, counter value: %u\n",
-                           data_to_be_sent[2]);
                     break;
                     // second page in book, counter value 3
                 case 3:
                     data_to_be_sent[2] = 0b00000001;
                     data_to_be_sent[9] = 0b00000001;
-                    printf("fourth page read, counter value: %u\n",
-                           data_to_be_sent[2]);
                     break;
-                default:
-                    printf("SOMETHING WENT WRONG, read counter is %u\n",
-                           read_counter);
             }
 
             read_counter++;
