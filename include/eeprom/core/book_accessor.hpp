@@ -264,9 +264,6 @@ class BookAccessor
 
         // find maximum value
         // TODO implement counter wraparound
-        // TODO implement a more robust way to determine which page is the most
-        // recent one, as this method is sus to errors if there are multiple
-        // failed writes
         std::array<uint16_t, 4> reads = {read_00, read_01, read_11, read_10};
         std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
         uint16_t most_recent_index = 0;
@@ -286,7 +283,9 @@ class BookAccessor
                 // breaks if it has tried more than 4 times (the number of pages
                 // in a book)
                 if (most_recent_index >= 4) {
-                    std::string error = "CRC DIDN'T MATCH";
+                    std::array<uint8_t,
+                               static_cast<size_t>(types::DataSize::BOOK)>
+                        error{0};
                     // writes an error to the buffer
                     // TODO ? maybe come up with a way to recover the data when
                     // this happens?
@@ -323,6 +322,7 @@ class BookAccessor
                 }
 
                 most_recent_index++;
+                most_recent_valid = reads[most_recent_index];
             }
 
             std::copy_n(returned_data.begin(), returned_data.size(),

@@ -10,6 +10,13 @@
 using namespace eeprom;
 
 struct MockEEPromTaskClient {
+    enum ReadOption {
+        VALID,
+        ONE_INVALID,
+        ALL_INVALID,
+    };
+
+    ReadOption read_option = VALID;
     uint16_t read_counter = 0;
 
     void send_eeprom_queue(const task::TaskMessage& m) {
@@ -29,29 +36,62 @@ struct MockEEPromTaskClient {
             // TODO Make Data that will be sent back from "EEPROM"
             // generate arrays that aren't the valid one
 
-            switch (read_counter) {
-                    // first in page, counter value 2
-                case 0:
-                    data_to_be_sent[2] = 0b00000010;  // counter
-                    data_to_be_sent[9] = 0b00000010;  // value
-                    break;
-                    // second page in book, counter value 3
-                case 1:
-                    data_to_be_sent[2] = 0b00000011;
-                    data_to_be_sent[9] = 0b00000011;
-                    break;
-                    // third (current) page in book, counter value 4
-                case 2:
-                    data_to_be_sent[2] = 0b00000100;
-                    data_to_be_sent[0] = 0b10000100;  // CRC
-                    data_to_be_sent[1] = 0b01000000;  // still CRC
-                    data_to_be_sent[9] = 0b00000100;
-                    break;
-                    // second page in book, counter value 3
-                case 3:
-                    data_to_be_sent[2] = 0b00000001;
-                    data_to_be_sent[9] = 0b00000001;
-                    break;
+            if (read_option == VALID) {
+                switch (read_counter) {
+                        // first in page, counter value 2
+                    case 0:
+                        data_to_be_sent[2] = 0b00000010;  // counter
+                        data_to_be_sent[9] = 0b00000010;  // value
+                        break;
+                        // second page in book, counter value 3
+                    case 1:
+                        data_to_be_sent[2] = 0b00000011;
+                        data_to_be_sent[9] = 0b00000011;
+                        break;
+                        // third (current) page in book, counter value 4
+                    case 2:
+                        data_to_be_sent[2] = 0b00000100;
+                        data_to_be_sent[0] = 0b10000100;  // CRC
+                        data_to_be_sent[1] = 0b01000000;  // still CRC
+                        data_to_be_sent[9] = 0b00000100;
+                        break;
+                        // fourth page in book, counter value 1
+                    case 3:
+                        data_to_be_sent[2] = 0b00000001;
+                        data_to_be_sent[9] = 0b00000001;
+                        break;
+                }
+            } else if (read_option == ONE_INVALID) {
+                switch (read_counter) {
+                        // first in page, counter value 1
+                    case 0:
+                        data_to_be_sent[2] = 0b00000001;  // counter
+                        data_to_be_sent[9] = 0b00000001;  // value
+                        break;
+                        // second page in book, counter value 2
+                    case 1:
+                        data_to_be_sent[2] = 0b00000010;
+                        data_to_be_sent[9] = 0b00000010;
+                        break;
+                        // third (current) page in book, counter value 3 valid
+                        // CRC; data value 4
+                    case 2:
+                        data_to_be_sent[2] = 0b00000011;
+                        data_to_be_sent[0] = 0b10000100;  // CRC
+                        data_to_be_sent[1] = 0b01000000;  // still CRC
+                        data_to_be_sent[9] = 0b00000100;
+                        break;
+                        // fourth page in book, counter value 3 invalid (no)
+                        // CRC; data value 7
+                    case 3:
+                        data_to_be_sent[2] = 0b00000100;
+                        data_to_be_sent[9] = 0b00001001;
+                        break;
+                }
+            } else if (read_option == ALL_INVALID) {
+                // NO CRC sent at all
+                data_to_be_sent[2] = 0b00000001;  // counter
+                data_to_be_sent[9] = 0b00000001;  // value
             }
 
             read_counter++;
@@ -87,8 +127,26 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     uint16_t offset = 0;
     uint32_t message_index = 0;
 
-    test_book_accessor.get_data(key, len, offset, message_index);
+    GIVEN("Book Accessor initializes properly") {
+        THEN("Read valid data properly") {
+            mock_client.read_option = MockEEPromTaskClient::VALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000100);
+        }
 
-    // check that the value read is correct
-    REQUIRE(buffer[0] == 0b00000100);
+        THEN("Cascade read when one page of data is invalid") {
+            mock_client.read_option = MockEEPromTaskClient::ONE_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000100);
+        }
+
+        THEN("Return invalid data when all pages are invalid") {
+            mock_client.read_option = MockEEPromTaskClient::ALL_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000000);
+        }
+    }
 }
