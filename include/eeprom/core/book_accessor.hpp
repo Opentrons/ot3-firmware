@@ -123,13 +123,14 @@ class BookAccessor
     void read_complete(uint32_t message_index) override {
         // split big read into 4 pages
         for (uint8_t i = 0; i < 4; i++) {
+            check_read.book_index = i;
+            printf("read complete, page %u\n", check_read.book_index);
             // 1. save what's in buffer to FullRead.reads
             std::copy_n((intermediate_buffer.begin() +
                          (static_cast<ptrdiff_t>(types::page_length * i))),
                         types::page_length,
                         check_read.reads[check_read.book_index].begin());
-
-            check_read.book_index++;
+            printf("%u\n", check_read.reads[check_read.book_index][2]);
         }
         read_final(message_index);
     }
@@ -138,7 +139,7 @@ class BookAccessor
   private:
     struct FullRead {
         uint8_t book_index = 0;
-        std::array<std::array<uint8_t, types::page_length>, 4> reads;
+        std::array<std::array<uint8_t, types::page_length>, 4> reads{};
     };
 
     // fields, decide what they are
@@ -232,23 +233,37 @@ class BookAccessor
     }
 
     auto check_crc(std::array<uint8_t, types::page_length> bytes) -> bool {
+        printf("check crc bytes: ");
+        for (int i = 0; i < types::page_length; i++) {
+            printf("%u ", bytes[i]);
+        }
+        printf("\n");
         // Grab CRC from byte array
         std::array<uint8_t, 2> given_CRC{};
         std::copy_n(bytes.begin(), 2, given_CRC.begin());
+        printf("given CRC: %u %u\n", given_CRC[0], given_CRC[1]);
 
         // calculate the CRC from the given data
         // Note: only the used bytes will be used in CRC caluclations
         std::array<uint8_t, 2> given_data{};
-        std::copy_n(bytes.begin() + types::book_header_length, action_cmd_m.len,
-                    given_data.begin());
+        std::copy_n(bytes.begin() + types::book_header_length + 1,
+                    action_cmd_m.len, given_data.begin());
+        printf("given data: ");
+        for (int i = 0; i < action_cmd_m.len; i++) {
+            printf("%u ", given_data[i]);
+        }
+        printf("\n");
 
         std::array<uint8_t, 2> calculated_crc = calc_crc(given_data);
+        printf("calculated CRC: %u %u\n", calculated_crc[0], calculated_crc[1]);
 
         return (calculated_crc == given_CRC);
     }
 
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
+        // TODO: Change names to reflect the fact that we are not doing one
+        // large read instead of 4 small ones
         uint16_t read_00 = 0;
         uint16_t read_01 = 0;
         uint16_t read_11 = 0;
@@ -257,14 +272,19 @@ class BookAccessor
         // convert counter from bytes to longs
 
         std::memcpy(&read_00, &check_read.reads[0][2], sizeof(read_00));
+        printf("read_00: %u\n", read_00);
         std::memcpy(&read_01, &check_read.reads[1][2], sizeof(read_01));
+        printf("read_01: %u\n", read_01);
         std::memcpy(&read_11, &check_read.reads[2][2], sizeof(read_11));
+        printf("read_11: %u\n", read_11);
         std::memcpy(&read_10, &check_read.reads[3][2], sizeof(read_10));
+        printf("read_10: %u\n", read_10);
 
         // find maximum value
         // TODO implement counter wraparound
         uint16_t most_recent_valid =
             std::max({read_00, read_01, read_11, read_10});
+        printf("most recent valid: %u\n", most_recent_valid);
 
         if (action_cmd_m.action == TableAction::READ) {
             // std::array<uint8_t, 56> data_for_return{};
@@ -309,10 +329,17 @@ class BookAccessor
                     most_recent_valid = read_00;
 
                 } else if (most_recent_valid == read_11) {
+                    printf("checking read_11\n");
                     returned_data = std::span(check_read.reads[2])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
+                    printf("returned data: ");
+                    for (int i = 0; i < returned_data_len; i++) {
+                        printf("%u ", returned_data[i]);
+                    }
+                    printf("\n");
                     crc_valid = check_crc(check_read.reads[2]);
+                    printf("crc valid: %u\n", crc_valid);
                     most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_10) {

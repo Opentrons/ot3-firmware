@@ -16,39 +16,56 @@ struct MockEEPromTaskClient {
         if (const auto* read_message =
                 std::get_if<message::OTLibraryReadMessage>(&m)) {
             // structure return message
-            message::OTLibraryBookMessage to_be_sent =
-                eeprom::message::OTLibraryBookMessage{};
+            message::OTLibraryPageMessage to_be_sent =
+                eeprom::message::OTLibraryPageMessage{};
             to_be_sent.memory_address = read_message->memory_address;
             to_be_sent.length = read_message->length;
             to_be_sent.message_index = 0;
 
             auto data_to_be_sent =
                 std::array<uint8_t,
-                           static_cast<size_t>(types::DataSize::BOOK)>{};
+                           static_cast<size_t>(types::DataSize::PAGE)>{};
 
             // TODO Make Data that will be sent back from "EEPROM"
             // generate arrays that aren't the valid one
 
-            // first in page, counter value 2
-            data_to_be_sent[2] = 0b00000010;  // counter
-            data_to_be_sent[9] = 0b00000010;  // value
+            switch (read_counter) {
+                    // first in page, counter value 2
+                case 0:
+                    data_to_be_sent[2] = 0b00000010;  // counter
+                    data_to_be_sent[9] = 0b00000010;  // value
+                    printf("first page read, counter value: %u\n",
+                           data_to_be_sent[2]);
+                    break;
+                    // second page in book, counter value 3
+                case 1:
+                    data_to_be_sent[2] = 0b00000011;
+                    data_to_be_sent[9] = 0b00000011;
+                    printf("second page read, counter value: %u\n",
+                           data_to_be_sent[2]);
+                    break;
+                    // third (current) page in book, counter value 4
+                case 2:
+                    data_to_be_sent[2] = 0b00000100;
+                    data_to_be_sent[0] = 0b10000100;  // CRC
+                    data_to_be_sent[1] = 0b01000000;  // still CRC
+                    data_to_be_sent[9] = 0b00000100;
+                    printf("third page read, counter value: %u\n",
+                           data_to_be_sent[2]);
+                    break;
+                    // second page in book, counter value 3
+                case 3:
+                    data_to_be_sent[2] = 0b00000001;
+                    data_to_be_sent[9] = 0b00000001;
+                    printf("fourth page read, counter value: %u\n",
+                           data_to_be_sent[2]);
+                    break;
+                default:
+                    printf("SOMETHING WENT WRONG, read counter is %u\n",
+                           read_counter);
+            }
 
-            // second page in book, counter value 3
-            data_to_be_sent[types::page_length + 2] = 0b00000011;
-            data_to_be_sent[types::page_length + types::book_header_length] =
-                0b00000011;
-
-            // third (current) page in book, counter value 4
-            data_to_be_sent[(types::page_length * 2) + 2] = 0b00000100;
-            data_to_be_sent[types::page_length * 2] = 0b10000100;  // CRC
-            data_to_be_sent[(types::page_length * 2) + 1] = 0b01000000;
-            data_to_be_sent[(types::page_length * 2) +
-                            types::book_header_length] = 0b00000100;
-
-            // second page in book, counter value 3
-            data_to_be_sent[(types::page_length * 3) + 2] = 0b00000001;
-            data_to_be_sent[(types::page_length * 3) +
-                            types::book_header_length] = 0b00000001;
+            read_counter++;
 
             to_be_sent.data = data_to_be_sent;
 
