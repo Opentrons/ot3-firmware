@@ -13,10 +13,8 @@ struct MockEEPromTaskClient {
     uint16_t read_counter = 0;
 
     void send_eeprom_queue(const task::TaskMessage& m) {
-        printf("Got message\n");
         if (const auto* read_message =
                 std::get_if<message::OTLibraryReadMessage>(&m)) {
-            printf("ot read message.\n");
             // structure return message
             message::OTLibraryBookMessage to_be_sent =
                 eeprom::message::OTLibraryBookMessage{};
@@ -86,6 +84,5 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     test_book_accessor.get_data(key, len, offset, message_index);
 
     // check that the value read is correct
-    printf("back in test, no segfault\n");
     REQUIRE(buffer[0] == 0b00000100);
 }
