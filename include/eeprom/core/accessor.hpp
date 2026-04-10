@@ -185,7 +185,10 @@ class EEPromAccessor {
 
         begin_read_addr = read_addr;
         while (bytes_remain > 0) {
-            amount_to_read = std::min(bytes_remain, types::max_data_length);
+            amount_to_read = std::min(bytes_remain, types::page_length);
+            printf(
+                "send eeprom read message from "
+                "OT_start_read_at_offset\n");
             eeprom_client.send_eeprom_queue(
                 eeprom::message::OTLibraryReadMessage{
                     .message_index = message_index,
@@ -226,7 +229,7 @@ class EEPromAccessor {
                 std::copy_n(m.data.cbegin(), m.length, buffer_ptr);
                 bytes_recieved += m.length;
                 if (bytes_recieved == bytes_to_read) {
-                    printf("calling read complete.");
+                    printf("calling read complete.\n");
                     read_listener.read_complete(m.message_index);
                 }
             },

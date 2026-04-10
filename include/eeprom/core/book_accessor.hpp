@@ -89,13 +89,10 @@ class BookAccessor
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
                   uint32_t message_index) {
-        printf("Are we making it\n");
         if (read_write_ready()) {
-            printf("We made it\n");
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
                 LOG("Error, attemping to read uninitalized value");
-                printf("Error, attemping to read uninitalized value");
                 return;
             }
             action_cmd_m = table_entry_action{.key = key,
@@ -105,7 +102,6 @@ class BookAccessor
 
             // call a read to the table entry so we know where
             // to read the data
-            printf("sending read message.\n");
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = table_location,
@@ -117,7 +113,7 @@ class BookAccessor
 
     auto read_write_ready() -> bool {
         return true;
-        //return table_ready() && tail_accessor.data_rev_complete();
+        // return table_ready() && tail_accessor.data_rev_complete();
     }
 
     auto table_ready() -> bool {
@@ -328,11 +324,12 @@ class BookAccessor
                 }
             }
 
-            std::copy_n(returned_data.begin(), sizeof(returned_data),
+            std::copy_n(returned_data.begin(), returned_data.,
                         this->buffer.begin());
 
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
+
         } else if (action_cmd_m.action == TableAction::WRITE) {
             // TODO: finish this when writing
             return;
@@ -372,7 +369,6 @@ class BookAccessor
     }
 
     void table_action_callback(const message::EepromMessage& m) {
-        printf("Table action cb/n");
         const auto* data_iter = m.data.begin();
         types::address data_addr = 0;
         types::data_length data_len = 0;
@@ -397,7 +393,6 @@ class BookAccessor
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
                 // read all 4 whole pages at the same time
-                printf("Start read at offset\n");
                 this->OT_start_read_at_offset(
                     data_addr, data_addr + (types::page_length * 4),
                     m.message_index);

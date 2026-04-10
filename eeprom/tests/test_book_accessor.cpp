@@ -58,10 +58,8 @@ struct MockEEPromTaskClient {
                 read_message->callback;
 
             callback(to_be_sent, read_message->callback_param);
-        }
-        else if (const auto* read_message =
-                std::get_if<message::ReadEepromMessage>(&m)) {
-
+        } else if (const auto* read_message =
+                       std::get_if<message::ReadEepromMessage>(&m)) {
             auto resp = message::EepromMessage{};
             resp.data.fill(0);
             read_message->callback(resp, read_message->callback_param);
@@ -88,5 +86,6 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     test_book_accessor.get_data(key, len, offset, message_index);
 
     // check that the value read is correct
+    printf("back in test, no segfault\n");
     REQUIRE(buffer[0] == 0b00000100);
 }
