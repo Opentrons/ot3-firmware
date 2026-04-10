@@ -267,8 +267,10 @@ class BookAccessor
         // TODO implement a more robust way to determine which page is the most
         // recent one, as this method is sus to errors if there are multiple
         // failed writes
-        uint16_t most_recent_valid =
-            std::max({read_00, read_01, read_11, read_10});
+        std::array<uint16_t, 4> reads = {read_00, read_01, read_11, read_10};
+        std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
+        uint16_t most_recent_index = 0;
+        uint16_t most_recent_valid = reads[most_recent_index];
 
         if (action_cmd_m.action == TableAction::READ) {
             // std::array<uint8_t, 56> data_for_return{};
@@ -278,15 +280,12 @@ class BookAccessor
                     .subspan(types::book_header_length + 1, returned_data_len);
             bool crc_valid = false;
 
-            uint16_t attempts = 0;
-
             while (!crc_valid) {
                 // This while loop will keep looping through pages read until it
                 // finds one whose written CRC matches the one calcluated
-                attempts++;
                 // breaks if it has tried more than 4 times (the number of pages
                 // in a book)
-                if (attempts > 4) {
+                if (most_recent_index >= 4) {
                     std::string error = "CRC DIDN'T MATCH";
                     // writes an error to the buffer
                     // TODO ? maybe come up with a way to recover the data when
@@ -303,29 +302,27 @@ class BookAccessor
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
                     crc_valid = check_crc(check_read.reads[0]);
-                    most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_01) {
                     returned_data = std::span(check_read.reads[1])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
                     crc_valid = check_crc(check_read.reads[1]);
-                    most_recent_valid = read_00;
 
                 } else if (most_recent_valid == read_11) {
                     returned_data = std::span(check_read.reads[2])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
                     crc_valid = check_crc(check_read.reads[2]);
-                    most_recent_valid = read_10;
 
                 } else if (most_recent_valid == read_10) {
                     returned_data = std::span(check_read.reads[3])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
                     crc_valid = check_crc(check_read.reads[3]);
-                    most_recent_valid = read_11;
                 }
+
+                most_recent_index++;
             }
 
             std::copy_n(returned_data.begin(), returned_data.size(),
