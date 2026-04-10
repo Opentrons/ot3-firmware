@@ -81,8 +81,9 @@ class BookAccessor
         const uint16_t generator_position = 16;
 
         // left shit data to accomadate crc
-        std::bitset<data_bitset.size() + generator_position> bit_data(
-            data_bitset << generator_position);
+        std::bitset<(num_bytes * 8) + static_cast<size_t>(generator_position)>
+            bit_data(data_bitset.to_ullong());
+        bit_data <<= generator_position;
         uint16_t data_position = bit_data.size() - 1;
 
         while (data_position >= generator_position) {
