@@ -202,7 +202,7 @@ class BookAccessor
         // left shit data to accomadate crc
         std::bitset<(num_bytes * 8) + static_cast<size_t>(generator_position)>
             bit_data(data_bitset.to_ullong());
-        bit_data << generator_position;
+        bit_data <<= generator_position;
         uint16_t data_position = bit_data.size() - 1;
 
         while (data_position >= generator_position) {
