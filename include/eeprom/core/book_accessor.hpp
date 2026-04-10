@@ -324,7 +324,7 @@ class BookAccessor
                 }
             }
 
-            std::copy_n(returned_data.begin(), returned_data.,
+            std::copy_n(returned_data.begin(), returned_data.size(),
                         this->buffer.begin());
 
             // tell object that called the read that the read is avaiable
