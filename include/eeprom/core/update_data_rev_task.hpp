@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "eeprom/core/book_accessor.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
@@ -154,7 +155,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;
