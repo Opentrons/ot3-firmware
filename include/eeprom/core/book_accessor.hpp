@@ -43,7 +43,7 @@ struct PageType {
 
 struct BookAccessorIntermediate {
   protected:
-    static inline DataBufferType<static_cast<size_t>(types::page_length * 4)>
+    DataBufferType<static_cast<size_t>(types::page_length * 4)>
         intermediate_buffer;
 };
 
@@ -54,10 +54,10 @@ struct BookAccessorIntermediate {
 
 template <task::TaskClient EEpromTaskClient, size_t SIZE>
 class BookAccessor
-    : public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
+    : BookAccessorIntermediate,
+      public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
                                               addresses::ot_library_begin>,
-      eeprom::accessor::ReadListener,
-      BookAccessorIntermediate {
+      eeprom::accessor::ReadListener {
   public:
     explicit BookAccessor(
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
@@ -237,7 +237,7 @@ class BookAccessor
 
         // calculate the CRC from the given data
         // Note: only the used bytes will be used in CRC caluclations
-        std::array<uint8_t, 2> given_data{};
+        std::array<uint8_t, types::book_data_length> given_data{};
         std::copy_n(bytes.begin() + types::book_header_length + 1,
                     action_cmd_m.len, given_data.begin());
 
