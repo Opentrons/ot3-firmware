@@ -25,8 +25,8 @@ using TableAction = dev_data::TableAction;
 using table_entry_action = dev_data::table_entry_action;
 
 /*
- * The PageType represents a page on which data will exist. It will be used to
- * organise data during reads and writes.
+ * The PageType represents a page on which data will exist. It will be used
+ * to organise data during reads and writes.
  * */
 template <size_t SIZE>
 struct PageType {
@@ -47,8 +47,8 @@ struct BookAccessorIntermediate {
         intermediate_buffer;
 };
 
-/*Accessor for OT Library. Takes byte arrays as data. Ensure they are in Little
- * Endian (in accordance with STM32 Architecture)
+/*Accessor for OT Library. Takes byte arrays as data. Ensure they are in
+ * Little Endian (in accordance with STM32 Architecture)
  *
  * SIZE is the size of the buffer*/
 
@@ -280,15 +280,15 @@ class BookAccessor
             bool crc_valid = false;
 
             while (!crc_valid) {
-                // This while loop will keep looping through pages read until it
-                // finds one whose written CRC matches the one calcluated
-                // breaks if it has tried more than 4 times (the number of pages
-                // in a book)
+                // This while loop will keep looping through pages read
+                // until it finds one whose written CRC matches the one
+                // calcluated breaks if it has tried more than 4 times (the
+                // number of pages in a book)
                 if (most_recent_index >= 4) {
                     std::array<uint8_t, SIZE> error{0};
                     // writes an error to the buffer
-                    // TODO ? maybe come up with a way to recover the data when
-                    // this happens?
+                    // TODO ? maybe come up with a way to recover the data
+                    // when this happens?
 
                     std::copy_n(error.begin(), error.size(),
                                 this->buffer.begin());
