@@ -254,7 +254,6 @@ class BookAccessor
         uint16_t read_01 = 0;
         uint16_t read_11 = 0;
         uint16_t read_10 = 0;
-
         // convert counter from bytes to longs
 
         std::memcpy(&read_00, &check_read.reads[0][2], sizeof(read_00));
@@ -296,6 +295,8 @@ class BookAccessor
                     return;
                 }
 
+                most_recent_valid = reads[most_recent_index];
+
                 if (most_recent_valid == read_00) {
                     returned_data = std::span(check_read.reads[0])
                                         .subspan(types::book_header_length + 1,
@@ -322,7 +323,6 @@ class BookAccessor
                 }
 
                 most_recent_index++;
-                most_recent_valid = reads[most_recent_index];
             }
 
             std::copy_n(returned_data.begin(), returned_data.size(),
