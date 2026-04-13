@@ -123,23 +123,16 @@ class BookAccessor
     void read_complete(uint32_t message_index) override {
         // split big read into 4 pages
         for (uint8_t i = 0; i < 4; i++) {
-            check_read.book_index = i;
-            // 1. save what's in buffer to FullRead.reads
+            // 1. save what's in buffer to all_reads
             std::copy_n((intermediate_buffer.begin() +
                          (static_cast<ptrdiff_t>(types::page_length * i))),
-                        types::page_length,
-                        check_read.reads[check_read.book_index].begin());
+                        types::page_length, all_reads[i].begin());
         }
         read_final(message_index);
     }
 
     // GET_DATA CONVENIENCE METHODS
   private:
-    struct FullRead {
-        uint8_t book_index = 0;
-        std::array<std::array<uint8_t, types::page_length>, 4> reads{};
-    };
-
     // fields, decide what they are
     // Add a tail accessor?
     dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor;
@@ -148,8 +141,7 @@ class BookAccessor
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     DataBufferType<SIZE>& buffer;
-
-    FullRead check_read{};
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     // convert bitset to bytes
     template <uint16_t numbits>
@@ -259,10 +251,10 @@ class BookAccessor
         uint16_t read_10 = 0;
         // convert counter from bytes to longs
 
-        std::memcpy(&read_00, &check_read.reads[0][2], sizeof(read_00));
-        std::memcpy(&read_01, &check_read.reads[1][2], sizeof(read_01));
-        std::memcpy(&read_11, &check_read.reads[2][2], sizeof(read_11));
-        std::memcpy(&read_10, &check_read.reads[3][2], sizeof(read_10));
+        std::memcpy(&read_00, &all_reads[0][2], sizeof(read_00));
+        std::memcpy(&read_01, &all_reads[1][2], sizeof(read_01));
+        std::memcpy(&read_11, &all_reads[2][2], sizeof(read_11));
+        std::memcpy(&read_10, &all_reads[3][2], sizeof(read_10));
 
         // find maximum value
         // TODO implement counter wraparound
@@ -275,7 +267,7 @@ class BookAccessor
             // std::array<uint8_t, 56> data_for_return{};
             types::data_length returned_data_len = action_cmd_m.len;
             auto returned_data =
-                std::span(check_read.reads[0])
+                std::span(all_reads[0])
                     .subspan(types::book_header_length + 1, returned_data_len);
             bool crc_valid = false;
 
@@ -299,28 +291,28 @@ class BookAccessor
                 most_recent_valid = reads[most_recent_index];
 
                 if (most_recent_valid == read_00) {
-                    returned_data = std::span(check_read.reads[0])
+                    returned_data = std::span(all_reads[0])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
-                    crc_valid = check_crc(check_read.reads[0]);
+                    crc_valid = check_crc(all_reads[0]);
 
                 } else if (most_recent_valid == read_01) {
-                    returned_data = std::span(check_read.reads[1])
+                    returned_data = std::span(all_reads[1])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
-                    crc_valid = check_crc(check_read.reads[1]);
+                    crc_valid = check_crc(all_reads[1]);
 
                 } else if (most_recent_valid == read_11) {
-                    returned_data = std::span(check_read.reads[2])
+                    returned_data = std::span(all_reads[2])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
-                    crc_valid = check_crc(check_read.reads[2]);
+                    crc_valid = check_crc(all_reads[2]);
 
                 } else if (most_recent_valid == read_10) {
-                    returned_data = std::span(check_read.reads[3])
+                    returned_data = std::span(all_reads[3])
                                         .subspan(types::book_header_length + 1,
                                                  returned_data_len);
-                    crc_valid = check_crc(check_read.reads[3]);
+                    crc_valid = check_crc(all_reads[3]);
                 }
 
                 most_recent_index++;
