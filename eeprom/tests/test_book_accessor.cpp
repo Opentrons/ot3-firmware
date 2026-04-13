@@ -9,7 +9,7 @@
 
 using namespace eeprom;
 
-struct MockEEPromTaskClient {
+struct BMockEEpromTaskClient {
     enum ReadOption {
         VALID,
         ONE_INVALID,
@@ -112,14 +112,14 @@ struct MockEEPromTaskClient {
 };
 
 SCENARIO("Book Accessor can read data from EEPROM") {
-    auto mock_client = MockEEPromTaskClient{};
+    auto mock_client = BMockEEpromTaskClient{};
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
     auto tail_accessor =
-        eeprom::dev_data::DevDataTailAccessor<MockEEPromTaskClient>{
+        eeprom::dev_data::DevDataTailAccessor<BMockEEpromTaskClient>{
             mock_client};
     auto test_book_accessor =
-        book_accessor::BookAccessor<MockEEPromTaskClient, 1>{
+        book_accessor::BookAccessor<BMockEEpromTaskClient, 1>{
             mock_client, mock_listener, buffer, tail_accessor};
 
     uint16_t key = 0;
@@ -129,21 +129,21 @@ SCENARIO("Book Accessor can read data from EEPROM") {
 
     GIVEN("Book Accessor initializes properly") {
         THEN("Read valid data properly") {
-            mock_client.read_option = MockEEPromTaskClient::VALID;
+            mock_client.read_option = BMockEEpromTaskClient::VALID;
             test_book_accessor.get_data(key, len, offset, message_index);
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Cascade read when one page of data is invalid") {
-            mock_client.read_option = MockEEPromTaskClient::ONE_INVALID;
+            mock_client.read_option = BMockEEpromTaskClient::ONE_INVALID;
             test_book_accessor.get_data(key, len, offset, message_index);
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Return invalid data when all pages are invalid") {
-            mock_client.read_option = MockEEPromTaskClient::ALL_INVALID;
+            mock_client.read_option = BMockEEpromTaskClient::ALL_INVALID;
             test_book_accessor.get_data(key, len, offset, message_index);
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000000);
