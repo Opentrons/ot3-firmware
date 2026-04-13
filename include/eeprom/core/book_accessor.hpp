@@ -72,13 +72,51 @@ class BookAccessor
     // fields, decide what they are
     // Add a tail accessor?
 
-    template <size_t SIZE>
-    auto calc_crc(std::array<std::byte, SIZE> data)
-        -> std::array<std::byte, 2> {
+    // convert bitset to bytes
+    template <uint16_t numbits>
+    auto bitsettobytes(std::bitset<numbits> bits)
+        -> std::array<uint8_t, numbits / 8> {
+        std::array<uint8_t, numbits / 8> output{};
+
+        for (int i = 0; i < numbits; i++) {
+            uint8_t& cur = output[i / 8];
+
+            if (bits.test(i)) {
+                cur |= 1 << (i % 8);
+            }
+        }
+
+        return output;
+    }
+
+    // convert bytes to bitset
+    template <size_t numbytes>
+    auto bytestobitset(std::array<uint8_t, numbytes> data)
+        -> std::bitset<8 * numbytes> {
+        std::bitset<numbytes * 8> bits;
+
+        for (int i = 0; i < static_cast<int>(numbytes); ++i) {
+            uint8_t cur = data[i];
+            int offset = i * 8;
+
+            for (int bit = 1; bit <= 8; ++bit) {
+                auto mask = 1 << (8 - bit);
+                bool is_set = (cur & mask) != 0;
+
+                bits[offset + (8 - bit)] = is_set;
+            }
+        }
+
+        return bits;
+    }
+
+    template <size_t num_bytes>
+    auto calc_crc(std::array<uint8_t, num_bytes> data)
+        -> std::array<uint8_t, 2> {
         // convert data array into a bitset, to make bit manipulation easier
-        auto data_bitset = bytestobitset<SIZE>(data);
+        auto data_bitset = bytestobitset<num_bytes>(data);
         std::bitset<17> generator(0b10001000000100001);
-        const uint16_t generator_position = 16;
+        constexpr uint16_t generator_position = 16;
 
         // left shit data to accomadate crc
         std::bitset<(num_bytes * 8) + static_cast<size_t>(generator_position)>
@@ -93,7 +131,9 @@ class BookAccessor
             }
 
             uint16_t difference = data_position - generator_position;
-            std::bitset<bit_data.size()> divisor(generator);
+            std::bitset<(num_bytes * 8) +
+                        static_cast<size_t>(generator_position)>
+                divisor(generator.to_ullong());
             divisor <<= difference;
             bit_data ^= divisor;
             // data_position--;
@@ -107,47 +147,8 @@ class BookAccessor
         }
 
         // convert crc bitset back into byte array
-        std::array<std::byte, 2> crc_byte = bitsettobytes<16>(crc);
+        std::array<uint8_t, 2> crc_byte = bitsettobytes<16>(crc);
         return crc_byte;
-    }
-
-    // convert bytes to bitset
-    template <size_t numbytes>
-    auto bytestobitset(std::array<std::byte, numbytes> data)
-        -> std::bitset<8 * numbytes> {
-        std::bitset<numbytes * 8> bits;
-
-        for (int i = 0; i < numbytes; ++i) {
-            std::byte cur = data[i];
-            int offset = ((numbytes - i) * 8) - 1;
-
-            for (int bit = 1; bit <= 8; ++bit) {
-                auto mask = static_cast<std::byte>(1 << (8 - bit));
-                bool is_set = (cur & mask) != std::byte{0};
-
-                bits[offset] = is_set;
-                --offset;  // move to next bit in b
-            }
-        }
-
-        return bits;
-    }
-
-    // convert bitset to bytes
-    template <uint16_t SIZE>
-    auto bitsettobytes(std::bitset<SIZE> bits)
-        -> std::array<std::byte, SIZE / 8> {
-        std::array<std::byte, SIZE / 8> output{};
-
-        for (int i = SIZE - 1; i >= 0; i--) {
-            std::byte& cur = output[output.size() - 1 - (i / 8)];
-
-            if (bits.test(i)) {
-                cur |= static_cast<std::byte>(1 << (i % 8));
-            }
-        }
-
-        return output;
     }
 
     template <size_t SIZE>
