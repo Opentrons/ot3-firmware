@@ -285,9 +285,7 @@ class BookAccessor
                 // breaks if it has tried more than 4 times (the number of pages
                 // in a book)
                 if (most_recent_index >= 4) {
-                    std::array<uint8_t,
-                               static_cast<size_t>(types::DataSize::BOOK)>
-                        error{0};
+                    std::array<uint8_t, SIZE> error{0};
                     // writes an error to the buffer
                     // TODO ? maybe come up with a way to recover the data when
                     // this happens?
@@ -295,7 +293,7 @@ class BookAccessor
                     std::copy_n(error.begin(), error.size(),
                                 this->buffer.begin());
 
-                    return;
+                    break;
                 }
 
                 most_recent_valid = reads[most_recent_index];
@@ -328,8 +326,10 @@ class BookAccessor
                 most_recent_index++;
             }
 
-            std::copy_n(returned_data.begin(), returned_data.size(),
-                        this->buffer.begin());
+            if (crc_valid) {
+                std::copy_n(returned_data.begin(), returned_data.size(),
+                            this->buffer.begin());
+            }
 
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
