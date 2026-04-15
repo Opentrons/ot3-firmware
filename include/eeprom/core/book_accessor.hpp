@@ -100,7 +100,7 @@ class BookAccessor
                             "truncating to %d",
                             len);
                     }
-                    std::array<uint8_t, types::page_length> page_data{};
+                    std::array<uint8_t, types::page_length> page_data{0};
                     uint16_t counter = 1;
                     std::array<uint8_t, 2> crc = calc_crc(data);
 
