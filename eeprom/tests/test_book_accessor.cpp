@@ -5,6 +5,8 @@
 #include "eeprom/core/messages.hpp"
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/types.hpp"
+#include "eeprom/firmware/crc16.h"
+#include "eeprom/tests/mock_crc.hpp"
 #include "eeprom/tests/mock_eeprom_listener.hpp"
 
 using namespace eeprom;
@@ -115,12 +117,13 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     auto mock_client = BMockEEpromTaskClient{};
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
+    auto mock_crc = MockCRC{};
     auto tail_accessor =
         eeprom::dev_data::DevDataTailAccessor<BMockEEpromTaskClient>{
             mock_client};
     auto test_book_accessor =
         book_accessor::BookAccessor<BMockEEpromTaskClient, 1>{
-            mock_client, mock_listener, buffer, tail_accessor};
+            mock_client, mock_listener, buffer, tail_accessor, mock_crc};
 
     uint16_t key = 0;
     uint16_t len = 1;
