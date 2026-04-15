@@ -69,7 +69,6 @@ class BookAccessor
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
-                // NOTE: ask Ryan why this is 2*conf.address_bytes
                 write.length = 2 * conf.addr_bytes;
                 // data pointers are offsets from the start of the data section
                 // of the eeprom, so we subtract data_address_begin here to
@@ -91,20 +90,16 @@ class BookAccessor
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     len, data_iter, data_iter + conf.addr_bytes);
-                // NOTE: appears to be writing to data table
                 this->eeprom_client.send_eeprom_queue(write);
 
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
-                // NOTE: appears to be writing to data location, this is where
-                // mods should be made
                 if (!data.empty()) {
                     if (data.size() > len) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
                             len);
                     }
-                    // TODO: Stretch data out to fill whole page
                     std::array<uint8_t, types::page_length> page_data{};
                     uint16_t counter = 1;
                     std::array<uint8_t, 2> crc = calc_crc(data);
@@ -397,10 +392,12 @@ class BookAccessor
                 [[fallthrough]];
             case TableAction::CREATE:
                 // TODO: calculate new start address
+                // TODO: Figure out how to make sure that this never writes past
+                // ot_library_end
                 if (tail_accessor.get_data_tail() + action_cmd_m.len +
                         (2 * conf.addr_bytes) >
                     data_addr) {
-                    LOG("Error attempted to iniztialze value too large for "
+                    LOG("Error attempted to initialize value too large for "
                         "memory");
                 } else {
                     // First write the new table entry
@@ -409,7 +406,8 @@ class BookAccessor
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
                     write_iter = bit_utils::int_to_bytes(
-                        uint16_t(data_addr - action_cmd_m.len), write_iter,
+                        uint16_t(data_addr - action_cmd_m.len) & 0xFF00,
+                        write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                         (write_iter + conf.addr_bytes));
                     write_iter = bit_utils::int_to_bytes(
@@ -425,9 +423,10 @@ class BookAccessor
                     // If we passed data into the create write that data into
                     // the memory
                     if (do_initalize) {
-                        this->write_at_offset(this->type_data,
-                                              data_addr - action_cmd_m.len,
-                                              data_addr, m.message_index);
+                        this->write_at_offset(
+                            this->type_data,
+                            (data_addr - action_cmd_m.len) & 0xFF00,
+                            types::page_length, m.message_index);
                     }
                 }
                 break;
