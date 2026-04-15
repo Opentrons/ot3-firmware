@@ -25,23 +25,6 @@ using DataTailType =
 using TableAction = dev_data::TableAction;
 using table_entry_action = dev_data::table_entry_action;
 
-/*
- * The PageType represents a page on which data will exist. It will be used
- * to organise data during reads and writes.
- * */
-template <size_t SIZE>
-struct PageType {
-    std::array<uint8_t, 2> crc;
-    uint8_t length;
-    DataBufferType<SIZE> data;
-    uint16_t counter;
-
-    struct checkValid {
-        uint8_t errors;
-        uint8_t retire;
-    };
-};
-
 struct BookAccessorIntermediate {
   protected:
     DataBufferType<static_cast<size_t>(types::page_length * 4)>
@@ -78,10 +61,104 @@ class BookAccessor
             message::ConfigRequestMessage{config_req_callback, this});
     }
 
-    // void create_new_data_part(uint8_t key, uint16_t len,
-    //                           std::array<uint8_t, SIZE> data) {
-    //     std::ignore = key, len, data;
-    // }
+    void create_data_part(uint16_t key, uint16_t len,
+                          std::array<uint8_t, SIZE>& data) {
+        if (table_ready()) {
+            //  if the key is zero we don't need to read the former address
+            if (key == 0) {
+                // double check if this is writig to the data_table
+                message::WriteEepromMessage write;
+                write.memory_address = addresses::data_address_begin;
+                // NOTE: ask Ryan why this is 2*conf.address_bytes
+                write.length = 2 * conf.addr_bytes;
+                // data pointers are offsets from the start of the data section
+                // of the eeprom, so we subtract data_address_begin here to
+                // store the right value
+
+                // new in OT library, subtract from ot_library_end to cut off
+                // stale addresses
+                types::address new_ptr = conf.mem_size -
+                                         addresses::ot_library_end - len -
+                                         addresses::ot_library_begin;
+
+                // dorp second byte (first byte is pre-aligned to 4 pages);
+                new_ptr &= 0xFF00;
+
+                auto* data_iter = write.data.begin();
+                data_iter = bit_utils::int_to_bytes(
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    new_ptr, data_iter, data_iter + conf.addr_bytes);
+                data_iter = bit_utils::int_to_bytes(
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    len, data_iter, data_iter + conf.addr_bytes);
+                // NOTE: appears to be writing to data table
+                this->eeprom_client.send_eeprom_queue(write);
+
+                tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+
+                // NOTE: appears to be writing to data location, this is where
+                // mods should be made
+                if (!data.empty()) {
+                    if (data.size() > len) {
+                        LOG("Warning, sent too much data to initalize, "
+                            "truncating to %d",
+                            len);
+                    }
+                    // TODO: Stretch data out to fill whole page
+                    std::array<uint8_t, types::page_length> page_data{};
+                    uint16_t counter = 1;
+                    std::array<uint8_t, 2> crc = calc_crc(data);
+
+                    // make CRC the first two bytes of the page
+                    std::copy_n(crc.begin(), 2, page_data.begin());
+                    // make Counter the next two bytes of the page
+                    std::copy_n(reinterpret_cast<uint8_t*>(&counter),
+                                sizeof(counter), page_data.begin() + 2);
+                    // make the data the rest of the page
+                    std::copy_n(
+                        data.begin(), data.size(),
+                        page_data.begin() + types::book_header_length + 1);
+
+                    this->write_at_offset(
+                        accessor::AccessorBuffer(page_data.begin(),
+                                                 page_data.end()),
+                        new_ptr, types::page_length, 0);
+                }
+            } else {
+                action_cmd_m.key = key;
+                action_cmd_m.offset = 0;
+                action_cmd_m.len = len;
+                action_cmd_m.action = TableAction::CREATE;
+                if (!data.empty()) {
+                    if (data.size() > len) {
+                        LOG("Warning, sent too much data to initalize, "
+                            "truncating to %d",
+                            len);
+                    }
+                    std::copy_n(data.begin(), len, this->type_data.begin());
+                    action_cmd_m.action = TableAction::INITALIZE;
+                }
+                // call a read to the previous table entry so we know where
+                // to put the data
+                tail_accessor.start_update();
+                this->eeprom_client.send_eeprom_queue(
+                    message::ReadEepromMessage{
+                        .memory_address = calculate_table_entry_start(key - 1),
+                        .length = static_cast<types::data_length>(
+                            2 * conf.addr_bytes),
+                        .callback = table_action_callback,
+                        .callback_param = this});
+            }
+        } else {
+            LOG("ERROR, attempting to create data part before driver "
+                "initalized");
+        }
+    }
+
+    void create_data_part(uint16_t key, uint16_t len) {
+        auto dummy = std::array<uint8_t, 0>{};
+        create_data_part(key, len, dummy);
+    }
     //
     // void write_data(uint8_t key, uint16_t len,
     //                 std::array<uint8_t, SIZE> data) {
@@ -312,11 +389,48 @@ class BookAccessor
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
 
+        bool do_initalize = false;
         switch (action_cmd_m.action) {
             case TableAction::INITALIZE:
+                do_initalize = true;
+                // don't break this is just an extension of create
                 [[fallthrough]];
             case TableAction::CREATE:
-                [[fallthrough]];
+                // TODO: calculate new start address
+                if (tail_accessor.get_data_tail() + action_cmd_m.len +
+                        (2 * conf.addr_bytes) >
+                    data_addr) {
+                    LOG("Error attempted to iniztialze value too large for "
+                        "memory");
+                } else {
+                    // First write the new table entry
+                    message::WriteEepromMessage write;
+                    write.memory_address = tail_accessor.get_data_tail();
+                    write.length = 2 * conf.addr_bytes;
+                    auto* write_iter = write.data.begin();
+                    write_iter = bit_utils::int_to_bytes(
+                        uint16_t(data_addr - action_cmd_m.len), write_iter,
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        (write_iter + conf.addr_bytes));
+                    write_iter = bit_utils::int_to_bytes(
+                        action_cmd_m.len, write_iter,
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        write_iter + conf.addr_bytes);
+                    this->eeprom_client.send_eeprom_queue(write);
+
+                    // After writing the table entry use the tail accessor to
+                    // update the tail
+                    tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+
+                    // If we passed data into the create write that data into
+                    // the memory
+                    if (do_initalize) {
+                        this->write_at_offset(this->type_data,
+                                              data_addr - action_cmd_m.len,
+                                              data_addr, m.message_index);
+                    }
+                }
+                break;
             case TableAction::WRITE:
                 [[fallthrough]];
             case TableAction::READ:
