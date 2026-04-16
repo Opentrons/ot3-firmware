@@ -229,6 +229,8 @@ class BookAccessor
     }
 
     auto table_ready() -> bool {
+        printf("config updated is %d and tail updated is %d\n", config_updated,
+               tail_accessor.get_tail_updated());
         return config_updated && tail_accessor.get_tail_updated();
     }
 
