@@ -36,6 +36,8 @@ struct BookAccessorIntermediate {
  *
  * SIZE is the size of the buffer*/
 
+// TODO: Remove this one size for everything, make each method have its own
+// template size parameter
 template <task::TaskClient EEpromTaskClient, size_t SIZE>
 class BookAccessor
     : BookAccessorIntermediate,
@@ -61,27 +63,37 @@ class BookAccessor
             message::ConfigRequestMessage{config_req_callback, this});
     }
 
+    template <size_t NUM_BYTES>
     void create_data_part(uint16_t key, uint16_t len,
-                          std::array<uint8_t, SIZE>& data) {
+                          std::array<uint8_t, NUM_BYTES>& data) {
+        printf("inside create data part with key %d and len %d\n", key, len);
+
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
+                printf(
+                    "Creating data part for key 0, writing directly to data "
+                    "table\n");
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
                 write.length = 2 * conf.addr_bytes;
                 // data pointers are offsets from the start of the data section
-                // of the eeprom, so we subtract data_address_begin here to
+                // of the eeprom, so we subtract ot_library_begin here to
                 // store the right value
 
                 // new in OT library, subtract from ot_library_end to cut off
                 // stale addresses
-                types::address new_ptr = conf.mem_size -
-                                         addresses::ot_library_end - len -
+                types::address new_ptr = addresses::ot_library_end - len -
                                          addresses::ot_library_begin;
 
-                // dorp second byte (first byte is pre-aligned to 4 pages);
+                // drop second byte (first byte is pre-aligned to 4 pages);
                 new_ptr &= 0xFF00;
+
+                printf("ot_library_end is %d and ot_library_begin is %d\n",
+                       addresses::ot_library_end, addresses::ot_library_begin);
+                printf("calculated address of %d for key 0\n", new_ptr);
+                printf("double checking that byte drop worked %d\n", new_ptr);
 
                 auto* data_iter = write.data.begin();
                 data_iter = bit_utils::int_to_bytes(
@@ -90,11 +102,18 @@ class BookAccessor
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     len, data_iter, data_iter + conf.addr_bytes);
+                printf("about to write to address %d with length %d\n",
+                       write.memory_address, write.length);
                 this->eeprom_client.send_eeprom_queue(write);
+                printf("wrote table entry for key 0, increasing data tail\n");
 
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                 if (!data.empty()) {
+                    printf(
+                        "data not empty, writing data to address %d with "
+                        "length %d\n",
+                        new_ptr, len);
                     if (data.size() > len) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
@@ -130,7 +149,22 @@ class BookAccessor
                             "truncating to %d",
                             len);
                     }
-                    std::copy_n(data.begin(), len, this->type_data.begin());
+                    std::array<uint8_t, types::page_length> page_data{0};
+                    uint16_t counter = 1;
+                    std::array<uint8_t, 2> crc = calc_crc(data);
+
+                    // make CRC the first two bytes of the page
+                    std::copy_n(crc.begin(), 2, page_data.begin());
+                    // make Counter the next two bytes of the page
+                    std::copy_n(reinterpret_cast<uint8_t*>(&counter),
+                                sizeof(counter), page_data.begin() + 2);
+                    // make the data the rest of the page
+                    std::copy_n(
+                        data.begin(), data.size(),
+                        page_data.begin() + types::book_header_length + 1);
+
+                    std::copy_n(page_data.begin(), page_data.size(),
+                                this->type_data.begin());
                     action_cmd_m.action = TableAction::INITALIZE;
                 }
                 // call a read to the previous table entry so we know where
@@ -145,6 +179,8 @@ class BookAccessor
                         .callback_param = this});
             }
         } else {
+            printf("Table not ready, cannot create data part for key %d\n",
+                   key);
             LOG("ERROR, attempting to create data part before driver "
                 "initalized");
         }
@@ -187,6 +223,7 @@ class BookAccessor
     }
 
     auto read_write_ready() -> bool {
+        // NOTE: THIS WAS DONE TO TEST THE READ/WRITE METHODS
         return true;
         // return table_ready() && tail_accessor.data_rev_complete();
     }
@@ -216,8 +253,8 @@ class BookAccessor
     bool config_updated{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
-    DataBufferType<SIZE>& buffer;
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
+    DataBufferType<SIZE>& buffer;
 
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
@@ -433,6 +470,8 @@ class BookAccessor
             case TableAction::WRITE:
                 [[fallthrough]];
             case TableAction::READ:
+                // TODO: ask Ryan if this is unnecessary
+                // action_cmd_m.len = data_len;
                 data_addr += action_cmd_m.offset;
                 // read all 4 whole pages at the same time
                 this->OT_start_read_at_offset(

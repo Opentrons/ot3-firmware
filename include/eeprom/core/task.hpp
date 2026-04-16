@@ -18,8 +18,7 @@ namespace task {
 
 using TaskMessage =
     std::variant<message::WriteEepromMessage, message::ReadEepromMessage,
-                 message::OTLibraryReadMessage, message::OTLibraryBookMessage,
-                 message::OTLibraryPageMessage, message::ConfigRequestMessage,
+                 message::OTLibraryReadMessage, message::ConfigRequestMessage,
                  i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
@@ -164,135 +163,149 @@ class EEPromMessageHandler {
         }
     }
 
-    void visit(message::OTLibraryPageMessage &m) {
-        LOG("Received request to write %d bytes to address %x", m.length,
-            m.memory_address);
+    // void visit(message::OTLibraryPageMessage &m) {
+    //     LOG("Received request to write %d bytes to address %x", m.length,
+    //         m.memory_address);
+    //
+    //     if (m.length <= 0) {
+    //         return;
+    //     }
+    //     if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+    //         LOG("Error attempting to write to an eeprom address that exceeds
+    //         "
+    //             "device storage");
+    //         return;
+    //     }
+    //
+    //     // If you attempt to write with a length that crosses the page
+    //     boundary
+    //     // (8 Bytes for MICROCHIP and 64 for ST) it will wrap and overwrite
+    //     // the beginning of the current page instead of moving to the next
+    //     page
+    //     // we should handle this my visiting two separate write messages
+    //     // if (((m.memory_address % hw_iface.get_eeprom_page_boundary()) +
+    //     //      m.length) > hw_iface.get_eeprom_page_boundary()) {
+    //     //     return this->split_write(m,
+    //     hw_iface.get_eeprom_page_boundary());
+    //     // }
+    //     //
+    //     // The ST eeprom has a page write function but that requires driving
+    //     // the write enable pin differently which would require us to change
+    //     // how we use enable_eeprom_write disable_eeprom_write calls in each
+    //     // firmware implementation however this would allow us to write 64
+    //     // bytes/cycle which may be performance boost.
+    //
+    //     auto buffer = i2c::messages::MaxMessageBuffer{};
+    //     auto *iter = buffer.begin();
+    //
+    //     // Older boards use 1 byte addresses, if we're on an older board we
+    //     // need to drop the higher byte of the memory address when sending
+    //     the
+    //     // the message over i2c
+    //     if (hw_iface.get_eeprom_addr_bytes() ==
+    //         static_cast<size_t>(
+    //             hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
+    //         m.memory_address = m.memory_address
+    //                            << hardware_iface::ADDR_BITS_DIFFERENCE;
+    //     }
+    //     iter = bit_utils::int_to_bytes(
+    //         //
+    //         NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    //         m.memory_address, iter, (iter +
+    //         hw_iface.get_eeprom_addr_bytes()));
+    //     // Remainder is data
+    //     iter = std::copy_n(
+    //         m.data.cbegin(),
+    //         std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
+    //         iter);
+    //     // A write transaction.
+    //     auto transaction = i2c::messages::Transaction{
+    //         .message_index = m.message_index,
+    //         .address = hw_iface.get_eeprom_address(),
+    //         .bytes_to_read = 0,
+    //         .bytes_to_write = static_cast<std::size_t>(iter -
+    //         buffer.begin()), .write_buffer = buffer};
+    //     // Use the WRITE_TOKEN to disambiguate from the reads.
+    //     auto transaction_id =
+    //         i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
+    //     hw_iface.disable();
+    //     if (!writer.transact(transaction, transaction_id, own_queue)) {
+    //         // Failed to write transaction. Re-enable write protection.
+    //         hw_iface.enable();
+    //     }
+    // }
 
-        if (m.length <= 0) {
-            return;
-        }
-        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
-            LOG("Error attempting to write to an eeprom address that exceeds "
-                "device storage");
-            return;
-        }
-
-        // If you attempt to write with a length that crosses the page boundary
-        // (8 Bytes for MICROCHIP and 64 for ST) it will wrap and overwrite
-        // the beginning of the current page instead of moving to the next page
-        // we should handle this my visiting two separate write messages
-        // if (((m.memory_address % hw_iface.get_eeprom_page_boundary()) +
-        //      m.length) > hw_iface.get_eeprom_page_boundary()) {
-        //     return this->split_write(m, hw_iface.get_eeprom_page_boundary());
-        // }
-        //
-        // The ST eeprom has a page write function but that requires driving
-        // the write enable pin differently which would require us to change
-        // how we use enable_eeprom_write disable_eeprom_write calls in each
-        // firmware implementation however this would allow us to write 64
-        // bytes/cycle which may be performance boost.
-
-        auto buffer = i2c::messages::MaxMessageBuffer{};
-        auto *iter = buffer.begin();
-
-        // Older boards use 1 byte addresses, if we're on an older board we
-        // need to drop the higher byte of the memory address when sending the
-        // the message over i2c
-        if (hw_iface.get_eeprom_addr_bytes() ==
-            static_cast<size_t>(
-                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address
-                               << hardware_iface::ADDR_BITS_DIFFERENCE;
-        }
-        iter = bit_utils::int_to_bytes(
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
-        // Remainder is data
-        iter = std::copy_n(
-            m.data.cbegin(),
-            std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
-            iter);
-        // A write transaction.
-        auto transaction = i2c::messages::Transaction{
-            .message_index = m.message_index,
-            .address = hw_iface.get_eeprom_address(),
-            .bytes_to_read = 0,
-            .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
-            .write_buffer = buffer};
-        // Use the WRITE_TOKEN to disambiguate from the reads.
-        auto transaction_id =
-            i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
-        hw_iface.disable();
-        if (!writer.transact(transaction, transaction_id, own_queue)) {
-            // Failed to write transaction. Re-enable write protection.
-            hw_iface.enable();
-        }
-    }
-
-    void visit(message::OTLibraryBookMessage &m) {
-        LOG("Received request to write %d bytes to address %x", m.length,
-            m.memory_address);
-
-        if (m.length <= 0) {
-            return;
-        }
-        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
-            LOG("Error attempting to write to an eeprom address that exceeds "
-                "device storage");
-            return;
-        }
-
-        // If you attempt to write with a length that crosses the page boundary
-        // (8 Bytes for MICROCHIP and 64 for ST) it will wrap and overwrite
-        // the beginning of the current page instead of moving to the next page
-        // we should handle this my visiting two separate write messages
-        // if (((m.memory_address % hw_iface.get_eeprom_page_boundary()) +
-        //      m.length) > hw_iface.get_eeprom_page_boundary()) {
-        //     return this->split_write(m, hw_iface.get_eeprom_page_boundary());
-        // }
-
-        // The ST eeprom has a page write function but that requires driving
-        // the write enable pin differently which would require us to change
-        // how we use enable_eeprom_write disable_eeprom_write calls in each
-        // firmware implementation however this would allow us to write 64
-        // bytes/cycle which may be performance boost.
-
-        auto buffer = i2c::messages::MaxMessageBuffer{};
-        auto *iter = buffer.begin();
-
-        // Older boards use 1 byte addresses, if we're on an older board we
-        // need to drop the higher byte of the memory address when sending the
-        // the message over i2c
-        if (hw_iface.get_eeprom_addr_bytes() ==
-            static_cast<size_t>(
-                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address
-                               << hardware_iface::ADDR_BITS_DIFFERENCE;
-        }
-        iter = bit_utils::int_to_bytes(
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
-        // Remainder is data
-        iter = std::copy_n(
-            m.data.cbegin(),
-            std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
-            iter);
-        // A write transaction.
-        auto transaction = i2c::messages::Transaction{
-            .message_index = m.message_index,
-            .address = hw_iface.get_eeprom_address(),
-            .bytes_to_read = 0,
-            .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
-            .write_buffer = buffer};
-        // Use the WRITE_TOKEN to disambiguate from the reads.
-        auto transaction_id =
-            i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
-        hw_iface.disable();
-        if (!writer.transact(transaction, transaction_id, own_queue)) {
-            // Failed to write transaction. Re-enable write protection.
-            hw_iface.enable();
-        }
-    }
+    // void visit(message::OTLibraryBookMessage &m) {
+    //     LOG("Received request to write %d bytes to address %x", m.length,
+    //         m.memory_address);
+    //
+    //     if (m.length <= 0) {
+    //         return;
+    //     }
+    //     if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+    //         LOG("Error attempting to write to an eeprom address that exceeds
+    //         "
+    //             "device storage");
+    //         return;
+    //     }
+    //
+    //     // If you attempt to write with a length that crosses the page
+    //     boundary
+    //     // (8 Bytes for MICROCHIP and 64 for ST) it will wrap and overwrite
+    //     // the beginning of the current page instead of moving to the next
+    //     page
+    //     // we should handle this my visiting two separate write messages
+    //     // if (((m.memory_address % hw_iface.get_eeprom_page_boundary()) +
+    //     //      m.length) > hw_iface.get_eeprom_page_boundary()) {
+    //     //     return this->split_write(m,
+    //     hw_iface.get_eeprom_page_boundary());
+    //     // }
+    //
+    //     // The ST eeprom has a page write function but that requires driving
+    //     // the write enable pin differently which would require us to change
+    //     // how we use enable_eeprom_write disable_eeprom_write calls in each
+    //     // firmware implementation however this would allow us to write 64
+    //     // bytes/cycle which may be performance boost.
+    //
+    //     auto buffer = i2c::messages::MaxMessageBuffer{};
+    //     auto *iter = buffer.begin();
+    //
+    //     // Older boards use 1 byte addresses, if we're on an older board we
+    //     // need to drop the higher byte of the memory address when sending
+    //     the
+    //     // the message over i2c
+    //     if (hw_iface.get_eeprom_addr_bytes() ==
+    //         static_cast<size_t>(
+    //             hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
+    //         m.memory_address = m.memory_address
+    //                            << hardware_iface::ADDR_BITS_DIFFERENCE;
+    //     }
+    //     iter = bit_utils::int_to_bytes(
+    //         //
+    //         NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    //         m.memory_address, iter, (iter +
+    //         hw_iface.get_eeprom_addr_bytes()));
+    //     // Remainder is data
+    //     iter = std::copy_n(
+    //         m.data.cbegin(),
+    //         std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
+    //         iter);
+    //     // A write transaction.
+    //     auto transaction = i2c::messages::Transaction{
+    //         .message_index = m.message_index,
+    //         .address = hw_iface.get_eeprom_address(),
+    //         .bytes_to_read = 0,
+    //         .bytes_to_write = static_cast<std::size_t>(iter -
+    //         buffer.begin()), .write_buffer = buffer};
+    //     // Use the WRITE_TOKEN to disambiguate from the reads.
+    //     auto transaction_id =
+    //         i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
+    //     hw_iface.disable();
+    //     if (!writer.transact(transaction, transaction_id, own_queue)) {
+    //         // Failed to write transaction. Re-enable write protection.
+    //         hw_iface.enable();
+    //     }
+    // }
 
     /**
      * Handle a request to read from the eeprom
@@ -432,7 +445,7 @@ class EEPromMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
   public:
     using Messages = TaskMessage;
@@ -470,7 +483,7 @@ class EEPromTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage &m) {
-    {client.send_eeprom_queue(m)};
+    { client.send_eeprom_queue(m) };
 };
 
 }  // namespace task
