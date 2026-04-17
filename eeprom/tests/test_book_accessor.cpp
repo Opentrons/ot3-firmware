@@ -192,75 +192,73 @@ struct BMockEEpromTaskClient {
     }
 };
 
-// SCENARIO("Creating a data partition") {
-//     /* NOTE: This feature is very similar to what we have in dev data, so
-//     we
-//      * are not testing it as extensively here, just making sure that the
-//      * book accessor can call create data without error and that it sends
-//      * the correct message to the EEPROM client. We will rely on the more
-//      * extensive testing of create data in dev data to make sure that
-//      create
-//      * data is working properly. */
-//     auto mock_client = BMockEEpromTaskClient{};
-//     auto mock_listener = MockListener{};
-//     auto buffer = eeprom::book_accessor::DataBufferType<1>();
-//     auto mock_crc = MockCRC{};
-//     auto tail_accessor =
-//         eeprom::dev_data::DevDataTailAccessor<BMockEEpromTaskClient>{
-//             mock_client};
-//     auto test_book_accessor =
-//         book_accessor::BookAccessor<BMockEEpromTaskClient, 1>{
-//             mock_client, mock_listener, buffer, tail_accessor, mock_crc};
-//
-//     mock_client.read_option = BMockEEpromTaskClient::VALID;
-//
-//     uint16_t key = 0;
-//     uint16_t len = 1;
-//     // std::array<uint8_t, 1> data{0b00000100};
-//     std::array<uint8_t, 0> empty_data{};
-//
-//     GIVEN("Book Accessor initializes properly") {
-//         THEN("Create data part no data") {
-//             test_book_accessor.create_data_part<0>(key, len, empty_data);
-//
-//             // check that the correct message was sent to the EEPROM
-//             client
-//             // first message after configuration message should be a
-//             write to
-//             // the first table entry
-//             auto message = mock_client.messages_received[1];
-//             REQUIRE(
-//                 std::holds_alternative<message::WriteEepromMessage>(message));
-//             auto write_message =
-//             std::get<message::WriteEepromMessage>(message);
-//             REQUIRE(write_message.memory_address ==
-//                     eeprom::addresses::data_address_begin);
-//
-//             // check that address to be written is correct
-//
-//             uint16_t data_address_written = 0;
-//
-//             printf("Write message data is: ");
-//             for (size_t i = 0; i < write_message.data.size(); i++) {
-//                 printf("%d ", write_message.data[i]);
-//             }
-//             printf("\n");
-//
-//             std::copy_n(write_message.data.begin(),
-//                         sizeof(data_address_written),
-//                         reinterpret_cast<uint8_t*>(&data_address_written));
-//
-//             // hide first byte of address, we only care that the second
-//             byte is
-//             // 0
-//             printf("Data address written is %d\n", data_address_written);
-//             data_address_written &= 0x00FF;
-//             printf("Data address written is %d\n", data_address_written);
-//
-//             REQUIRE(data_address_written == 0);
-//         }
-//     }
-// }
+SCENARIO("Creating a data partition") {
+    /* NOTE: This feature is very similar to what we have in dev data, so
+    we
+     * are not testing it as extensively here, just making sure that the
+     * book accessor can call create data without error and that it sends
+     * the correct message to the EEPROM client. We will rely on the more
+     * extensive testing of create data in dev data to make sure that
+     create
+     * data is working properly. */
+
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<1>();
+    auto mock_crc = MockCRC{};
+
+    auto mock_client =
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>{};
+    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>>{mock_client};
+    auto test_book_accessor = book_accessor::BookAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>,
+        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+
+    tail_accessor.finish_data_rev();
+    uint16_t key = 0;
+    uint16_t len = 1;
+    // std::array<uint8_t, 1> data{0b00000100};
+    std::array<uint8_t, 0> empty_data{};
+
+    GIVEN("Book Accessor initializes properly") {
+        THEN("Create data part no data") {
+            test_book_accessor.create_data_part<0>(key, len, empty_data);
+
+            auto message = mock_client.messages_received[1];
+            REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
+                message));
+            auto write_message =
+                std::get<eeprom::message::WriteEepromMessage>(message);
+            REQUIRE(write_message.memory_address ==
+                    eeprom::addresses::data_address_begin);
+
+            // check that address to be written is correct
+
+            uint16_t data_address_written = 0;
+
+            printf("Write message data is: ");
+            for (size_t i = 0; i < write_message.data.size(); i++) {
+                printf("%d ", write_message.data[i]);
+            }
+            printf("\n");
+
+            std::copy_n(write_message.data.begin(),
+                        sizeof(data_address_written),
+                        reinterpret_cast<uint8_t*>(&data_address_written));
+
+            // hide first byte of address, we only care that the second
+            // byte is 0
+            printf("Data address written is %d\n", data_address_written);
+            data_address_written &= 0x00FF;
+            printf("Data address written is %d\n", data_address_written);
+
+            REQUIRE(data_address_written == 0);
+        }
+    }
+}
 
 SCENARIO("Book Accessor can read data from EEPROM") {
     auto mock_listener = MockListener{};
