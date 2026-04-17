@@ -61,6 +61,7 @@ class BookAccessor
           buffer(buffer) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
+        printf("Book Accessor initialized and sent config request message\n");
     }
 
     template <size_t NUM_BYTES>
@@ -224,14 +225,17 @@ class BookAccessor
 
     auto read_write_ready() -> bool {
         // NOTE: THIS WAS DONE TO TEST THE READ/WRITE METHODS
-        return true;
-        // return table_ready() && tail_accessor.data_rev_complete();
+        // return true;
+        printf("table ready is %d and tail rev complete is %d\n", table_ready(),
+               tail_accessor.data_rev_complete());
+        return table_ready() && tail_accessor.data_rev_complete();
     }
 
     auto table_ready() -> bool {
         printf("config updated is %d and tail updated is %d\n", config_updated,
                tail_accessor.get_tail_updated());
         return config_updated && tail_accessor.get_tail_updated();
+        // return true;
     }
 
     void read_complete(uint32_t message_index) override {
@@ -385,6 +389,10 @@ class BookAccessor
 
     // callbacks
     void config_req_callback(const message::ConfigResponseMessage& m) {
+        printf(
+            "Received config response message with chip type %d and address "
+            "bytes %d\n",
+            m.chip, m.addr_bytes);
         conf = m;
         config_updated = true;
         tail_accessor.set_config(conf);
