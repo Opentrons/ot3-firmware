@@ -79,6 +79,7 @@ class BookAccessor
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
                 write.length = 2 * conf.addr_bytes;
+                printf("conf.addr_bytes is %d\n", conf.addr_bytes);
                 // data pointers are offsets from the start of the data section
                 // of the eeprom, so we subtract ot_library_begin here to
                 // store the right value
@@ -97,12 +98,28 @@ class BookAccessor
                 printf("double checking that byte drop worked %d\n", new_ptr);
 
                 auto* data_iter = write.data.begin();
+                printf("write.data contains the bytes: ");
+                for (size_t i = 0; i < write.data.size(); i++) {
+                    printf("%d ", write.data[i]);
+                }
+                printf("\n");
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     new_ptr, data_iter, data_iter + conf.addr_bytes);
+                printf(
+                    "after writing new_ptr, write.data contains the bytes: ");
+                for (size_t i = 0; i < write.data.size(); i++) {
+                    printf("%d ", write.data[i]);
+                }
+                printf("\n");
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     len, data_iter, data_iter + conf.addr_bytes);
+                printf("after writing len, write.data contains the bytes: ");
+                for (size_t i = 0; i < write.data.size(); i++) {
+                    printf("%d ", write.data[i]);
+                }
+                printf("\n");
                 printf("about to write to address %d with length %d\n",
                        write.memory_address, write.length);
                 this->eeprom_client.send_eeprom_queue(write);

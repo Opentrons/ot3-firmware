@@ -138,7 +138,6 @@ class EEPromAccessor {
     auto start_read_at_offset(types::data_length offset,
                               types::data_length limit_offset,
                               uint32_t message_index) -> void {
-        printf("start read at offset \n");
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
@@ -206,20 +205,13 @@ class EEPromAccessor {
      */
     void callback(const eeprom::message::EepromMessage& msg) {
         // TODO (ryan 07-18-22) handle errors in response
-        printf("callback called (inside accessor)\n");
         auto* buffer_ptr =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             (type_data.begin() + (msg.memory_address - begin_read_addr));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
 
-        printf(
-            "diagnosis, in accessor callback bytes_received is not equalling "
-            "bytes_to_read, bytes_received: %lu, bytes_to_read: %lu\n",
-            bytes_recieved, bytes_to_read);
-
         if (bytes_recieved == bytes_to_read) {
-            printf("calling read complete\n");
             read_listener.read_complete(msg.message_index);
         }
     }

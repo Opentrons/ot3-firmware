@@ -68,7 +68,6 @@ class DevDataTailAccessor
     auto finish_data_rev() -> void { data_rev_finished = true; }
 
     void read_complete(uint32_t) final {
-        printf("read_complete\n");
         // test if data is set to default values at delivery
         auto delivery_state =
             std::array<uint8_t, addresses::lookup_table_tail_length>{};
@@ -100,7 +99,6 @@ class DevDataTailAccessor
             std::min(bytes_remain, types::max_data_length);
         std::copy_n(data_added.begin(), addresses::lookup_table_tail_length,
                     data_to_add.begin());
-        printf("increasing data tail\n");
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
                 .message_index = 0,
