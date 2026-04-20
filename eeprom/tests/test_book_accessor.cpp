@@ -49,6 +49,7 @@ struct BMockEEpromTaskClient {
     std::vector<task::TaskMessage> messages_received{};
 
     std::array<uint8_t, 16384> backing{};
+
   private:
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -157,9 +158,8 @@ struct BMockEEpromTaskClient {
         resp.memory_address = message.memory_address;
         resp.length = message.length;
         resp.message_index = message.message_index;
-        printf("Received read message to address %d with length c%d\n",
-        std::copy_n(&backing[message.memory_address], message.length, resp.data.begin());
-               message.memory_address, message.length);
+        std::copy_n(&backing[message.memory_address], message.length,
+                    resp.data.begin());
         message.callback(resp, message.callback_param);
         messages_received.push_back(message);
     }
@@ -170,7 +170,8 @@ struct BMockEEpromTaskClient {
         // for testing purposes we don't need to do anything when we get a
         // write message, but we could add some functionality here if we
         // wanted
-        std::copy_n(message.data.begin(), message.length, &backing[message.memory_address]);
+        std::copy_n(message.data.begin(), message.length,
+                    &backing[message.memory_address]);
         messages_received.push_back(message);
     }
 
