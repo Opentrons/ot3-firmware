@@ -412,8 +412,6 @@ class BookAccessor
                 [[fallthrough]];
             case TableAction::CREATE:
                 // TODO: calculate new start address
-                // TODO: Figure out how to make sure that this never writes past
-                // ot_library_end
                 if (tail_accessor.get_data_tail() + action_cmd_m.len +
                         (2 * conf.addr_bytes) >
                     data_addr) {
@@ -445,7 +443,7 @@ class BookAccessor
                     if (do_initalize) {
                         this->write_at_offset(
                             this->type_data,
-                            (data_addr - action_cmd_m.len) & 0xFF00,
+                            (data_addr - (types::page_length * 4)) & 0xFF00,
                             types::page_length, m.message_index);
                     }
                 }
