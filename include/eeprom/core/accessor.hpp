@@ -169,11 +169,6 @@ class EEPromAccessor {
     auto OT_start_read_at_offset(types::data_length offset,
                                  types::data_length limit_offset,
                                  uint32_t message_index) -> void {
-        printf(
-            "OT_start_read_at_offset called with offset %lu, limit_offset "
-            "%lu\n",
-            static_cast<unsigned long>(offset),
-            static_cast<unsigned long>(limit_offset));
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
@@ -218,10 +213,6 @@ class EEPromAccessor {
         bytes_recieved += msg.length;
 
         if (bytes_recieved == bytes_to_read) {
-            printf(
-                "bytes_received == bytes_to_read, calling read complete "
-                "callback with message "
-                "index\n");
             read_listener.read_complete(msg.message_index);
         }
     }

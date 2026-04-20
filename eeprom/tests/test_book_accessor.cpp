@@ -165,11 +165,9 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::WriteEepromMessage& message) {
-        printf("Received write message to address %d with length %d\n",
-               message.memory_address, message.length);
-        // for testing purposes we don't need to do anything when we get a
-        // write message, but we could add some functionality here if we
-        // wanted
+        // for testing purposes we don't need to do anything when we get
+        // a write message, but we could add some functionality here if
+        // we wanted
         std::copy_n(message.data.begin(), message.length,
                     &backing[message.memory_address]);
         messages_received.push_back(message);
@@ -222,13 +220,14 @@ SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
         1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
 
     tail_accessor.finish_data_rev();
-    uint16_t key = 0;
-    uint16_t len = 1;
-    // std::array<uint8_t, 1> data{0b00000100};
-    std::array<uint8_t, 0> empty_data{};
 
     GIVEN("Book Accessor initializes properly") {
         THEN("Create data part no data") {
+            uint16_t key = 0;
+            uint16_t len = 1;
+            // std::array<uint8_t, 1> data{0b00000100};
+            std::array<uint8_t, 0> empty_data{};
+
             mock_client.messages_received.clear();
             test_book_accessor.create_data_part<0>(key, len, empty_data);
 
@@ -246,23 +245,48 @@ SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
 
             uint16_t data_address_written = 0;
 
-            printf("Write message data is: ");
-            for (size_t i = 0; i < write_message.data.size(); i++) {
-                printf("%d ", write_message.data[i]);
-            }
-            printf("\n");
             std::ignore = bit_utils::bytes_to_int(
                 write_message.data.cbegin(),
                 write_message.data.cbegin() + sizeof(data_address_written),
                 data_address_written);
             // hide first byte of address, we only care that the second
             // byte is 0
-            printf("Data address written is %d\n", data_address_written);
             data_address_written &= 0x00FF;
-            printf("Data address written is %d\n", data_address_written);
 
             REQUIRE(data_address_written == 0);
         }
+        // THEN("create data part with existing data") {
+        uint16_t key = 1;
+        uint16_t len = 1;
+        // std::array<uint8_t, 1> data{0b00000100};
+        std::array<uint8_t, 0> empty_data{};
+
+        mock_client.messages_received.clear();
+        test_book_accessor.create_data_part<0>(key, len, empty_data);
+
+        // 3 messages (config, read, write) sent to eeprom client (by
+        // tail_accessor flow) before the write that we care about
+        auto message = mock_client.messages_received[0];
+        REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
+            message));
+        auto write_message =
+            std::get<eeprom::message::WriteEepromMessage>(message);
+        REQUIRE(write_message.memory_address ==
+                eeprom::addresses::data_address_begin + 4);
+
+        // check that address to be written is correct
+
+        uint16_t data_address_written = 0;
+
+        std::copy_n(write_message.data.begin(), sizeof(data_address_written),
+                    reinterpret_cast<uint16_t*>(&data_address_written));
+
+        // hide first byte of address, we only care that the second
+        // byte is 0
+        data_address_written &= 0x00FF;
+
+        REQUIRE(data_address_written == 0);
+        // }
     }
 }
 

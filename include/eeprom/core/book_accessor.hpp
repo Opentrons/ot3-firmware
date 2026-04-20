@@ -61,25 +61,18 @@ class BookAccessor
           buffer(buffer) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
-        printf("Book Accessor initialized and sent config request message\n");
     }
 
     template <size_t NUM_BYTES>
     void create_data_part(uint16_t key, uint16_t len,
                           std::array<uint8_t, NUM_BYTES>& data) {
-        printf("inside create data part with key %d and len %d\n", key, len);
-
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
-                printf(
-                    "Creating data part for key 0, writing directly to data "
-                    "table\n");
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
                 write.length = 2 * conf.addr_bytes;
-                printf("conf.addr_bytes is %d\n", conf.addr_bytes);
                 // data pointers are offsets from the start of the data section
                 // of the eeprom, so we subtract ot_library_begin here to
                 // store the right value
@@ -92,46 +85,18 @@ class BookAccessor
                 // drop second byte (first byte is pre-aligned to 4 pages);
                 new_ptr &= 0xFF00;
 
-                printf("ot_library_end is %d and ot_library_begin is %d\n",
-                       addresses::ot_library_end, addresses::ot_library_begin);
-                printf("calculated address of %d for key 0\n", new_ptr);
-                printf("double checking that byte drop worked %d\n", new_ptr);
-
                 auto* data_iter = write.data.begin();
-                printf("write.data contains the bytes: ");
-                for (size_t i = 0; i < write.data.size(); i++) {
-                    printf("%d ", write.data[i]);
-                }
-                printf("\n");
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     new_ptr, data_iter, data_iter + conf.addr_bytes);
-                printf(
-                    "after writing new_ptr, write.data contains the bytes: ");
-                for (size_t i = 0; i < write.data.size(); i++) {
-                    printf("%d ", write.data[i]);
-                }
-                printf("\n");
                 data_iter = bit_utils::int_to_bytes(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     len, data_iter, data_iter + conf.addr_bytes);
-                printf("after writing len, write.data contains the bytes: ");
-                for (size_t i = 0; i < write.data.size(); i++) {
-                    printf("%d ", write.data[i]);
-                }
-                printf("\n");
-                printf("about to write to address %d with length %d\n",
-                       write.memory_address, write.length);
                 this->eeprom_client.send_eeprom_queue(write);
-                printf("wrote table entry for key 0, increasing data tail\n");
 
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                 if (!data.empty()) {
-                    printf(
-                        "data not empty, writing data to address %d with "
-                        "length %d\n",
-                        new_ptr, len);
                     if (data.size() > len) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
@@ -157,7 +122,6 @@ class BookAccessor
                         new_ptr, types::page_length, 0);
                 }
             } else {
-                action_cmd_m.key = key;
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
                 action_cmd_m.action = TableAction::CREATE;
@@ -188,6 +152,7 @@ class BookAccessor
                 // call a read to the previous table entry so we know where
                 // to put the data
                 tail_accessor.start_update();
+
                 this->eeprom_client.send_eeprom_queue(
                     message::ReadEepromMessage{
                         .memory_address = calculate_table_entry_start(key - 1),
@@ -197,8 +162,6 @@ class BookAccessor
                         .callback_param = this});
             }
         } else {
-            printf("Table not ready, cannot create data part for key %d\n",
-                   key);
             LOG("ERROR, attempting to create data part before driver "
                 "initalized");
         }
@@ -218,17 +181,9 @@ class BookAccessor
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
                   uint32_t message_index) {
-        printf("Attempting to get data with key %d, len %d, offset %d\n", key,
-               len, offset);
         if (read_write_ready()) {
-            printf("Table ready, attempting to read data for key %d\n", key);
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
-                printf(
-                    "Error, attempted to read key %d at location %d which is "
-                    "past "
-                    "current data tail at location %d\n",
-                    key, table_location, tail_accessor.get_data_tail());
                 LOG("Error, attemping to read uninitalized value");
                 return;
             }
@@ -240,10 +195,6 @@ class BookAccessor
 
             // call a read to the table entry so we know where
             // to read the data
-            printf(
-                "sending read message for key %d at address %d with length "
-                "%d\n",
-                key, table_location, 2 * conf.addr_bytes);
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = table_location,
@@ -256,14 +207,10 @@ class BookAccessor
     auto read_write_ready() -> bool {
         // NOTE: THIS WAS DONE TO TEST THE READ/WRITE METHODS
         // return true;
-        printf("table ready is %d and tail rev complete is %d\n", table_ready(),
-               tail_accessor.data_rev_complete());
         return table_ready() && tail_accessor.data_rev_complete();
     }
 
     auto table_ready() -> bool {
-        printf("config updated is %d and tail updated is %d\n", config_updated,
-               tail_accessor.get_tail_updated());
         return config_updated && tail_accessor.get_tail_updated();
         // return true;
     }
@@ -419,9 +366,6 @@ class BookAccessor
 
     // callbacks
     void config_req_callback(const message::ConfigResponseMessage& m) {
-        printf(
-            "Received config response message with chip type and address "
-            "bytes %d\n", m.addr_bytes);
         conf = m;
         config_updated = true;
         tail_accessor.set_config(conf);
@@ -446,9 +390,6 @@ class BookAccessor
     }
 
     void table_action_callback(const message::EepromMessage& m) {
-        printf(
-            "Received EEPROM message for table action with message index %d\n",
-            m.message_index);
         const auto* data_iter = m.data.begin();
         types::address data_addr = 0;
         types::data_length data_len = 0;
@@ -512,7 +453,6 @@ class BookAccessor
             case TableAction::WRITE:
                 [[fallthrough]];
             case TableAction::READ:
-                printf("table_action read\n");
                 // TODO: ask Ryan if this is unnecessary
                 // action_cmd_m.len = data_len;
                 data_addr += action_cmd_m.offset;
