@@ -169,6 +169,11 @@ class EEPromAccessor {
     auto OT_start_read_at_offset(types::data_length offset,
                                  types::data_length limit_offset,
                                  uint32_t message_index) -> void {
+        printf(
+            "OT_start_read_at_offset called with offset %lu, limit_offset "
+            "%lu\n",
+            static_cast<unsigned long>(offset),
+            static_cast<unsigned long>(limit_offset));
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
@@ -184,6 +189,7 @@ class EEPromAccessor {
         types::data_length bytes_remain = (limit_offset + begin) - read_addr;
 
         begin_read_addr = read_addr;
+
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::page_length);
             eeprom_client.send_eeprom_queue(

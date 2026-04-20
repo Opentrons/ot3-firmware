@@ -34,9 +34,7 @@ struct BMockEEpromTaskClient {
     ReadOption read_option = VALID;
     int read_counter = 0;
 
-    BMockEEpromTaskClient<I2CQueueWriter, OwnQueue>() {
-        writer.set_queue(&i2c_queue);
-    }
+    BMockEEpromTaskClient() { writer.set_queue(&i2c_queue); }
 
     task::EEPromMessageHandler<I2CQueueWriter, OwnQueue> true_eeprom_handler =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
@@ -54,7 +52,6 @@ struct BMockEEpromTaskClient {
         i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     MockHardwareIface hardware_iface =
         MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
-
     void visit(const message::OTLibraryReadMessage& message) {
         // structure return message
         message::OTLibraryPageMessage to_be_sent =
@@ -156,7 +153,13 @@ struct BMockEEpromTaskClient {
         resp.memory_address = message.memory_address;
         resp.length = message.length;
         resp.message_index = message.message_index;
-        resp.data.fill(0);
+
+        if (message.memory_address == 30) {
+            resp.data.fill(0xFF);  // default data is all 0xFF to simulate
+                                   // uninitialized memory
+        } else {
+            resp.data.fill(2);
+        }
         printf("Received read message to address %d with length c%d\n",
                message.memory_address, message.length);
         message.callback(resp, message.callback_param);
@@ -226,11 +229,12 @@ SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
 
     GIVEN("Book Accessor initializes properly") {
         THEN("Create data part no data") {
+            mock_client.messages_received.clear();
             test_book_accessor.create_data_part<0>(key, len, empty_data);
 
             // 3 messages (config, read, write) sent to eeprom client (by
             // tail_accessor flow) before the write that we care about
-            auto message = mock_client.messages_received[2];
+            auto message = mock_client.messages_received[0];
             REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
                 message));
             auto write_message =

@@ -441,12 +441,15 @@ class BookAccessor
     auto calculate_table_entry_start(uint16_t key) -> types::address {
         types::address addr = 0;
         if (config_updated) {
-            addr = addresses::ot_library_begin + (key * 2 * conf.addr_bytes);
+            addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
         }
         return addr;
     }
 
     void table_action_callback(const message::EepromMessage& m) {
+        printf(
+            "Received EEPROM message for table action with message index %d\n",
+            m.message_index);
         const auto* data_iter = m.data.begin();
         types::address data_addr = 0;
         types::data_length data_len = 0;
@@ -510,6 +513,7 @@ class BookAccessor
             case TableAction::WRITE:
                 [[fallthrough]];
             case TableAction::READ:
+                printf("table_action read\n");
                 // TODO: ask Ryan if this is unnecessary
                 // action_cmd_m.len = data_len;
                 data_addr += action_cmd_m.offset;
