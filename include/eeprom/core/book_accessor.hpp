@@ -424,7 +424,7 @@ class BookAccessor
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
                     write_iter = bit_utils::int_to_bytes(
-                        uint16_t(data_addr - action_cmd_m.len) & 0xFF00,
+                        uint16_t(data_addr - (types::page_length * 4)) & 0xFF00,
                         write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                         (write_iter + conf.addr_bytes));
