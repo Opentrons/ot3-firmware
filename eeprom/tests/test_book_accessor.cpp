@@ -34,7 +34,10 @@ struct BMockEEpromTaskClient {
     ReadOption read_option = VALID;
     int read_counter = 0;
 
-    BMockEEpromTaskClient() { writer.set_queue(&i2c_queue); }
+    BMockEEpromTaskClient() {
+        writer.set_queue(&i2c_queue);
+        backing.fill(0xFF);
+    }
 
     task::EEPromMessageHandler<I2CQueueWriter, OwnQueue> true_eeprom_handler =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
@@ -45,6 +48,7 @@ struct BMockEEpromTaskClient {
 
     std::vector<task::TaskMessage> messages_received{};
 
+    std::array<uint8_t, 16384> backing{};
   private:
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -153,14 +157,8 @@ struct BMockEEpromTaskClient {
         resp.memory_address = message.memory_address;
         resp.length = message.length;
         resp.message_index = message.message_index;
-
-        if (message.memory_address == 30) {
-            resp.data.fill(0xFF);  // default data is all 0xFF to simulate
-                                   // uninitialized memory
-        } else {
-            resp.data.fill(2);
-        }
         printf("Received read message to address %d with length c%d\n",
+        std::copy_n(&backing[message.memory_address], message.length, resp.data.begin());
                message.memory_address, message.length);
         message.callback(resp, message.callback_param);
         messages_received.push_back(message);
@@ -172,6 +170,7 @@ struct BMockEEpromTaskClient {
         // for testing purposes we don't need to do anything when we get a
         // write message, but we could add some functionality here if we
         // wanted
+        std::copy_n(message.data.begin(), message.length, &backing[message.memory_address]);
         messages_received.push_back(message);
     }
 
@@ -251,11 +250,10 @@ SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
                 printf("%d ", write_message.data[i]);
             }
             printf("\n");
-
-            std::copy_n(write_message.data.begin(),
-                        sizeof(data_address_written),
-                        reinterpret_cast<uint16_t*>(&data_address_written));
-
+            std::ignore = bit_utils::bytes_to_int(
+                write_message.data.cbegin(),
+                write_message.data.cbegin() + sizeof(data_address_written),
+                data_address_written);
             // hide first byte of address, we only care that the second
             // byte is 0
             printf("Data address written is %d\n", data_address_written);
@@ -289,7 +287,9 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     uint16_t offset = 0;
     uint32_t message_index = 0;
 
+    std::array<uint8_t, 0> empty_data{};
     GIVEN("Book Accessor initializes properly") {
+        test_book_accessor.create_data_part<0>(key, len, empty_data);
         THEN("Read valid data properly") {
             mock_client.read_option = ReadOption::VALID;
             test_book_accessor.get_data(key, len, offset, message_index);

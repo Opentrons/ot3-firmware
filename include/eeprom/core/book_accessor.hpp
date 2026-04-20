@@ -420,9 +420,8 @@ class BookAccessor
     // callbacks
     void config_req_callback(const message::ConfigResponseMessage& m) {
         printf(
-            "Received config response message with chip type %d and address "
-            "bytes %d\n",
-            m.chip, m.addr_bytes);
+            "Received config response message with chip type and address "
+            "bytes %d\n", m.addr_bytes);
         conf = m;
         config_updated = true;
         tail_accessor.set_config(conf);
