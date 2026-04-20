@@ -212,6 +212,10 @@ class EEPromAccessor {
         bytes_recieved += msg.length;
 
         if (bytes_recieved == bytes_to_read) {
+            printf(
+                "bytes_received == bytes_to_read, calling read complete "
+                "callback with message "
+                "index\n");
             read_listener.read_complete(msg.message_index);
         }
     }

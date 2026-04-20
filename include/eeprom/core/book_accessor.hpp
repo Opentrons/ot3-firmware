@@ -218,12 +218,21 @@ class BookAccessor
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
                   uint32_t message_index) {
+        printf("Attempting to get data with key %d, len %d, offset %d\n", key,
+               len, offset);
         if (read_write_ready()) {
+            printf("Table ready, attempting to read data for key %d\n", key);
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
+                printf(
+                    "Error, attempted to read key %d at location %d which is "
+                    "past "
+                    "current data tail at location %d\n",
+                    key, table_location, tail_accessor.get_data_tail());
                 LOG("Error, attemping to read uninitalized value");
                 return;
             }
+
             action_cmd_m = table_entry_action{.key = key,
                                               .offset = offset,
                                               .len = len,
@@ -231,6 +240,10 @@ class BookAccessor
 
             // call a read to the table entry so we know where
             // to read the data
+            printf(
+                "sending read message for key %d at address %d with length "
+                "%d\n",
+                key, table_location, 2 * conf.addr_bytes);
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = table_location,
@@ -428,7 +441,7 @@ class BookAccessor
     auto calculate_table_entry_start(uint16_t key) -> types::address {
         types::address addr = 0;
         if (config_updated) {
-            addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
+            addr = addresses::ot_library_begin + (key * 2 * conf.addr_bytes);
         }
         return addr;
     }

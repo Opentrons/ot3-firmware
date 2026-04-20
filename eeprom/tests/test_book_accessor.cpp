@@ -194,9 +194,8 @@ struct BMockEEpromTaskClient {
     }
 };
 
-SCENARIO("Creating a data partition") {
-    /* NOTE: This feature is very similar to what we have in dev data, so
-    we
+SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
+    what we have in dev data, so we
      * are not testing it as extensively here, just making sure that the
      * book accessor can call create data without error and that it sends
      * the correct message to the EEPROM client. We will rely on the more
@@ -263,50 +262,49 @@ SCENARIO("Creating a data partition") {
         }
     }
 }
-//
-// SCENARIO("Book Accessor can read data from EEPROM") {
-//     auto mock_listener = MockListener{};
-//     auto buffer = eeprom::book_accessor::DataBufferType<1>();
-//     auto mock_crc = MockCRC{};
-//
-//     auto mock_client =
-//         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-//                               test_mocks::MockI2CResponseQueue>{};
-//     auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
-//         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-//                               test_mocks::MockI2CResponseQueue>>{mock_client};
-//     auto test_book_accessor = book_accessor::BookAccessor<
-//         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-//                               test_mocks::MockI2CResponseQueue>,
-//         1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
-//
-//     tail_accessor.finish_data_rev();
-//
-//     uint16_t key = 0;
-//     uint16_t len = 1;
-//     uint16_t offset = 0;
-//     uint32_t message_index = 0;
-//
-//     GIVEN("Book Accessor initializes properly") {
-//         THEN("Read valid data properly") {
-//             mock_client.read_option = ReadOption::VALID;
-//             test_book_accessor.get_data(key, len, offset, message_index);
-//             // check that the value read is correct
-//             REQUIRE(buffer[0] == 0b00000100);
-//         }
-//
-//         THEN("Cascade read when one page of data is invalid") {
-//             mock_client.read_option = ReadOption::ONE_INVALID;
-//             test_book_accessor.get_data(key, len, offset, message_index);
-//             // check that the value read is correct
-//             REQUIRE(buffer[0] == 0b00000100);
-//         }
-//
-//         THEN("Return invalid data when all pages are invalid") {
-//             mock_client.read_option = ReadOption::ALL_INVALID;
-//             test_book_accessor.get_data(key, len, offset, message_index);
-//             // check that the value read is correct
-//             REQUIRE(buffer[0] == 0b00000000);
-//         }
-//     }
-// }
+
+SCENARIO("Book Accessor can read data from EEPROM") {
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<1>();
+    auto mock_crc = MockCRC{};
+
+    auto mock_client =
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>{};
+    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>>{mock_client};
+    auto test_book_accessor = book_accessor::BookAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>,
+        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+
+    tail_accessor.finish_data_rev();
+    uint16_t key = 0;
+    uint16_t len = 1;
+    uint16_t offset = 0;
+    uint32_t message_index = 0;
+
+    GIVEN("Book Accessor initializes properly") {
+        THEN("Read valid data properly") {
+            mock_client.read_option = ReadOption::VALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000100);
+        }
+
+        THEN("Cascade read when one page of data is invalid") {
+            mock_client.read_option = ReadOption::ONE_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000100);
+        }
+
+        THEN("Return invalid data when all pages are invalid") {
+            mock_client.read_option = ReadOption::ALL_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index);
+            // check that the value read is correct
+            REQUIRE(buffer[0] == 0b00000000);
+        }
+    }
+}

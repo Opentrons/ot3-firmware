@@ -68,20 +68,28 @@ class DevDataTailAccessor
     auto finish_data_rev() -> void { data_rev_finished = true; }
 
     void read_complete(uint32_t) final {
+        printf("read_complete dev_data_tail_accessor entered\n");
         // test if data is set to default values at delivery
         auto delivery_state =
             std::array<uint8_t, addresses::lookup_table_tail_length>{};
         delivery_state.fill(conf.default_byte_value);
+        printf("data_tail_buff: %d %d\n", data_tail_buff[0], data_tail_buff[1]);
+        printf("delivery_state: %d %d\n", delivery_state[0], delivery_state[1]);
         if (std::equal(delivery_state.begin(), delivery_state.end(),
                        data_tail_buff.begin())) {
+            printf("entered if statement\n");
             // Value is set to default so update it to data section start
             auto init_tail = DataTailType{};
             data_tail = addresses::data_address_begin;
+            printf("data_tail: %d\n", data_tail);
             std::ignore = bit_utils::int_to_bytes(
                 data_tail, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
             this->write(init_tail, 0);
         } else {
+            printf(
+                "IF STATEMENT IN READ_COMPLETE IN TAIL_ACCESSOR IS NEVER "
+                "ENTERED\n");
             // load current data tail to memory
             std::ignore = bit_utils::bytes_to_int(
                 data_tail_buff.begin(),
