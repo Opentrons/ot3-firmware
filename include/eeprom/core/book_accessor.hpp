@@ -138,7 +138,7 @@ class BookAccessor
                     uint16_t counter = 1;
                     // move data to larger container
                     std::array<uint8_t, types::book_data_length> data_container;
-                    std::copy_n(data.begin(), data.size, data_container.begin);
+                    std::copy_n(data.begin(), data.size(), data_container.begin());
                     std::array<uint8_t, 2> crc = calc_crc(data_container);
 
                     // make CRC the first two bytes of the page
