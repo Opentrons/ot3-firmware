@@ -277,8 +277,10 @@ SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
 
         uint16_t data_address_written = 0;
 
-        std::copy_n(write_message.data.begin(), sizeof(data_address_written),
-                    reinterpret_cast<uint16_t*>(&data_address_written));
+        std::ignore = bit_utils::bytes_to_int(
+            write_message.data.cbegin(),
+            write_message.data.cbegin() + sizeof(data_address_written),
+            data_address_written);
 
         // hide first byte of address, we only care that the second
         // byte is 0
