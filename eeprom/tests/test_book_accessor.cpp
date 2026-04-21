@@ -10,7 +10,6 @@
 #include "eeprom/firmware/crc16.h"
 #include "eeprom/tests/mock_crc.hpp"
 #include "eeprom/tests/mock_eeprom_listener.hpp"
-#include "eeprom/tests/mock_eeprom_task_client.hpp"
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 using namespace eeprom;
