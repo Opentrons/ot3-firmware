@@ -183,7 +183,6 @@ class EEPromAccessor {
         types::data_length bytes_remain = (limit_offset + begin) - read_addr;
 
         begin_read_addr = read_addr;
-
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::page_length);
             eeprom_client.send_eeprom_queue(
@@ -210,7 +209,6 @@ class EEPromAccessor {
             (type_data.begin() + (msg.memory_address - begin_read_addr));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
-
         if (bytes_recieved == bytes_to_read) {
             read_listener.read_complete(msg.message_index);
         }
