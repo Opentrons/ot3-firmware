@@ -100,7 +100,7 @@ class BookAccessor
                     if (data.size() > types::book_data_length) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
-                            types::books_data_length);
+                            types::book_data_length);
                     }
                     std::array<uint8_t, types::page_length> page_data{0};
                     uint16_t counter = 1;
