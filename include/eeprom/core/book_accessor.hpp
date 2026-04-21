@@ -79,7 +79,7 @@ class BookAccessor
 
                 // new in OT library, subtract from ot_library_end to cut off
                 // stale addresses
-                types::address new_ptr = addresses::ot_library_end - len -
+                types::address new_ptr = addresses::ot_library_end - types::page_length -
                                          addresses::ot_library_begin;
 
                 // drop second byte (first byte is pre-aligned to 4 pages);
@@ -97,14 +97,17 @@ class BookAccessor
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                 if (!data.empty()) {
-                    if (data.size() > len) {
+                    if (data.size() > types::book_data_length) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
-                            len);
+                            types::books_data_length);
                     }
                     std::array<uint8_t, types::page_length> page_data{0};
                     uint16_t counter = 1;
-                    std::array<uint8_t, 2> crc = calc_crc(data);
+                    // move data to larger container
+                    std::array<uint8_t, types::book_data_length> data_container;
+                    std::copy_n(data.begin(), data.size, data_container.begin);
+                    std::array<uint8_t, 2> crc = calc_crc(data_container);
 
                     // make CRC the first two bytes of the page
                     std::copy_n(crc.begin(), 2, page_data.begin());
@@ -113,7 +116,7 @@ class BookAccessor
                                 sizeof(counter), page_data.begin() + 2);
                     // make the data the rest of the page
                     std::copy_n(
-                        data.begin(), data.size(),
+                        data_container.begin(), data_container.size(),
                         page_data.begin() + types::book_header_length + 1);
 
                     this->write_at_offset(
@@ -126,14 +129,17 @@ class BookAccessor
                 action_cmd_m.len = len;
                 action_cmd_m.action = TableAction::CREATE;
                 if (!data.empty()) {
-                    if (data.size() > len) {
+                    if (data.size() > types::book_data_length) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
-                            len);
+                            types::book_data_length);
                     }
                     std::array<uint8_t, types::page_length> page_data{0};
                     uint16_t counter = 1;
-                    std::array<uint8_t, 2> crc = calc_crc(data);
+                    // move data to larger container
+                    std::array<uint8_t, types::book_data_length> data_container;
+                    std::copy_n(data.begin(), data.size, data_container.begin);
+                    std::array<uint8_t, 2> crc = calc_crc(data_container);
 
                     // make CRC the first two bytes of the page
                     std::copy_n(crc.begin(), 2, page_data.begin());
@@ -412,7 +418,7 @@ class BookAccessor
                 [[fallthrough]];
             case TableAction::CREATE:
                 // TODO: calculate new start address
-                if (tail_accessor.get_data_tail() + action_cmd_m.len +
+                if (tail_accessor.get_data_tail() + types::page_length +
                         (2 * conf.addr_bytes) >
                     data_addr) {
                     LOG("Error attempted to initialize value too large for "
