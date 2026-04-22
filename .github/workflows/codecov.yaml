@@ -63,6 +63,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ot3-firmware/coverage.xml
           name: codecov-ot3-firmware
           fail_ci_if_error: true
