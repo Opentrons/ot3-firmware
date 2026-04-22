@@ -57,6 +57,8 @@ struct BMockEEpromTaskClient {
     MockHardwareIface hardware_iface =
         MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
     void visit(const message::OTLibraryReadMessage& message) {
+        printf("Received OTLibraryReadMessage with address %d and length %d\n",
+               message.memory_address, message.length);
         // structure return message
         message::OTLibraryPageMessage to_be_sent =
             eeprom::message::OTLibraryPageMessage{};
@@ -152,6 +154,8 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::ReadEepromMessage& message) {
+        printf("Received ReadEepromMessage with address %d and length %d\n",
+               message.memory_address, message.length);
         auto resp = message::EepromMessage{};
 
         resp.memory_address = message.memory_address;
@@ -164,6 +168,8 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::WriteEepromMessage& message) {
+        printf("Received WriteEepromMessage with address %d and length %d\n",
+               message.memory_address, message.length);
         // for testing purposes we don't need to do anything when we get
         // a write message, but we could add some functionality here if
         // we wanted
@@ -181,6 +187,7 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::ConfigRequestMessage& message) {
+        printf("Received ConfigRequestMessage \n");
         messages_received.push_back(message);
 
         auto m = task::TaskMessage{message};
@@ -189,19 +196,21 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const i2c::messages::TransactionResponse& message) {
+        printf("Received TransactionResponse \n");
         std::ignore = message;
         messages_received.push_back(message);
     }
 };
 
-SCENARIO("Creating a data partition") { /* NOTE: This feature is very similar to
-    what we have in dev data, so we
-     * are not testing it as extensively here, just making sure that the
-     * book accessor can call create data without error and that it sends
-     * the correct message to the EEPROM client. We will rely on the more
-     * extensive testing of create data in dev data to make sure that
-     create
-     * data is working properly. */
+SCENARIO("Creating a data partition") {
+    /* NOTE: This feature is very similar to
+       * what we have in dev data, so we
+       * are not testing it as extensively here, just making sure that the
+       * book accessor can call create data without error and that it sends
+       * the correct message to the EEPROM client. We will rely on the more
+       * extensive testing of create data in dev data to make sure that
+       create
+       * data is working properly. */
 
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
@@ -318,23 +327,79 @@ SCENARIO("Book Accessor can read data from EEPROM") {
         test_book_accessor.create_data_part<0>(key, len, empty_data);
         THEN("Read valid data properly") {
             mock_client.read_option = ReadOption::VALID;
+            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
+            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Cascade read when one page of data is invalid") {
             mock_client.read_option = ReadOption::ONE_INVALID;
+            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
+            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Return invalid data when all pages are invalid") {
             mock_client.read_option = ReadOption::ALL_INVALID;
+            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
+            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000000);
+        }
+    }
+}
+
+SCENARIO("Book Accessor can write data to EEPROM") {
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<1>();
+    auto mock_crc = MockCRC{};
+
+    auto mock_client =
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>{};
+    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>>{mock_client};
+    auto test_book_accessor = book_accessor::BookAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>,
+        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+
+    tail_accessor.finish_data_rev();
+    uint16_t key = 0;
+    uint16_t len = 1;
+    uint16_t offset = 0;
+    // uint32_t message_index = 0;
+
+    std::array<uint8_t, 0> empty_data{};
+    GIVEN("Data Partition is successfully created") {
+        mock_client.messages_received.clear();
+        test_book_accessor.create_data_part<0>(key, len, empty_data);
+
+        THEN("Write data properly") {
+            std::array<uint8_t, 1> data_to_write{0b00000101};
+            printf("beginning write\n");
+            test_book_accessor.write_data(key, len, offset, data_to_write);
+            printf("finished write\n");
+
+            // Get_data sends 4 messages to the EEPROM client before the write
+            // that we care about
+            auto message = mock_client.messages_received[5];
+            REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
+                message));
+
+            // auto write_message =
+            //     std::get<eeprom::message::WriteEepromMessage>(message);
+
+            // check that the value written is correct
+            // REQUIRE(
+            //     mock_client.backing[eeprom::addresses::data_address_begin] ==
+            //     0b00000101);
         }
     }
 }

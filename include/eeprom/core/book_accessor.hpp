@@ -195,7 +195,7 @@ class BookAccessor
             // call a read to the table entry so we know where
             // to put the data
             // call get_data. call table action callback from inside read flow
-            get_data(key, len, offset, 0);
+            get_data(key, len, offset, 0, true);
         }
     }
 
@@ -211,7 +211,7 @@ class BookAccessor
     }
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
-                  uint32_t message_index) {
+                  uint32_t message_index, bool read_before_write = false) {
         if (read_write_ready()) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
@@ -219,10 +219,12 @@ class BookAccessor
                 return;
             }
 
-            action_cmd_m = table_entry_action{.key = key,
-                                              .offset = offset,
-                                              .len = len,
-                                              .action = TableAction::READ};
+            if (!read_before_write) {
+                action_cmd_m = table_entry_action{.key = key,
+                                                  .offset = offset,
+                                                  .len = len,
+                                                  .action = TableAction::READ};
+            }
 
             // call a read to the table entry so we know where
             // to read the data
