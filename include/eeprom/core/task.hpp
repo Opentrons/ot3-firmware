@@ -301,7 +301,7 @@ class EEPromMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
   public:
     using Messages = TaskMessage;
@@ -339,7 +339,7 @@ class EEPromTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage &m) {
-    { client.send_eeprom_queue(m) };
+    {client.send_eeprom_queue(m)};
 };
 
 }  // namespace task
