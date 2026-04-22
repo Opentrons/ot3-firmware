@@ -268,6 +268,7 @@ class BookAccessor
     eeprom::CRC16Base& crc16;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
+    // TODO: change this to be a TableAction
     bool am_writing{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;

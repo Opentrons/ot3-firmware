@@ -377,11 +377,13 @@ SCENARIO("Book Accessor can write data to EEPROM") {
     // uint32_t message_index = 0;
 
     std::array<uint8_t, 0> empty_data{};
-    GIVEN("Data Partition is successfully created") {
-        mock_client.messages_received.clear();
+    GIVEN("Data Partition is successfully created and reads are operational") {
         test_book_accessor.create_data_part<0>(key, len, empty_data);
+        // make sure to set read_option to valid
+        mock_client.read_option = ReadOption::VALID;
 
         THEN("Write data properly") {
+            mock_client.messages_received.clear();
             std::array<uint8_t, 1> data_to_write{0b00000101};
             printf("beginning write\n");
             test_book_accessor.write_data(key, len, offset, data_to_write);
@@ -393,8 +395,14 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
                 message));
 
-            // auto write_message =
-            //     std::get<eeprom::message::WriteEepromMessage>(message);
+            auto write_message =
+                std::get<eeprom::message::WriteEepromMessage>(message);
+
+            // make sure the counter value is correct in the data that is being
+            // written
+
+            auto data = write_message.data;
+            uint16_t counter_value = 0;
 
             // check that the value written is correct
             // REQUIRE(
