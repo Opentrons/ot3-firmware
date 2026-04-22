@@ -187,6 +187,10 @@ class BookAccessor
 
             // copy the data to our internal buffer
             std::copy_n(page_data.begin(), len, this->type_data.begin());
+
+            // NOTE: action_cmd_m.action will be overwritten during read phase
+            // and reinstated by read_final. The true marker of whether we are
+            // writing is the "am_writing" field
             this->action_cmd_m =
                 table_entry_action{.key = key,
                                    .offset = offset,
@@ -195,7 +199,8 @@ class BookAccessor
             // call a read to the table entry so we know where
             // to put the data
             // call get_data. call table action callback from inside read flow
-            get_data(key, len, offset, 0, true);
+            am_writing = true;
+            get_data(key, len, offset, 0);
         }
     }
 
@@ -211,7 +216,7 @@ class BookAccessor
     }
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
-                  uint32_t message_index, bool read_before_write = false) {
+                  uint32_t message_index) {
         if (read_write_ready()) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
@@ -219,12 +224,10 @@ class BookAccessor
                 return;
             }
 
-            if (!read_before_write) {
-                action_cmd_m = table_entry_action{.key = key,
-                                                  .offset = offset,
-                                                  .len = len,
-                                                  .action = TableAction::READ};
-            }
+            action_cmd_m = table_entry_action{.key = key,
+                                              .offset = offset,
+                                              .len = len,
+                                              .action = TableAction::READ};
 
             // call a read to the table entry so we know where
             // to read the data
@@ -265,6 +268,7 @@ class BookAccessor
     eeprom::CRC16Base& crc16;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
+    bool am_writing{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
@@ -325,7 +329,7 @@ class BookAccessor
             std::span(all_reads[0])
                 .subspan(types::book_header_length + 1, returned_data_len);
 
-        if (action_cmd_m.action == TableAction::READ) {
+        if (!am_writing) {
             std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
             bool crc_valid = false;
             while (!crc_valid) {
@@ -382,8 +386,9 @@ class BookAccessor
             read_listener.read_complete(message_index);
         }
 
-        else if (action_cmd_m.action == TableAction::WRITE) {
+        else {
             // create a new eeprom message to send to table_action_callback
+
             message::EepromMessage write_msg;
 
             // because all_reads contains 4 pages in the order they were read
@@ -427,6 +432,10 @@ class BookAccessor
             write_msg.length = conf.addr_bytes;
             // just fill memory address with beginning of lookup table tail
             write_msg.memory_address = addresses::lookup_table_tail_begin;
+
+            // set table action to write
+            action_cmd_m.action = TableAction::WRITE;
+            am_writing = false;
 
             table_action_callback(write_msg);
         }
@@ -533,8 +542,6 @@ class BookAccessor
                                       m.message_index);
                 break;
             case TableAction::READ:
-                // TODO: ask Ryan if this is unnecessary
-                // action_cmd_m.len = data_len;
                 data_addr += action_cmd_m.offset;
                 // read all 4 whole pages at the same time
                 this->OT_start_read_at_offset(
