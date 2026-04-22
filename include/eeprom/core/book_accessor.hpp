@@ -425,22 +425,40 @@ class BookAccessor
             // reverse reads list, so we write to the page that was read the
             // longest time ago
             std::sort(reads.begin(), reads.end());
+            printf(
+                "Reads in order from least recent to most recent: %d, %d, %d, "
+                "%d\n",
+                reads[0], reads[1], reads[2], reads[3]);
+
             uint16_t least_recent = reads[0];
 
             uint16_t page_address = current_book_address;
+            printf("current_book_address: %04X\n", current_book_address);
 
             // NOTE: this logic will break once a location eventually wears out.
             // It does not prevent writes to that location.
 
             if (least_recent == read_00) {
-                page_address &= static_cast<types::address>(read_00_offset);
+                page_address |= static_cast<types::address>(read_00_offset);
+                printf("least recent val: %d\n", read_00);
+                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_01) {
-                page_address &= static_cast<types::address>(read_01_offset);
+                page_address |= static_cast<types::address>(read_01_offset);
+                printf("least recent val: %d\n", read_01);
+                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_10) {
-                page_address &= static_cast<types::address>(read_10_offset);
+                page_address |= static_cast<types::address>(read_10_offset);
+                printf("least recent val: %d\n", read_10);
+                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_11) {
-                page_address &= static_cast<types::address>(read_11_offset);
+                printf("page address before bitmask: %04X\n", page_address);
+                page_address |= static_cast<types::address>(read_11_offset);
+                printf("least recent val: %d\n", read_11);
+                printf("read_11_offset: %04X\n",
+                       static_cast<types::address>(read_11_offset));
+                printf("least recent page address: %04X\n", page_address);
             }
+            printf("current_book_address: %04X\n", current_book_address);
 
             // storing this in data instead of memory address because table
             // action callback cheks data to determine write location
@@ -584,11 +602,13 @@ class BookAccessor
                 break;
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
+                current_book_address = data_addr;
+                printf("data_addr: %04X\n", data_addr);
+                printf("current_book_address: %04X\n", current_book_address);
                 // read all 4 whole pages at the same time
                 this->OT_start_read_at_offset(
                     data_addr, data_addr + (types::page_length * 4),
                     m.message_index);
-                current_book_address = data_addr;
                 break;
         }
     }
