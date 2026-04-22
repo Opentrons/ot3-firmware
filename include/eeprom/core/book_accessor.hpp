@@ -66,6 +66,31 @@ class BookAccessor
     template <size_t NUM_BYTES>
     void create_data_part(uint16_t key, uint16_t len,
                           std::array<uint8_t, NUM_BYTES>& data) {
+        // "page_data" is what will be written to the EEPROM. Just data with the
+        // header and some extra bytes afterwards to fill the page.
+        std::array<uint8_t, types::page_length> page_data{0};
+
+        if (!data.empty()) {
+            if (data.size() > types::book_data_length) {
+                LOG("Warning, sent too much data to initalize, "
+                    "truncating to %d",
+                    types::book_data_length);
+            }
+            uint16_t counter = 1;
+            // move data to larger container
+            std::array<uint8_t, types::book_data_length> data_container;
+            std::copy_n(data.begin(), data.size(), data_container.begin());
+            std::array<uint8_t, 2> crc = calc_crc(data_container);
+
+            // make CRC the first two bytes of the page
+            std::copy_n(crc.begin(), 2, page_data.begin());
+            // make Counter the next two bytes of the page
+            std::copy_n(reinterpret_cast<uint8_t*>(&counter), sizeof(counter),
+                        page_data.begin() + 2);
+            // make the data the rest of the page
+            std::copy_n(data_container.begin(), data_container.size(),
+                        page_data.begin() + types::book_header_length + 1);
+        }
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
@@ -79,7 +104,8 @@ class BookAccessor
 
                 // new in OT library, subtract from ot_library_end to cut off
                 // stale addresses
-                types::address new_ptr = addresses::ot_library_end - types::page_length -
+                types::address new_ptr = addresses::ot_library_end -
+                                         types::page_length -
                                          addresses::ot_library_begin;
 
                 // drop second byte (first byte is pre-aligned to 4 pages);
@@ -97,28 +123,6 @@ class BookAccessor
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                 if (!data.empty()) {
-                    if (data.size() > types::book_data_length) {
-                        LOG("Warning, sent too much data to initalize, "
-                            "truncating to %d",
-                            types::book_data_length);
-                    }
-                    std::array<uint8_t, types::page_length> page_data{0};
-                    uint16_t counter = 1;
-                    // move data to larger container
-                    std::array<uint8_t, types::book_data_length> data_container;
-                    std::copy_n(data.begin(), data.size(), data_container.begin());
-                    std::array<uint8_t, 2> crc = calc_crc(data_container);
-
-                    // make CRC the first two bytes of the page
-                    std::copy_n(crc.begin(), 2, page_data.begin());
-                    // make Counter the next two bytes of the page
-                    std::copy_n(reinterpret_cast<uint8_t*>(&counter),
-                                sizeof(counter), page_data.begin() + 2);
-                    // make the data the rest of the page
-                    std::copy_n(
-                        data_container.begin(), data_container.size(),
-                        page_data.begin() + types::book_header_length + 1);
-
                     this->write_at_offset(
                         accessor::AccessorBuffer(page_data.begin(),
                                                  page_data.end()),
@@ -129,28 +133,6 @@ class BookAccessor
                 action_cmd_m.len = len;
                 action_cmd_m.action = TableAction::CREATE;
                 if (!data.empty()) {
-                    if (data.size() > types::book_data_length) {
-                        LOG("Warning, sent too much data to initalize, "
-                            "truncating to %d",
-                            types::book_data_length);
-                    }
-                    std::array<uint8_t, types::page_length> page_data{0};
-                    uint16_t counter = 1;
-                    // move data to larger container
-                    std::array<uint8_t, types::book_data_length> data_container;
-                    std::copy_n(data.begin(), data.size(), data_container.begin());
-                    std::array<uint8_t, 2> crc = calc_crc(data_container);
-
-                    // make CRC the first two bytes of the page
-                    std::copy_n(crc.begin(), 2, page_data.begin());
-                    // make Counter the next two bytes of the page
-                    std::copy_n(reinterpret_cast<uint8_t*>(&counter),
-                                sizeof(counter), page_data.begin() + 2);
-                    // make the data the rest of the page
-                    std::copy_n(
-                        data.begin(), data.size(),
-                        page_data.begin() + types::book_header_length + 1);
-
                     std::copy_n(page_data.begin(), page_data.size(),
                                 this->type_data.begin());
                     action_cmd_m.action = TableAction::INITALIZE;
