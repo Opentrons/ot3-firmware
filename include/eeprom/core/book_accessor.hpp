@@ -430,14 +430,6 @@ class BookAccessor
         }
     }
 
-    // void write_callback(uint8_t key, uint16_t len,
-    //                     std::array<uint8_t, BUFFER_SIZE> data) {
-    //     std::ignore = data;
-    // }
-    //
-    // Methods from DevDataAccessor
-
-    // callbacks
     void config_req_callback(const message::ConfigResponseMessage& m) {
         conf = m;
         config_updated = true;
