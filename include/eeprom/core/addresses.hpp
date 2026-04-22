@@ -165,8 +165,10 @@ class DataAddressWrapper {
         write.length = boundary_address_length;
 
         auto* write_iter = write.data.begin();
-        write_iter = bit_utils::int_to_bytes(_boundary_address, write_iter,
-                                             write_iter + write.length);
+        write_iter = bit_utils::int_to_bytes(
+            _boundary_address, write_iter,
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            write_iter + write.length);
 
         eeprom_client.send_eeprom_queue(write);
     }

@@ -11,6 +11,11 @@ else()
     message(STATUS "no set version")
 endif()
 
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
+    message(STATUS "set download style old")
+    cmake_policy(SET CMP0169 OLD)
+endif()
+
 if (NOT DEFINED ENV{PRESET_IN_USE})
     message(FATAL_ERROR "Use a preset. Use cmake --list-presets to show available presets.")
 endif ()
