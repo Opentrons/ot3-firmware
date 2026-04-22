@@ -193,8 +193,6 @@ class BookAccessor
     }
 
     auto read_write_ready() -> bool {
-        // NOTE: THIS WAS DONE TO TEST THE READ/WRITE METHODS
-        // return true;
         return table_ready() && tail_accessor.data_rev_complete();
     }
 
