@@ -185,8 +185,28 @@ class BookAccessor
             std::copy_n(data.begin(), data.size(),
                         page_data.begin() + types::book_header_length + 1);
 
-            // copy the data to our internal buffer
-            std::copy_n(page_data.begin(), len, this->type_data.begin());
+            printf("write_buffer before write:");
+            for (auto byte : write_buffer) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
+
+            // copy the data to our internal buffer (write_buffer is used as an
+            // internal buffer so it isn't overwritten by the read that we have
+            // to do to write)
+            std::copy_n(page_data.begin(), page_data.size(),
+                        write_buffer.begin());
+            printf("page data to write: ");
+            for (auto byte : page_data) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
+
+            printf("write_buffer to write: ");
+            for (auto byte : write_buffer) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
 
             // NOTE: action_cmd_m.action will be overwritten during read phase
             // and reinstated by read_final. The true marker of whether we are
@@ -203,7 +223,6 @@ class BookAccessor
             get_data(key, len, offset, 0);
         }
     }
-
     template <std::size_t NUM_BYTES>
     void write_data(uint16_t key, uint16_t len,
                     std::array<uint8_t, NUM_BYTES>& data) {
@@ -275,6 +294,9 @@ class BookAccessor
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
     DataBufferType<BUFFER_SIZE>& buffer;
     types::address current_book_address = addresses::ot_library_begin;
+    std::array<uint8_t, types::page_length> write_buffer_internal{0};
+    accessor::AccessorBuffer write_buffer{write_buffer_internal.begin(),
+                                          write_buffer_internal.end()};
 
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
@@ -427,9 +449,15 @@ class BookAccessor
             write_iter = bit_utils::int_to_bytes(page_address, write_iter,
                                                  write_iter + conf.addr_bytes);
             // copy new counter value into next 2 bytes of data
-            write_iter =
-                bit_utils::int_to_bytes(reads[reads.size() - 1] + 1, write_iter,
-                                        write_iter + conf.addr_bytes);
+            uint16_t new_counter = reads[reads.size() - 1] + 1;
+            write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
+                                                 write_iter + conf.addr_bytes);
+            printf("New counter value: %d\n", reads[reads.size() - 1] + 1);
+            printf("write_msg.data: ");
+            for (auto byte : write_msg.data) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
             write_msg.length = conf.addr_bytes;
             // just fill memory address with beginning of lookup table tail
             write_msg.memory_address = addresses::lookup_table_tail_begin;
@@ -477,6 +505,7 @@ class BookAccessor
         data_iter = bit_utils::bytes_to_int(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_len);
+        printf("data_len: %d\n", data_len);
         if (conf.chip == hardware_iface::EEPromChipType::MICROCHIP_24AA02T) {
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
@@ -534,11 +563,22 @@ class BookAccessor
                 // the length of the data to be written.
 
                 // copy counter value into bytes 2 and 3 of type_data
-                std::ignore = bit_utils::int_to_bytes(
-                    data_len, this->type_data.begin() + 2,
-                    this->type_data.begin() + 4);
+                printf("write_buffer before writing counter: ");
+                for (auto byte : write_buffer) {
+                    printf("%02X ", byte);
+                }
+                printf("\n");
+                std::ignore =
+                    bit_utils::int_to_bytes(data_len, write_buffer.begin() + 2,
+                                            write_buffer.begin() + 4);
 
-                this->write_at_offset(this->type_data, data_addr,
+                printf("write_buffer after writing counter: ");
+                for (auto byte : write_buffer) {
+                    printf("%02X ", byte);
+                }
+                printf("\n");
+
+                this->write_at_offset(write_buffer, data_addr,
                                       data_addr + types::page_length,
                                       m.message_index);
                 break;

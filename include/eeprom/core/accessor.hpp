@@ -108,6 +108,11 @@ class EEPromAccessor {
     auto write_at_offset(const AccessorBuffer& data, types::data_length offset,
                          types::data_length limit_offset,
                          uint32_t message_index) -> void {
+        printf("data to write: ");
+        for (uint8_t* iter = data.begin(); iter < data.end(); iter++) {
+            printf("%02X ", *iter);
+        }
+        printf("\n");
         types::data_length amount_to_write = 0;
         types::data_length write_remain = limit_offset - offset;
         auto write = types::EepromData{};
@@ -116,6 +121,12 @@ class EEPromAccessor {
         types::address limit_addr = begin + limit_offset;
         // NOLINTNEXTLINE(modernize-use-nullptr)
         while (type_iter < data.end() && write_addr < limit_addr) {
+            printf("writing: ");
+            for (size_t i = 0;
+                 i < std::min(write_remain, types::max_data_length); i++) {
+                printf("%02X ", *(type_iter + i));
+            }
+            printf("\n");
             amount_to_write = std::min(write_remain, types::max_data_length);
 
             std::copy_n(type_iter, amount_to_write, write.begin());

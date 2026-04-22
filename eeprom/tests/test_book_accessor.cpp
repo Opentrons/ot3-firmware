@@ -170,6 +170,11 @@ struct BMockEEpromTaskClient {
     void visit(const message::WriteEepromMessage& message) {
         printf("Received WriteEepromMessage with address %d and length %d\n",
                message.memory_address, message.length);
+        printf("Data being written: ");
+        for (size_t i = 0; i < message.length; i++) {
+            printf("%02X ", message.data[i]);
+        }
+        printf("\n");
         // for testing purposes we don't need to do anything when we get
         // a write message, but we could add some functionality here if
         // we wanted
@@ -389,9 +394,9 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             test_book_accessor.write_data(key, len, offset, data_to_write);
             printf("finished write\n");
 
-            // Get_data sends 4 messages to the EEPROM client before the write
-            // that we care about
-            auto message = mock_client.messages_received[5];
+            // Get_data sends a few messages to the EEPROM client before the
+            // write that we care about
+            auto message = mock_client.messages_received[3];
             REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
                 message));
 
@@ -402,7 +407,28 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             // written
 
             auto data = write_message.data;
+            printf("data received in write message: ");
+            for (auto byte : data) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
+            const auto* data_iter = data.begin();
+            printf("Data being written: ");
+            for (auto byte : data) {
+                printf("%02X ", byte);
+            }
+            printf("\n");
+
+            // check that counter value is correct (get_data should have current
+            // counter value of 4 because of the valid read_option, so the
+            // counter value should be 5 when we write)
             uint16_t counter_value = 0;
+            data_iter = bit_utils::bytes_to_int(data_iter + 2, data_iter + 4,
+                                                counter_value);
+            // std::ignore = bit_utils::bytes_to_int(
+            //     data.begin() + 2, data.begin() + 4, counter_value);
+            printf("Counter value written: %d\n", counter_value);
+            REQUIRE(counter_value == 5);
 
             // check that the value written is correct
             // REQUIRE(
