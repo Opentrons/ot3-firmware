@@ -63,7 +63,8 @@ class BookAccessor
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
         DataBufferType<SIZE>& buffer,
         dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
-        : accessor::EEPromAccessor<EEpromTaskClient,
+        : BookAccessorIntermediate(),
+          accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
               eeprom_client, *this,
               accessor::AccessorBuffer(intermediate_buffer.begin(),
@@ -259,9 +260,9 @@ class BookAccessor
         // find maximum value
         // TODO implement counter wraparound
         std::array<uint16_t, 4> reads = {read_00, read_01, read_11, read_10};
-        std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
+        std::sort(reads.begin(), reads.end(), std::greater<>());
         uint16_t most_recent_index = 0;
-        uint16_t most_recent_valid = reads[most_recent_index];
+        uint16_t most_recent_valid = reads.at(most_recent_index);
 
         if (action_cmd_m.action == TableAction::READ) {
             // std::array<uint8_t, 56> data_for_return{};
@@ -288,7 +289,7 @@ class BookAccessor
                     break;
                 }
 
-                most_recent_valid = reads[most_recent_index];
+                most_recent_valid = reads.at(most_recent_index);
 
                 if (most_recent_valid == read_00) {
                     returned_data = std::span(all_reads[0])
