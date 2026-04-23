@@ -57,8 +57,6 @@ struct BMockEEpromTaskClient {
     MockHardwareIface hardware_iface =
         MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
     void visit(const message::OTLibraryReadMessage& message) {
-        printf("Received OTLibraryReadMessage with address %d and length %d\n",
-               message.memory_address, message.length);
         // structure return message
         message::OTLibraryPageMessage to_be_sent =
             eeprom::message::OTLibraryPageMessage{};
@@ -154,8 +152,6 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::ReadEepromMessage& message) {
-        printf("Received ReadEepromMessage with address %d and length %d\n",
-               message.memory_address, message.length);
         auto resp = message::EepromMessage{};
 
         resp.memory_address = message.memory_address;
@@ -168,13 +164,6 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::WriteEepromMessage& message) {
-        printf("Received WriteEepromMessage with address %d and length %d\n",
-               message.memory_address, message.length);
-        printf("Data being written: ");
-        for (size_t i = 0; i < message.length; i++) {
-            printf("%02X ", message.data[i]);
-        }
-        printf("\n");
         // for testing purposes we don't need to do anything when we get
         // a write message, but we could add some functionality here if
         // we wanted
@@ -192,7 +181,6 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const message::ConfigRequestMessage& message) {
-        printf("Received ConfigRequestMessage \n");
         messages_received.push_back(message);
 
         auto m = task::TaskMessage{message};
@@ -201,7 +189,6 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const i2c::messages::TransactionResponse& message) {
-        printf("Received TransactionResponse \n");
         std::ignore = message;
         messages_received.push_back(message);
     }
@@ -332,27 +319,21 @@ SCENARIO("Book Accessor can read data from EEPROM") {
         test_book_accessor.create_data_part<0>(key, len, empty_data);
         THEN("Read valid data properly") {
             mock_client.read_option = ReadOption::VALID;
-            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
-            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Cascade read when one page of data is invalid") {
             mock_client.read_option = ReadOption::ONE_INVALID;
-            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
-            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000100);
         }
 
         THEN("Return invalid data when all pages are invalid") {
             mock_client.read_option = ReadOption::ALL_INVALID;
-            printf("beginning read\n");
             test_book_accessor.get_data(key, len, offset, message_index);
-            printf("finished read\n");
             // check that the value read is correct
             REQUIRE(buffer[0] == 0b00000000);
         }
@@ -390,9 +371,7 @@ SCENARIO("Book Accessor can write data to EEPROM") {
         THEN("Write data properly") {
             mock_client.messages_received.clear();
             std::array<uint8_t, 1> data_to_write{0b00000101};
-            printf("beginning write\n");
             test_book_accessor.write_data(key, len, offset, data_to_write);
-            printf("finished write\n");
 
             // Get_data sends a few messages to the EEPROM client before the
             // write that we care about
@@ -407,17 +386,7 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             // written
 
             auto data = write_message.data;
-            printf("data received in write message: ");
-            for (auto byte : data) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
             const auto* data_iter = data.begin();
-            printf("Data being written: ");
-            for (auto byte : data) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
 
             // check that counter value is correct (get_data should have current
             // counter value of 4 because of the valid read_option, so the
@@ -425,7 +394,6 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             uint16_t counter_value = 0;
             data_iter = bit_utils::bytes_to_int(data_iter + 2, data_iter + 4,
                                                 counter_value);
-            printf("Counter value written: %d\n", counter_value);
             REQUIRE(counter_value == 5);
 
             // check that addres being written is correct
@@ -435,7 +403,6 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             // "VALID" case of the read is the 4th and final page. the address
             // of this page is 16384 - 64 - 64 = 16256
             uint16_t address_written = write_message.memory_address;
-            printf("Address written: %d\n", address_written);
             REQUIRE(address_written == 16256);
 
             // check that the value written is correct

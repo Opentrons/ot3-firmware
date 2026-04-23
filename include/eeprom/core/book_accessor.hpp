@@ -185,28 +185,11 @@ class BookAccessor
             std::copy_n(data.begin(), data.size(),
                         page_data.begin() + types::book_header_length + 1);
 
-            printf("write_buffer before write:");
-            for (auto byte : write_buffer) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
-
             // copy the data to our internal buffer (write_buffer is used as an
             // internal buffer so it isn't overwritten by the read that we have
             // to do to write)
             std::copy_n(page_data.begin(), page_data.size(),
                         write_buffer.begin());
-            printf("page data to write: ");
-            for (auto byte : page_data) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
-
-            printf("write_buffer to write: ");
-            for (auto byte : write_buffer) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
 
             // NOTE: action_cmd_m.action will be overwritten during read phase
             // and reinstated by read_final. The true marker of whether we are
@@ -425,40 +408,23 @@ class BookAccessor
             // reverse reads list, so we write to the page that was read the
             // longest time ago
             std::sort(reads.begin(), reads.end());
-            printf(
-                "Reads in order from least recent to most recent: %d, %d, %d, "
-                "%d\n",
-                reads[0], reads[1], reads[2], reads[3]);
 
             uint16_t least_recent = reads[0];
 
             uint16_t page_address = current_book_address;
-            printf("current_book_address: %04X\n", current_book_address);
 
             // NOTE: this logic will break once a location eventually wears out.
             // It does not prevent writes to that location.
 
             if (least_recent == read_00) {
                 page_address |= static_cast<types::address>(read_00_offset);
-                printf("least recent val: %d\n", read_00);
-                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_01) {
                 page_address |= static_cast<types::address>(read_01_offset);
-                printf("least recent val: %d\n", read_01);
-                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_10) {
                 page_address |= static_cast<types::address>(read_10_offset);
-                printf("least recent val: %d\n", read_10);
-                printf("least recent page address: %04X\n", page_address);
             } else if (least_recent == read_11) {
-                printf("page address before bitmask: %04X\n", page_address);
                 page_address |= static_cast<types::address>(read_11_offset);
-                printf("least recent val: %d\n", read_11);
-                printf("read_11_offset: %04X\n",
-                       static_cast<types::address>(read_11_offset));
-                printf("least recent page address: %04X\n", page_address);
             }
-            printf("current_book_address: %04X\n", current_book_address);
 
             // storing this in data instead of memory address because table
             // action callback cheks data to determine write location
@@ -470,12 +436,6 @@ class BookAccessor
             uint16_t new_counter = reads[reads.size() - 1] + 1;
             write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
                                                  write_iter + conf.addr_bytes);
-            printf("New counter value: %d\n", reads[reads.size() - 1] + 1);
-            printf("write_msg.data: ");
-            for (auto byte : write_msg.data) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
             write_msg.length = conf.addr_bytes;
             // just fill memory address with beginning of lookup table tail
             write_msg.memory_address = addresses::lookup_table_tail_begin;
@@ -523,7 +483,6 @@ class BookAccessor
         data_iter = bit_utils::bytes_to_int(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_len);
-        printf("data_len: %d\n", data_len);
         if (conf.chip == hardware_iface::EEPromChipType::MICROCHIP_24AA02T) {
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
@@ -581,20 +540,9 @@ class BookAccessor
                 // the length of the data to be written.
 
                 // copy counter value into bytes 2 and 3 of type_data
-                printf("write_buffer before writing counter: ");
-                for (auto byte : write_buffer) {
-                    printf("%02X ", byte);
-                }
-                printf("\n");
                 std::ignore =
                     bit_utils::int_to_bytes(data_len, write_buffer.begin() + 2,
                                             write_buffer.begin() + 4);
-
-                printf("write_buffer after writing counter: ");
-                for (auto byte : write_buffer) {
-                    printf("%02X ", byte);
-                }
-                printf("\n");
 
                 this->write_at_offset(write_buffer, data_addr,
                                       data_addr + types::page_length,
@@ -603,8 +551,6 @@ class BookAccessor
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
                 current_book_address = data_addr;
-                printf("data_addr: %04X\n", data_addr);
-                printf("current_book_address: %04X\n", current_book_address);
                 // read all 4 whole pages at the same time
                 this->OT_start_read_at_offset(
                     data_addr, data_addr + (types::page_length * 4),
