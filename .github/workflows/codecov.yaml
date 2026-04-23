@@ -49,7 +49,7 @@ jobs:
         run: pip install lcov_cobertura
 
       - name: Configure
-        run: cmake --preset=host-gcc10 -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug
+        run: cmake --preset=host -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug
 
       - name: Run all tests
         run: cmake --build --preset tests
@@ -63,6 +63,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ot3-firmware/coverage.xml
           name: codecov-ot3-firmware
           fail_ci_if_error: true
