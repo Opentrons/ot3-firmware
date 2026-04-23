@@ -425,10 +425,18 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             uint16_t counter_value = 0;
             data_iter = bit_utils::bytes_to_int(data_iter + 2, data_iter + 4,
                                                 counter_value);
-            // std::ignore = bit_utils::bytes_to_int(
-            //     data.begin() + 2, data.begin() + 4, counter_value);
             printf("Counter value written: %d\n", counter_value);
             REQUIRE(counter_value == 5);
+
+            // check that addres being written is correct
+
+            // expected: 16384 (final adress of EEPROM) - 64 (page length) to
+            // find the book location. the page with the lowest address in the
+            // "VALID" case of the read is the 4th and final page. the address
+            // of this page is 16384 - 64 - 64 = 16256
+            uint16_t address_written = write_message.memory_address;
+            printf("Address written: %d\n", address_written);
+            REQUIRE(address_written == 16256);
 
             // check that the value written is correct
             // REQUIRE(
