@@ -36,8 +36,6 @@ struct BookAccessorIntermediate {
  *
  * SIZE is the size of the buffer*/
 
-// TODO: Remove this one size for everything, make each method have its own
-// template size parameter
 template <task::TaskClient EEpromTaskClient, size_t BUFFER_SIZE>
 class BookAccessor
     : BookAccessorIntermediate,
@@ -193,16 +191,14 @@ class BookAccessor
 
             // NOTE: action_cmd_m.action will be overwritten during read phase
             // and reinstated by read_final. The true marker of whether we are
-            // writing is the "am_writing" field
             this->action_cmd_m =
                 table_entry_action{.key = key,
                                    .offset = offset,
                                    .len = len,
-                                   .action = TableAction::WRITE};
+                                   .action = TableAction::READ_BEFORE_WRITE};
             // call a read to the table entry so we know where
             // to put the data
             // call get_data. call table action callback from inside read flow
-            am_writing = true;
             get_data(key, len, offset, 0);
         }
     }
@@ -226,10 +222,12 @@ class BookAccessor
                 return;
             }
 
-            action_cmd_m = table_entry_action{.key = key,
-                                              .offset = offset,
-                                              .len = len,
-                                              .action = TableAction::READ};
+            if (!(action_cmd_m.action == TableAction::READ_BEFORE_WRITE)) {
+                action_cmd_m = table_entry_action{.key = key,
+                                                  .offset = offset,
+                                                  .len = len,
+                                                  .action = TableAction::READ};
+            }
 
             // call a read to the table entry so we know where
             // to read the data
@@ -270,8 +268,6 @@ class BookAccessor
     eeprom::CRC16Base& crc16;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
-    // TODO: change this to be a TableAction
-    bool am_writing{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
@@ -310,8 +306,6 @@ class BookAccessor
 
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
-        // TODO: Change names to reflect the fact that we are not doing one
-        // large read instead of 4 small ones
         uint16_t read_00 = 0;
         uint16_t read_01 = 0;
         uint16_t read_11 = 0;
@@ -335,7 +329,7 @@ class BookAccessor
             std::span(all_reads[0])
                 .subspan(types::book_header_length + 1, returned_data_len);
 
-        if (!am_writing) {
+        if (action_cmd_m.action == TableAction::READ) {
             std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
             bool crc_valid = false;
             while (!crc_valid) {
@@ -392,7 +386,7 @@ class BookAccessor
             read_listener.read_complete(message_index);
         }
 
-        else {
+        else if (action_cmd_m.action == TableAction::READ_BEFORE_WRITE) {
             // create a new eeprom message to send to table_action_callback
 
             message::EepromMessage write_msg;
@@ -442,7 +436,6 @@ class BookAccessor
 
             // set table action to write
             action_cmd_m.action = TableAction::WRITE;
-            am_writing = false;
 
             table_action_callback(write_msg);
         }
@@ -495,7 +488,6 @@ class BookAccessor
                 // don't break this is just an extension of create
                 [[fallthrough]];
             case TableAction::CREATE:
-                // TODO: calculate new start address
                 if (tail_accessor.get_data_tail() + types::page_length +
                         (2 * conf.addr_bytes) >
                     data_addr) {
@@ -548,6 +540,8 @@ class BookAccessor
                                       data_addr + types::page_length,
                                       m.message_index);
                 break;
+            case TableAction::READ_BEFORE_WRITE:
+                [[fallthrough]];
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
                 current_book_address = data_addr;
