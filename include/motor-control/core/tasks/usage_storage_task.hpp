@@ -9,7 +9,9 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/hardware_delay.hpp"
 #include "common/core/logging.h"
+#include "eeprom/core/book_accessor.hpp"
 #include "eeprom/core/dev_data.hpp"
+#include "eeprom/firmware/crc16.h"
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace usage_storage_task {
@@ -23,7 +25,7 @@ static constexpr uint16_t force_time_data_usage_len = 4;
 static constexpr uint16_t error_count_usage_len = 4;
 
 template <typename NUM_T>
-requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
+    requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
 [[nodiscard]] auto check_for_default_val(NUM_T val, size_t len = 0) -> NUM_T {
     // in most cases we want to use the compare to the actual max value,
     // but during the processing of GetUsageRequest the NUM_T is always uint64_t
@@ -48,8 +50,9 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         CanClient& can_client, EEPromClient& eeprom_client,
         eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
+          crc_mod(),
           usage_data_accessor{eeprom_client, *this, accessor_backing,
-                              tail_accessor} {}
+                              tail_accessor, crc_mod} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
@@ -188,14 +191,16 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     CanClient& can_client;
     eeprom::dev_data::DataBufferType<8> accessor_backing =
         eeprom::dev_data::DataBufferType<8>{};
-    eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor;
+    eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor_old;
+    eeprom::book_accessor::BookAccessor<EEPromClient, 8> usage_data_accessor;
+    eeprom::firmware::CRC16Accelerated crc_mod;
 };
 
 /**
  * The task entry point.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UsageStorageTask {
   public:
     using Messages = TaskMessage;
@@ -243,7 +248,7 @@ class UsageStorageTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_usage_storage_queue(m)};
+    { client.send_usage_storage_queue(m) };
 };
 
 }  // namespace usage_storage_task
