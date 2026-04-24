@@ -157,6 +157,7 @@ class BookAccessor
         auto dummy = std::array<uint8_t, 0>{};
         create_data_part(key, len, dummy);
     }
+
     template <std::size_t NUM_BYTES>
     void write_data(uint16_t key, uint16_t len, uint16_t offset,
                     std::array<uint8_t, NUM_BYTES>& data) {
@@ -189,8 +190,6 @@ class BookAccessor
             std::copy_n(page_data.begin(), page_data.size(),
                         write_buffer.begin());
 
-            // NOTE: action_cmd_m.action will be overwritten during read phase
-            // and reinstated by read_final. The true marker of whether we are
             this->action_cmd_m =
                 table_entry_action{.key = key,
                                    .offset = offset,
@@ -202,6 +201,7 @@ class BookAccessor
             get_data(key, len, offset, 0);
         }
     }
+
     template <std::size_t NUM_BYTES>
     void write_data(uint16_t key, uint16_t len,
                     std::array<uint8_t, NUM_BYTES>& data) {
@@ -238,6 +238,22 @@ class BookAccessor
                 .callback = table_action_callback,
                 .callback_param = this});
         }
+    }
+
+    void get_data(uint16_t key, uint16_t len, uint32_t message_index) {
+        get_data(key, len, 0, message_index);
+    }
+
+    void get_data(uint16_t key, uint32_t message_index) {
+        get_data(key, 0, 0, message_index);
+    }
+
+    auto data_part_exists(uint16_t key) -> bool {
+        if (table_ready()) {
+            return calculate_table_entry_start(key) <
+                   tail_accessor.get_data_tail();
+        }
+        return false;
     }
 
     auto read_write_ready() -> bool {
