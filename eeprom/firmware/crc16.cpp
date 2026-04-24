@@ -53,7 +53,7 @@ class CRC16Accelerated : public CRC16Base {
         hcrc.Instance = CRC;
         hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
         hcrc.Init.GeneratingPolynomial = 0b10001000000100001;
-        hcrc.Init.CRCLength = CRC_POLYLENGTH_12B;
+        hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
         hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
         hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
         hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
