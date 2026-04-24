@@ -1,11 +1,14 @@
 #pragma once
 
+#include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
 #include "eeprom/core/book_accessor.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/types.hpp"
+#include "eeprom/firmware/crc16.h"
+#include "types.hpp"
 
 namespace eeprom {
 namespace data_rev_task {
@@ -25,7 +28,7 @@ struct MigrateDataMessage {
 
 struct OTLibraryUpdateMessage {
     uint16_t data_rev;
-    std::vector<std::pair<types::address, types::data_length>> ot_library_table;
+    std::vector<std::pair<types::address, types::data_length>> data_table;
 };
 
 using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage,
@@ -38,6 +41,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
+          book_table_creator{eeprom_client, *this, accessor_backing,
+                             tail_accessor, crc_mod},
+          crc_mod(),
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client) {
         data_rev_accessor.start_read(0);
@@ -74,15 +80,23 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     void visit(MigrateDataMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
-            // set_ot_library_boundary(m);
-            //  TODO: Make an OTLibraryAccessor
+            for (const auto& i : m.data_table) {
+                // get data that was previously at key
+                table_creator.get_data(i.first, i.second);
 
-            /*for (const auto& i : m.data_table) {
-                // TODO: add a table_creator method to migrate data
-                // 1. get value here
-                // 2. move to same index in new_location
-            }*/
+                // copy data to temporary holding place
+                types::EepromData data_buff;
+                std::copy_n(accessor_backing.begin(), i.second,
+                            data_buff.begin());
 
+                // call book_accessor method to write data to new location in
+                // table
+                book_table_creator.create_data_part(i.first, i.second,
+                                                    data_buff);
+                while (!table_creator.table_ready()) {
+                    vTaskDelay(10);
+                }
+            }
             std::ignore = bit_utils::int_to_bytes(
                 m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);
@@ -90,37 +104,45 @@ class UpdateDataRevHandler : accessor::ReadListener {
         }
     }
 
-    void set_ot_library_boundary(MigrateDataMessage& m) {
-        // sort the data table to make sure keys are properly ordered
-        auto data_table_length = m.data_table.size();
-        std::sort(m.data_table.begin(), m.data_table.end());
-
-        // access final pair of data table and extract contents
-        std::pair<types::address, types::data_length> data_end =
-            m.data_table[data_table_length - 1];
-        types::address key = data_end.first;
-        types::data_length length = data_end.second;
-
-        // update the "tail" of ot_library (through ot_library_end address)
-        // to end of previous data
-        addresses::DataAddressWrapper::set_data_boundary(
-            table_creator.find_data_end(key, length), eeprom_client);
-    }
+    // method to set boundary of ot_library... not currently necessary, but may
+    // be useful in the future
+    //
+    // void set_ot_library_boundary(MigrateDataMessage&
+    // m) {
+    //     // sort the data table to make sure keys are properly ordered
+    //     auto data_table_length = m.data_table.size();
+    //     std::sort(m.data_table.begin(), m.data_table.end());
+    //
+    //     // access final pair of data table and extract contents
+    //     std::pair<types::address, types::data_length> data_end =
+    //         m.data_table[data_table_length - 1];
+    //     types::address key = data_end.first;
+    //     types::data_length length = data_end.second;
+    //
+    //     // update the "tail" of ot_library (through ot_library_end address)
+    //     // to end of previous data
+    //     addresses::DataAddressWrapper::set_data_boundary(
+    //         table_creator.find_data_end(key, length), eeprom_client);
+    // }
 
     void visit(const OTLibraryUpdateMessage& m) {
-        /*if (m.data_rev == current_data_rev + 1) {
-            for (const auto& i : m.ot_library_table) {
-                // create new table_creator method to handle the new file system
-                // TODO: add a table_creator method to add data in new format
+        if (m.data_rev == current_data_rev + 1) {
+            // set_ot_library_boundary(m);
+
+            for (const auto& i : m.data_table) {
+                // add the new data table entry
+                book_table_creator.create_data_part(i.first, i.second);
+                // wait for the table update to finish
+                while (!table_creator.table_ready()) {
+                    vTaskDelay(10);
+                }
             }
 
             std::ignore = bit_utils::int_to_bytes(
                 m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);
             current_data_rev = m.data_rev;
-        }*/
-        // placeholder for now
-        std::ignore = m;
+        }
     }
 
     void read_complete(uint32_t) final {
@@ -144,6 +166,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
     dev_data::DataBufferType<8> accessor_backing =
         dev_data::DataBufferType<8>{};
     dev_data::DevDataAccessor<EEPromClient> table_creator;
+    book_accessor::BookAccessor<EEPromClient, 8> book_table_creator;
+    eeprom::CRC16Accelerated crc_mod;
     data_revision::DataRevisionType data_rev_backing =
         data_revision::DataRevisionType{};
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;
@@ -154,7 +178,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;
