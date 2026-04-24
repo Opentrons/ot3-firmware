@@ -97,6 +97,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
                     vTaskDelay(10);
                 }
             }
+
             std::ignore = bit_utils::int_to_bytes(
                 m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);

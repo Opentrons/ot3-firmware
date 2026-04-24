@@ -50,7 +50,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         CanClient& can_client, EEPromClient& eeprom_client,
         eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
-          crc_mod(),
           usage_data_accessor{eeprom_client, *this, accessor_backing,
                               tail_accessor, crc_mod} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
@@ -191,9 +190,9 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     CanClient& can_client;
     eeprom::dev_data::DataBufferType<8> accessor_backing =
         eeprom::dev_data::DataBufferType<8>{};
-    eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor_old;
+    eeprom::CRC16Accelerated crc_mod{};
+    // eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor_old;
     eeprom::book_accessor::BookAccessor<EEPromClient, 8> usage_data_accessor;
-    eeprom::firmware::CRC16Accelerated crc_mod;
 };
 
 /**

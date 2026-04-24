@@ -35,6 +35,8 @@ class CRC16Base {
 
 class CRC16Accelerated : public CRC16Base {
   public:
+    ~CRC16Accelerated() override = default;
+
     /**
      * Initialize crc module.
      */
