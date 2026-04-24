@@ -164,7 +164,7 @@ class BookAccessor
             if (len > types::book_data_length) {
                 LOG("ERROR, trying to write %d bytes from a %lu byte buffer",
                     len, types::book_data_length);
-                len = data.size();
+                len = types::book_data_length;
             }
             LOG("Writing %d bytes to data partition", types::page_length);
 
@@ -330,8 +330,31 @@ class BookAccessor
                 .subspan(types::book_header_length + 1, returned_data_len);
 
         if (action_cmd_m.action == TableAction::READ) {
+            // handle counter wraparound
+            if (most_recent_index == 0 && most_recent_valid >= 65000) {
+                // re-sort to go from smallest to largest
+                std::sort(reads.begin(), reads.end());
+                // keep track of previous value to compute difference
+                uint16_t prev = reads[0];
+
+                for (auto& read : reads) {
+                    // check if previous read is close enough to current read to
+                    // be considered a wraparound
+                    if (read - prev <= 2) {
+                        prev = read;
+                    }
+                    // if not, then we have found the most recent value
+                    else {
+                        most_recent_valid = read;
+                        most_recent_index = &read - &reads[0];
+                        break;
+                    }
+                }
+            }
+
             std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
             bool crc_valid = false;
+
             while (!crc_valid) {
                 // This while loop will keep looping through pages read
                 // until it finds one whose written CRC matches the one
@@ -391,9 +414,9 @@ class BookAccessor
 
             message::EepromMessage write_msg;
 
-            // because all_reads contains 4 pages in the order they were read
-            // (00, 01, 11, 10), we can use the most_recent_valid variable to
-            // determine where to write the new data
+            // because all_reads contains 4 pages in the order they were
+            // read (00, 01, 11, 10), we can use the most_recent_valid
+            // variable to determine where to write the new data
             uint16_t read_00_offset = 0x0000;
             uint16_t read_01_offset = 0x0040;
             uint16_t read_10_offset = 0x0080;
@@ -407,8 +430,8 @@ class BookAccessor
 
             uint16_t page_address = current_book_address;
 
-            // NOTE: this logic will break once a location eventually wears out.
-            // It does not prevent writes to that location.
+            // NOTE: this logic will break once a location eventually wears
+            // out. It does not prevent writes to that location.
 
             if (least_recent == read_00) {
                 page_address |= static_cast<types::address>(read_00_offset);
@@ -428,6 +451,13 @@ class BookAccessor
                                                  write_iter + conf.addr_bytes);
             // copy new counter value into next 2 bytes of data
             uint16_t new_counter = reads[reads.size() - 1] + 1;
+            if (new_counter >= 65000) {
+                // reset counter to avoid overflow, this will cause some
+                // confusion in determining the most recent page, but it is
+                // necessary to avoid counter overflow which would cause
+                // even more confusion in determining the most recent page
+                new_counter = 0;
+            }
             write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
                                                  write_iter + conf.addr_bytes);
             write_msg.length = conf.addr_bytes;
@@ -510,12 +540,12 @@ class BookAccessor
                         write_iter + conf.addr_bytes);
                     this->eeprom_client.send_eeprom_queue(write);
 
-                    // After writing the table entry use the tail accessor to
-                    // update the tail
+                    // After writing the table entry use the tail accessor
+                    // to update the tail
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
-                    // If we passed data into the create write that data into
-                    // the memory
+                    // If we passed data into the create write that data
+                    // into the memory
                     if (do_initalize) {
                         this->write_at_offset(
                             this->type_data,
@@ -526,10 +556,10 @@ class BookAccessor
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
-                // NOTE: To avoid writing to much extra code, when writing the
-                // "data_len" gets received here (send from read_final) actually
-                // contains the new counter value to be applied to the page. NOT
-                // the length of the data to be written.
+                // NOTE: To avoid writing to much extra code, when writing
+                // the "data_len" gets received here (send from read_final)
+                // actually contains the new counter value to be applied to
+                // the page. NOT the length of the data to be written.
 
                 // copy counter value into bytes 2 and 3 of type_data
                 std::ignore =
