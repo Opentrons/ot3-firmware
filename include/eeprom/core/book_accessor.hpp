@@ -10,6 +10,7 @@
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "dev_data.hpp"
+#include "eeprom/firmware/crc16.h"
 #include "messages.hpp"
 #include "task.hpp"
 #include "types.hpp"
@@ -62,7 +63,8 @@ class BookAccessor
     explicit BookAccessor(
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
         DataBufferType<SIZE>& buffer,
-        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
+        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor,
+        eeprom::CRC16Base& crc16)
         : BookAccessorIntermediate(),
           accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
@@ -70,6 +72,7 @@ class BookAccessor
               accessor::AccessorBuffer(intermediate_buffer.begin(),
                                        intermediate_buffer.end())),
           tail_accessor(tail_accessor),
+          crc16(crc16),
           read_listener(read_listener),
           buffer(buffer) {
         eeprom_client.send_eeprom_queue(
@@ -137,6 +140,7 @@ class BookAccessor
     // fields, decide what they are
     // Add a tail accessor?
     dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor;
+    eeprom::CRC16Base& crc16;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
@@ -144,85 +148,14 @@ class BookAccessor
     DataBufferType<SIZE>& buffer;
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
-    // convert bitset to bytes
-    template <uint16_t numbits>
-    auto bitsettobytes(std::bitset<numbits> bits)
-        -> std::array<uint8_t, numbits / 8> {
-        std::array<uint8_t, numbits / 8> output{};
-
-        for (int i = 0; i < numbits; i++) {
-            uint8_t& cur = output[i / 8];
-
-            if (bits.test(i)) {
-                cur |= 1 << (i % 8);
-            }
-        }
-
-        return output;
-    }
-
-    // convert bytes to bitset
-    template <size_t numbytes>
-    auto bytestobitset(std::array<uint8_t, numbytes> data)
-        -> std::bitset<8 * numbytes> {
-        std::bitset<numbytes * 8> bits;
-
-        for (int i = 0; i < static_cast<int>(numbytes); ++i) {
-            uint8_t cur = data[i];
-            int offset = i * 8;
-
-            for (int bit = 1; bit <= 8; ++bit) {
-                auto mask = 1 << (8 - bit);
-                bool is_set = (cur & mask) != 0;
-
-                bits[offset + (8 - bit)] = is_set;
-            }
-        }
-
-        return bits;
-    }
-
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
         -> std::array<uint8_t, 2> {
-        // convert data array into a bitset, to make bit manipulation easier
-        auto data_bitset = bytestobitset<num_bytes>(data);
-        std::bitset<17> generator(0b10001000000100001);
-        constexpr uint16_t generator_position = 16;
+        uint16_t crc =
+            crc16.crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
+        std::array<uint8_t, 2> crc_byte{};
+        std::memcpy(crc_byte.data(), &crc, sizeof(crc));
 
-        // left shit data to accomadate crc
-        std::bitset<(num_bytes * 8) + static_cast<size_t>(generator_position)>
-            bit_data;
-        for (size_t i = 0; i < data_bitset.size(); i++) {
-            bit_data[i] = data_bitset[i];
-        }
-        bit_data <<= generator_position;
-        uint16_t data_position = bit_data.size() - 1;
-
-        while (data_position >= generator_position) {
-            if (!bit_data.test(data_position)) {
-                data_position--;
-                continue;
-            }
-
-            uint16_t difference = data_position - generator_position;
-            std::bitset<(num_bytes * 8) +
-                        static_cast<size_t>(generator_position)>
-                divisor(generator.to_ullong());
-            divisor <<= difference;
-            bit_data ^= divisor;
-            // data_position--;
-        }
-
-        // extract remainder from bit_data
-        std::bitset<16> crc;
-
-        for (int i = 15; i >= 0; i--) {
-            crc[i] = bit_data[i];
-        }
-
-        // convert crc bitset back into byte array
-        std::array<uint8_t, 2> crc_byte = bitsettobytes<16>(crc);
         return crc_byte;
     }
 
