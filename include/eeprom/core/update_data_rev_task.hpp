@@ -40,9 +40,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
-        : data_table_copy{},
-          received_data_buff{},
-          table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
+        : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
                              tail_accessor},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
@@ -81,56 +79,33 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     void visit(MigrateDataMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
-            printf("Starting migration");
-            migrating = true;
-            migrate_message = m;
-            data_table_copy = migrate_message.data_table;
+            for (const auto& i : m.data_table) {
+                // get data that was previously at key
+                table_creator.get_data(i.first, i.second);
 
-            // get data that was previously at key
-            migrate_message_helper();
-        }
-    }
+                // copy data to temporary holding place
+                types::EepromData data_buff;
+                std::copy_n(accessor_backing.begin(), i.second,
+                            data_buff.begin());
 
-    void migrate_message_helper() {
-        if (!data_table_copy.empty()) {
-            // remove the first item from data_table_copy
-            std::pair item = data_table_copy[0];
-
-            // create a new table entry at the same key
-            book_table_creator.create_data_part(item.first, item.second,
-                                                received_data_buff);
-        }
-
-        if (data_table_copy.size() > 1) {
-            // delete the first item from data_table_copy
-            data_table_copy.erase(data_table_copy.begin());
-
-            while (!table_creator.table_ready()) {
-                vTaskDelay(10);
+                // call book_accessor method to write data to new location in
+                // table
+                book_table_creator.create_data_part(i.first, i.second,
+                                                    data_buff);
+                while (!table_creator.table_ready()) {
+                    vTaskDelay(10);
+                }
             }
 
-            // reassign item to the new first item in data_table_copy (which is
-            // the second item from the original data_table_copy)
-            std::pair item = data_table_copy[0];
-
-            // call another read
-            // NOTE: this will trigger another call to this helper function, so
-            // it will keep getting called until data_table_copy is empty, at
-            // which point it will stop calling itself
-            table_creator.get_data(item.first, item.second);
-        }
-
-        else {
-            std::ignore = bit_utils::int_to_bytes(migrate_message.data_rev,
-                                                  data_rev_backing.begin(),
-                                                  data_rev_backing.end());
+            std::ignore = bit_utils::int_to_bytes(
+                m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
             data_rev_accessor.write(data_rev_backing, 0);
-
-            current_data_rev = migrate_message.data_rev;
+            current_data_rev = m.data_rev;
         }
     }
-    // method to set boundary of ot_library... not currently necessary, but
-    // may be useful in the future
+
+    // method to set boundary of ot_library... not currently necessary, but may
+    // be useful in the future
     //
     // void set_ot_library_boundary(MigrateDataMessage&
     // m) {
@@ -144,8 +119,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     //     types::address key = data_end.first;
     //     types::data_length length = data_end.second;
     //
-    //     // update the "tail" of ot_library (through ot_library_end
-    //     address)
+    //     // update the "tail" of ot_library (through ot_library_end address)
     //     // to end of previous data
     //     addresses::DataAddressWrapper::set_data_boundary(
     //         table_creator.find_data_end(key, length), eeprom_client);
@@ -172,9 +146,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void read_complete(uint32_t) final {
-        // test if data is set to 0xFFFF, some chips default to 0x0000 but
-        // this is fine since if it's set to that then it's already where we
-        // want it to be as a default
+        // test if data is set to 0xFFFF, some chips default to 0x0000 but this
+        // is fine since if it's set to that then it's already where we want it
+        // to be as a default
         auto delivery_state =
             std::vector<uint8_t>(addresses::data_revision_length, 0xFF);
         if (std::equal(delivery_state.begin(), delivery_state.end(),
@@ -183,29 +157,12 @@ class UpdateDataRevHandler : accessor::ReadListener {
             data_rev_accessor.write(data_rev_backing, 0);
         }
 
-        if (migrating) {
-            printf("Migrating data, accessor_backing: ");
-            for (const auto& byte : accessor_backing) {
-                printf("%02X ", byte);
-            }
-            printf("\n");
-            std::copy(accessor_backing.begin(), accessor_backing.end(),
-                      received_data_buff.begin());
-            migrate_message_helper();
-        }
-
         std::ignore = bit_utils::bytes_to_int(
             data_rev_backing.begin(), data_rev_backing.end(), current_data_rev);
         ready_for_new_message = true;
     }
-
     uint16_t current_data_rev = 0;
     bool ready_for_new_message = false;
-    MigrateDataMessage migrate_message = MigrateDataMessage{};
-    bool migrating = false;
-    std::vector<std::pair<types::address, types::data_length>> data_table_copy =
-        std::vector<std::pair<types::address, types::data_length>>{};
-    types::EepromData received_data_buff;
     dev_data::DataBufferType<8> accessor_backing =
         dev_data::DataBufferType<8>{};
     dev_data::DevDataAccessor<EEPromClient> table_creator;
