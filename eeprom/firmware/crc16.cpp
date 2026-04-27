@@ -18,7 +18,6 @@ void MX_CRC_Init(void) {
     hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
     hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
     hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
-
     if (HAL_CRC_Init(&hcrc) != HAL_OK) {
         Error_Handler();
     }
@@ -38,9 +37,9 @@ uint16_t CRC16Accelerated::crc16_accumulate(const uint8_t* data,
     return ~HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
 }
 
-void CRC16Accelerated::crc16_reset_accumulator() {
-    __HAL_CRC_DR_RESET(&hcrc);
-}  // class CRC16Accelerated : public CRC16Base {
+void CRC16Accelerated::crc16_reset_accumulator() { __HAL_CRC_DR_RESET(&hcrc); }
+
+// class CRC16Accelerated : public CRC16Base {
 //     /**
 //      * Handle to CRC module.
 //      */
