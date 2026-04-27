@@ -274,7 +274,6 @@ class BookAccessor
         read_final(message_index);
     }
 
-    // GET_DATA CONVENIENCE METHODS
   private:
     // fields, decide what they are
     // Add a tail accessor?
