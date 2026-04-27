@@ -50,7 +50,7 @@ static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 static auto usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto eeprom_data_rev_update_builder =
-    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::TaskMessage>{};
 
 /**
  * Start gantry tasks.
