@@ -46,15 +46,13 @@ class BookAccessor
     explicit BookAccessor(
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
         DataBufferType<BUFFER_SIZE>& buffer,
-        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor,
-        eeprom::CRC16Base& crc16)
+        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
         : accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
               eeprom_client, *this,
               accessor::AccessorBuffer(intermediate_buffer.begin(),
                                        intermediate_buffer.end())),
           tail_accessor(tail_accessor),
-          crc16(crc16),
           read_listener(read_listener),
           buffer(buffer) {
         eeprom_client.send_eeprom_queue(
@@ -281,7 +279,6 @@ class BookAccessor
     // fields, decide what they are
     // Add a tail accessor?
     dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor;
-    eeprom::CRC16Base& crc16;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
@@ -296,8 +293,7 @@ class BookAccessor
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
         -> std::array<uint8_t, 2> {
-        uint16_t crc =
-            crc16.crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
+        uint16_t crc = crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
         std::array<uint8_t, 2> crc_byte{};
         std::memcpy(crc_byte.data(), &crc, sizeof(crc));
 

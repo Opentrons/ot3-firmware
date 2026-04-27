@@ -42,8 +42,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
-                             tail_accessor, crc_mod},
-          crc_mod(),
+                             tail_accessor},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client) {
         data_rev_accessor.start_read(0);
@@ -168,7 +167,6 @@ class UpdateDataRevHandler : accessor::ReadListener {
         dev_data::DataBufferType<8>{};
     dev_data::DevDataAccessor<EEPromClient> table_creator;
     book_accessor::BookAccessor<EEPromClient, 8> book_table_creator;
-    eeprom::CRC16Accelerated crc_mod;
     data_revision::DataRevisionType data_rev_backing =
         data_revision::DataRevisionType{};
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;

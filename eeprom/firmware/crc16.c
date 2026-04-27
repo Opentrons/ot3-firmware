@@ -3,7 +3,6 @@
 #include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"
 
-namespace eeprom {
 
 static CRC_HandleTypeDef hcrc;
 
@@ -24,19 +23,20 @@ void MX_CRC_Init(void) {
 }
 
 // 3. Define the remaining member functions
-void CRC16Accelerated::crc16_init() { MX_CRC_Init(); }
+void crc16_init() {
+	MX_CRC_Init();
+}
 
-uint16_t CRC16Accelerated::crc16_compute(const uint8_t* data, uint8_t length) {
+uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     // Note: C-style cast to (uint32_t*) is often needed for HAL,
     // but ensure your data alignment is correct for the hardware!
     return ~HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
 }
 
-uint16_t CRC16Accelerated::crc16_accumulate(const uint8_t* data,
+uint16_t crc16_accumulate(const uint8_t* data,
                                             uint8_t length) {
     return ~HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
 }
 
-void CRC16Accelerated::crc16_reset_accumulator() { __HAL_CRC_DR_RESET(&hcrc); }
+void crc16_reset_accumulator() { __HAL_CRC_DR_RESET(&hcrc); }
 
-}  // namespace eeprom
