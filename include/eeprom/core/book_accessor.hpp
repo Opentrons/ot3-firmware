@@ -1,4 +1,7 @@
 #pragma once
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
@@ -10,10 +13,13 @@
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "dev_data.hpp"
-#include "eeprom/firmware/crc16.h"
 #include "messages.hpp"
 #include "task.hpp"
 #include "types.hpp"
+
+extern "C" {
+#include "eeprom/firmware/crc16.h"
+}
 
 namespace eeprom {
 namespace book_accessor {
@@ -61,9 +67,16 @@ class BookAccessor
 
     template <size_t NUM_BYTES>
     void create_data_part(uint16_t key, uint16_t len,
-                          std::array<uint8_t, NUM_BYTES>& data) {
-        // "page_data" is what will be written to the EEPROM. Just data with the
-        // header and some extra bytes afterwards to fill the page.
+                          std::array<uint8_t, NUM_BYTES>& data,
+                          bool migrating) {
+        action_cmd_m.action = TableAction::CREATE;
+
+        if (migrating) {
+            action_cmd_m.action = TableAction::MIGRATE;
+        }
+        // "page_data" is what will be written to the EEPROM. Just data
+        // with the header and some extra bytes afterwards to fill the
+        // page.
         std::array<uint8_t, types::page_length> page_data{0};
 
         if (!data.empty()) {
@@ -75,17 +88,25 @@ class BookAccessor
             uint16_t counter = 1;
             // move data to larger container
             std::array<uint8_t, types::book_data_length> data_container;
-            std::copy_n(data.begin(), data.size(), data_container.begin());
+            std::memcpy(data_container.data(), data.data(), data.size());
+            // std::copy_n(data.begin(), data.size(),
+            // data_container.begin());
             std::array<uint8_t, 2> crc = calc_crc(data_container);
 
             // make CRC the first two bytes of the page
-            std::copy_n(crc.begin(), 2, page_data.begin());
+            std::memcpy(page_data.data(), crc.data(), 2);
+            // std::copy_n(crc.begin(), 2, page_data.begin());
             // make Counter the next two bytes of the page
-            std::copy_n(reinterpret_cast<uint8_t*>(&counter), sizeof(counter),
-                        page_data.begin() + 2);
+            std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
+            // std::copy_n(reinterpret_cast<uint8_t*>(&counter),
+            // sizeof(counter),
+            //             page_data.begin() + 2);
             // make the data the rest of the page
-            std::copy_n(data_container.begin(), data_container.size(),
-                        page_data.begin() + types::book_header_length + 1);
+            std::memcpy(page_data.data() + types::book_header_length,
+                        data_container.data(), data.size());
+            // std::copy_n(data_container.begin(), data_container.size(),
+            //             page_data.begin() + types::book_header_length +
+            //             1);
         }
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
@@ -94,12 +115,12 @@ class BookAccessor
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
                 write.length = 2 * conf.addr_bytes;
-                // data pointers are offsets from the start of the data section
-                // of the eeprom, so we subtract ot_library_begin here to
-                // store the right value
+                // data pointers are offsets from the start of the data
+                // section of the eeprom, so we subtract ot_library_begin
+                // here to store the right value
 
-                // new in OT library, subtract from ot_library_end to cut off
-                // stale addresses
+                // new in OT library, subtract from ot_library_end to cut
+                // off stale addresses
                 types::address new_ptr = addresses::ot_library_end -
                                          types::page_length -
                                          addresses::ot_library_begin;
@@ -116,7 +137,9 @@ class BookAccessor
                     len, data_iter, data_iter + conf.addr_bytes);
                 this->eeprom_client.send_eeprom_queue(write);
 
-                tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+                if (!migrating) {
+                    tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+                }
 
                 if (!data.empty()) {
                     this->write_at_offset(
@@ -127,11 +150,12 @@ class BookAccessor
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
-                action_cmd_m.action = TableAction::CREATE;
                 if (!data.empty()) {
                     std::copy_n(page_data.begin(), page_data.size(),
-                                this->type_data.begin());
-                    action_cmd_m.action = TableAction::INITALIZE;
+                                write_buffer.begin());
+                    if (!migrating) {
+                        action_cmd_m.action = TableAction::INITALIZE;
+                    }
                 }
                 // call a read to the previous table entry so we know where
                 // to put the data
@@ -151,6 +175,12 @@ class BookAccessor
         }
     }
 
+    template <size_t NUM_BYTES>
+    void create_data_part(uint16_t key, uint16_t len,
+                          std::array<uint8_t, NUM_BYTES>& data) {
+        create_data_part(key, len, data, false);
+    }
+
     void create_data_part(uint16_t key, uint16_t len) {
         auto dummy = std::array<uint8_t, 0>{};
         create_data_part(key, len, dummy);
@@ -161,9 +191,10 @@ class BookAccessor
                     std::array<uint8_t, NUM_BYTES>& data) {
         if (read_write_ready()) {
             if (len > types::book_data_length) {
-                LOG("ERROR, trying to write %d bytes from a %lu byte buffer",
+                LOG("ERROR, trying to write %d bytes from a %lu byte "
+                    "buffer",
                     len, types::book_data_length);
-                len = data.size();
+                len = types::book_data_length;
             }
             LOG("Writing %d bytes to data partition", types::page_length);
 
@@ -182,9 +213,9 @@ class BookAccessor
             std::copy_n(data.begin(), data.size(),
                         page_data.begin() + types::book_header_length + 1);
 
-            // copy the data to our internal buffer (write_buffer is used as an
-            // internal buffer so it isn't overwritten by the read that we have
-            // to do to write)
+            // copy the data to our internal buffer (write_buffer is used as
+            // an internal buffer so it isn't overwritten by the read that
+            // we have to do to write)
             std::copy_n(page_data.begin(), page_data.size(),
                         write_buffer.begin());
 
@@ -195,7 +226,8 @@ class BookAccessor
                                    .action = TableAction::READ_BEFORE_WRITE};
             // call a read to the table entry so we know where
             // to put the data
-            // call get_data. call table action callback from inside read flow
+            // call get_data. call table action callback from inside read
+            // flow
             get_data(key, len, offset, 0);
         }
     }
@@ -292,9 +324,11 @@ class BookAccessor
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
         -> std::array<uint8_t, 2> {
-        uint16_t crc = crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
+        uint16_t crc =
+            crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
         std::array<uint8_t, 2> crc_byte{};
-        std::memcpy(crc_byte.data(), &crc, sizeof(crc));
+        std::copy_n(reinterpret_cast<uint8_t*>(&crc), 2, crc_byte.begin());
+        // std::memcpy(crc_byte.data(), &crc, sizeof(crc));
 
         return crc_byte;
     }
@@ -402,9 +436,9 @@ class BookAccessor
 
             message::EepromMessage write_msg;
 
-            // because all_reads contains 4 pages in the order they were read
-            // (00, 01, 11, 10), we can use the most_recent_valid variable to
-            // determine where to write the new data
+            // because all_reads contains 4 pages in the order they were
+            // read (00, 01, 11, 10), we can use the most_recent_valid
+            // variable to determine where to write the new data
             uint16_t read_00_offset = 0x0000;
             uint16_t read_01_offset = 0x0040;
             uint16_t read_10_offset = 0x0080;
@@ -418,8 +452,8 @@ class BookAccessor
 
             uint16_t page_address = current_book_address;
 
-            // NOTE: this logic will break once a location eventually wears out.
-            // It does not prevent writes to that location.
+            // NOTE: this logic will break once a location eventually wears
+            // out. It does not prevent writes to that location.
 
             if (least_recent == read_00) {
                 page_address |= static_cast<types::address>(read_00_offset);
@@ -493,7 +527,11 @@ class BookAccessor
         }
 
         bool do_initalize = false;
+        bool migrating = false;
         switch (action_cmd_m.action) {
+            case TableAction::MIGRATE:
+                migrating = true;
+                [[fallthrough]];
             case TableAction::INITALIZE:
                 do_initalize = true;
                 // don't break this is just an extension of create
@@ -510,26 +548,29 @@ class BookAccessor
                     write.memory_address = tail_accessor.get_data_tail();
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
+                    uint16_t new_addr = data_addr - (types::page_length * 4);
+                    new_addr &= 0xFF00;
                     write_iter = bit_utils::int_to_bytes(
-                        uint16_t(data_addr - (types::page_length * 4)) & 0xFF00,
-                        write_iter,
+                        new_addr, write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                        (write_iter + conf.addr_bytes));
+                        write_iter + conf.addr_bytes);
                     write_iter = bit_utils::int_to_bytes(
                         action_cmd_m.len, write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                         write_iter + conf.addr_bytes);
                     this->eeprom_client.send_eeprom_queue(write);
 
-                    // After writing the table entry use the tail accessor to
-                    // update the tail
-                    tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+                    // After writing the table entry use the tail accessor
+                    // to update the tail
+                    if (!migrating) {
+                        tail_accessor.increase_data_tail(2 * conf.addr_bytes);
+                    }
 
-                    // If we passed data into the create write that data into
-                    // the memory
+                    // If we passed data into the create write that data
+                    // into the memory
                     if (do_initalize) {
                         this->write_at_offset(
-                            this->type_data,
+                            write_buffer,
                             (data_addr - (types::page_length * 4)) & 0xFF00,
                             types::page_length, m.message_index);
                     }
@@ -537,12 +578,12 @@ class BookAccessor
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
-                // NOTE: To avoid writing to much extra code, when writing the
-                // "data_len" gets received here (send from read_final) actually
-                // contains the new counter value to be applied to the page. NOT
-                // the length of the data to be written.
+                // NOTE: To avoid writing to much extra code, when writing
+                // the "data_len" gets received here (send from read_final)
+                // actually contains the new counter value to be applied to
+                // the page. NOT the length of the data to be written.
 
-                // copy counter value into bytes 2 and 3 of type_data
+                // copy counter value into bytes 2 and 3 of write_buffer
                 std::ignore =
                     bit_utils::int_to_bytes(data_len, write_buffer.begin() + 2,
                                             write_buffer.begin() + 4);
@@ -574,3 +615,4 @@ class BookAccessor
 
 }  // namespace book_accessor
 }  // namespace eeprom
+#pragma GCC pop_options

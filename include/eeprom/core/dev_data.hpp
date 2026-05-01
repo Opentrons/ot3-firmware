@@ -14,7 +14,7 @@ template <std::size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
 using DataTailType = std::array<uint8_t, addresses::lookup_table_tail_length>;
 
-enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE };
+enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE, MIGRATE };
 
 struct table_entry_action {
     uint16_t key;
@@ -151,7 +151,9 @@ class DevDataTailAccessor
     types::address data_tail = 0;
     bool tail_updated{false};
     bool config_updated{false};
-    bool data_rev_finished{false};
+    // TODO: THIS IS A HACK FOR TESTING PURPOSES, REVERT BACK TO FALSE WHEN DONE
+    // WITH TESTING
+    bool data_rev_finished{true};
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     DataTailType data_to_add = DataTailType{};
 };
@@ -411,9 +413,12 @@ class DevDataAccessor
         }
         bool do_initalize = false;
         switch (action_cmd_m.action) {
-            // When we recive a message started from a create, the message will
-            // contain the table entry for the previous key, we need this data
-            // to assign the new key a storage location
+                // When we recive a message started from a create, the message
+                // will contain the table entry for the previous key, we need
+                // this data to assign the new key a storage location
+            case TableAction::MIGRATE:
+                // introduced for BookAccessor
+                [[fallthrough]];
             case TableAction::INITALIZE:
                 do_initalize = true;
                 // don't break this is just an extension of create

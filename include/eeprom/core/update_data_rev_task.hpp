@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
 #include "eeprom/core/book_accessor.hpp"
@@ -37,6 +40,9 @@ using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage,
 template <task::TaskClient EEPromClient>
 class UpdateDataRevHandler : accessor::ReadListener {
   public:
+    UpdateDataRevHandler(const UpdateDataRevHandler&) = delete;
+    UpdateDataRevHandler& operator=(const UpdateDataRevHandler&) = delete;
+
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
@@ -70,38 +76,60 @@ class UpdateDataRevHandler : accessor::ReadListener {
                     vTaskDelay(10);
                 }
             }
-            std::ignore = bit_utils::int_to_bytes(
-                m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
-            data_rev_accessor.write(data_rev_backing, 0);
-            current_data_rev = m.data_rev;
+            // std::ignore = bit_utils::int_to_bytes(
+            //     m.data_rev, data_rev_backing.begin(),
+            //     data_rev_backing.end());
+            // data_rev_accessor.write(data_rev_backing, 0);
+            // current_data_rev = m.data_rev;
         }
     }
 
     void visit(MigrateDataMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
-            for (const auto& i : m.data_table) {
-                // get data that was previously at key
-                table_creator.get_data(i.first, i.second);
+            migrating = true;
+            migrate_message = &m;
 
-                // copy data to temporary holding place
-                types::EepromData data_buff;
-                std::copy_n(accessor_backing.begin(), i.second,
-                            data_buff.begin());
+            // get data that was previously at key
+            table_creator.get_data(
+                migrate_message->data_table[migration_index].first,
+                migrate_message->data_table[migration_index].second, 0, 0);
+            // remove the first item from data_table_copy so that when the read
+            // completes and the helper function is called, it will know to
+            // migrate the data to the new table entry and then move on to the
+            // next item in the data table copy
+            // data_table_copy.erase(data_table_copy.begin());
 
-                // call book_accessor method to write data to new location in
-                // table
-                book_table_creator.create_data_part(i.first, i.second,
-                                                    data_buff);
-                while (!table_creator.table_ready()) {
-                    vTaskDelay(10);
-                }
-            }
-
-            std::ignore = bit_utils::int_to_bytes(
-                m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
-            data_rev_accessor.write(data_rev_backing, 0);
-            current_data_rev = m.data_rev;
+            // migrate_message_helper();
         }
+    }
+
+    void migrate_message_helper() {
+        if (!(migration_index < migrate_message->data_table.size())) {
+            // remove the first item from data table
+            std::pair item = migrate_message->data_table.at(migration_index);
+
+            // create a new table entry at the same key
+            book_table_creator.create_data_part(item.first, item.second,
+                                                accessor_backing, true);
+
+            // while (!table_creator.table_ready()) {
+            //     vTaskDelay(10);
+            // }
+
+            // reassign item to the next item in data table
+            migration_index++;
+            item = migrate_message->data_table[migration_index];
+
+            table_creator.get_data(item.first, item.second);
+        }
+        // else {
+        //     std::ignore = bit_utils::int_to_bytes(migrate_message.data_rev,
+        //                                           data_rev_backing.begin(),
+        //                                           data_rev_backing.end());
+        //     data_rev_accessor.write(data_rev_backing, 0);
+        //
+        //     current_data_rev = migrate_message.data_rev;
+        // }
     }
 
     // method to set boundary of ot_library... not currently necessary, but may
@@ -151,18 +179,24 @@ class UpdateDataRevHandler : accessor::ReadListener {
         // to be as a default
         auto delivery_state =
             std::vector<uint8_t>(addresses::data_revision_length, 0xFF);
-        if (std::equal(delivery_state.begin(), delivery_state.end(),
-                       data_rev_backing.begin())) {
-            data_rev_backing.fill(0x00);
-            data_rev_accessor.write(data_rev_backing, 0);
+        if (migrating) {
+            migrate_message_helper();
+        } else {
+            if (std::equal(delivery_state.begin(), delivery_state.end(),
+                           data_rev_backing.begin())) {
+                data_rev_backing.fill(0x00);
+                data_rev_accessor.write(data_rev_backing, 0);
+            }
         }
-
         std::ignore = bit_utils::bytes_to_int(
             data_rev_backing.begin(), data_rev_backing.end(), current_data_rev);
         ready_for_new_message = true;
     }
     uint16_t current_data_rev = 0;
     bool ready_for_new_message = false;
+    MigrateDataMessage* migrate_message = nullptr;
+    uint16_t migration_index = 0;
+    bool migrating = false;
     dev_data::DataBufferType<8> accessor_backing =
         dev_data::DataBufferType<8>{};
     dev_data::DevDataAccessor<EEPromClient> table_creator;
@@ -216,3 +250,4 @@ class UpdateDataRevTask {
 
 }  // namespace data_rev_task
 }  // namespace eeprom
+#pragma GCC pop_options
