@@ -19,6 +19,7 @@ using EepromData = std::array<uint8_t, max_data_length>;
 
 // in the OT-LIBRARY data_length can be up to 56
 // TODO update hard coded values in book_accessor
+// TODO: update this to a name that makes sense (page_data)
 constexpr data_length book_data_length = 56;
 constexpr data_length book_header_length = 8;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #pragma GCC push_options
 #pragma GCC optimize("O0")
 
@@ -62,6 +63,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
         return ready_for_new_message && table_creator.table_ready();
     }
 
+    auto busy_migrating() -> bool { return migrating; }
+
   private:
     void visit(std::monostate&) {}
 
@@ -84,15 +87,14 @@ class UpdateDataRevHandler : accessor::ReadListener {
         }
     }
 
-    void visit(MigrateDataMessage& m) {
+    void visit(const MigrateDataMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
             migrating = true;
-            migrate_message = &m;
+            key = m.data_table[migration_index].first;
+            length = m.data_table[migration_index].second;
 
             // get data that was previously at key
-            table_creator.get_data(
-                migrate_message->data_table[migration_index].first,
-                migrate_message->data_table[migration_index].second, 0, 0);
+            table_creator.get_data(key, length, 0);
             // remove the first item from data_table_copy so that when the read
             // completes and the helper function is called, it will know to
             // migrate the data to the new table entry and then move on to the
@@ -104,24 +106,15 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void migrate_message_helper() {
-        if (!(migration_index < migrate_message->data_table.size())) {
-            // remove the first item from data table
-            std::pair item = migrate_message->data_table.at(migration_index);
+        // create a new table entry at the same key
+        book_table_creator.create_data_part(key, length, accessor_backing,
+                                            true);
 
-            // create a new table entry at the same key
-            book_table_creator.create_data_part(item.first, item.second,
-                                                accessor_backing, true);
+        // while (!table_creator.table_ready()) {
+        //     vTaskDelay(10);
+        // }
 
-            // while (!table_creator.table_ready()) {
-            //     vTaskDelay(10);
-            // }
-
-            // reassign item to the next item in data table
-            migration_index++;
-            item = migrate_message->data_table[migration_index];
-
-            table_creator.get_data(item.first, item.second);
-        }
+        // reassign item to the next item in data table
         // else {
         //     std::ignore = bit_utils::int_to_bytes(migrate_message.data_rev,
         //                                           data_rev_backing.begin(),
@@ -194,9 +187,10 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
     uint16_t current_data_rev = 0;
     bool ready_for_new_message = false;
-    MigrateDataMessage* migrate_message = nullptr;
     uint16_t migration_index = 0;
     bool migrating = false;
+    uint16_t key = 0;
+    uint16_t length = 0;
     dev_data::DataBufferType<8> accessor_backing =
         dev_data::DataBufferType<8>{};
     dev_data::DevDataAccessor<EEPromClient> table_creator;
@@ -238,6 +232,11 @@ class UpdateDataRevTask {
             }
             handler.handle_message(i);
         }
+
+        while (handler.busy_migrating()) {
+            vTaskDelay(10);
+        }
+
         tail_accessor->finish_data_rev();
         vTaskDelete(nullptr);
     }

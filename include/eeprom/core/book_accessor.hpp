@@ -63,6 +63,7 @@ class BookAccessor
           buffer(buffer) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
+        crc16_init();
     }
 
     template <size_t NUM_BYTES>
@@ -121,12 +122,16 @@ class BookAccessor
 
                 // new in OT library, subtract from ot_library_end to cut
                 // off stale addresses
-                types::address new_ptr = addresses::ot_library_end -
-                                         types::page_length -
-                                         addresses::ot_library_begin;
+                types::address new_ptr =
+                    addresses::ot_library_end -
+                    (types::page_length * types::pages_per_book) -
+                    addresses::ot_library_begin;
 
                 // drop second byte (first byte is pre-aligned to 4 pages);
                 new_ptr &= 0xFF00;
+                // subtract a page to account fo the fact that the final page of
+                // the EEPROM is off-limits
+                new_ptr -= types::page_length;
 
                 auto* data_iter = write.data.begin();
                 data_iter = bit_utils::int_to_bytes(
@@ -145,7 +150,7 @@ class BookAccessor
                     this->write_at_offset(
                         accessor::AccessorBuffer(page_data.begin(),
                                                  page_data.end()),
-                        new_ptr, types::page_length, 0);
+                        new_ptr, new_ptr + types::page_length, 0);
                 }
             } else {
                 action_cmd_m.offset = 0;

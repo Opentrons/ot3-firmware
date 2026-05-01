@@ -3,29 +3,35 @@
 #include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"
 
-
 static CRC_HandleTypeDef hcrc;
 
 // 2. Define the static initialization method
 // Note: No 'static' keyword here!
 void MX_CRC_Init(void) {
     hcrc.Instance = CRC;
-    hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
-    hcrc.Init.GeneratingPolynomial = 0b10001000000100001;
-    hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
+    hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
     hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
     hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
     hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
     hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+    // hcrc.Instance = CRC;
+    // hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
+    // hcrc.Init.GeneratingPolynomial = 0b10001000000100001;
+    // hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
+    // hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+    // hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
+    // hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
+    // hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+    if (HAL_CRC_DeInit(&hcrc) != HAL_OK) {
+        Error_Handler();
+    }
     if (HAL_CRC_Init(&hcrc) != HAL_OK) {
         Error_Handler();
     }
 }
 
 // 3. Define the remaining member functions
-void crc16_init() {
-	MX_CRC_Init();
-}
+void crc16_init() { MX_CRC_Init(); }
 
 uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     // Note: C-style cast to (uint32_t*) is often needed for HAL,
@@ -33,10 +39,8 @@ uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     return ~HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
 }
 
-uint16_t crc16_accumulate(const uint8_t* data,
-                                            uint8_t length) {
+uint16_t crc16_accumulate(const uint8_t* data, uint8_t length) {
     return ~HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
 }
 
 void crc16_reset_accumulator() { __HAL_CRC_DR_RESET(&hcrc); }
-
