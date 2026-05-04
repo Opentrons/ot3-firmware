@@ -18,12 +18,15 @@ const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev2{
 
 const eeprom::data_rev_task::MigrateDataMessage data_table_rev3{
     .data_rev = 3,
-    .data_table = {std::make_pair(AXIS_DISTANCE_KEY,
-                                  usage_storage_task::distance_data_usage_len),
-                   std::make_pair(ERROR_COUNT_KEY,
+    .data_table = {std::make_pair(
+        AXIS_DISTANCE_KEY, usage_storage_task::distance_data_usage_len)}};
+
+const eeprom::data_rev_task::MigrateDataMessage data_table_rev4{
+    .data_rev = 4,
+    .data_table = {std::make_pair(ERROR_COUNT_KEY,
                                   usage_storage_task::error_count_usage_len)}};
 
 const std::vector<eeprom::data_rev_task::TaskMessage> table_updater = {
     // anytime there is an update to the data table add a message to this
     // vector with the new key/length pairs
-    data_table_rev1, data_table_rev2, data_table_rev3};
+    data_table_rev1, data_table_rev2, data_table_rev3, data_table_rev4};

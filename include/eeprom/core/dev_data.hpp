@@ -151,9 +151,7 @@ class DevDataTailAccessor
     types::address data_tail = 0;
     bool tail_updated{false};
     bool config_updated{false};
-    // TODO: THIS IS A HACK FOR TESTING PURPOSES, REVERT BACK TO FALSE WHEN DONE
-    // WITH TESTING
-    bool data_rev_finished{true};
+    bool data_rev_finished{false};
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     DataTailType data_to_add = DataTailType{};
 };
@@ -402,7 +400,6 @@ class DevDataAccessor
         types::address data_addr = 0;
         types::data_length data_len = 0;
 
-        // NOTE: HARDCODED FOR TESTING PURPOSES
         data_iter = bit_utils::bytes_to_int(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_addr);
@@ -413,8 +410,6 @@ class DevDataAccessor
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
-
-        data_addr = 0x3fd8;
 
         bool do_initalize = false;
         switch (action_cmd_m.action) {

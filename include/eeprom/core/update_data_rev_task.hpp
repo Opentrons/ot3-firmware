@@ -51,7 +51,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
           book_table_creator{eeprom_client, *this, accessor_backing,
                              tail_accessor},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
-          eeprom_client(eeprom_client) {
+          eeprom_client(eeprom_client),
+          tail_accessor(tail_accessor) {
         data_rev_accessor.start_read(0);
     }
 
@@ -79,29 +80,30 @@ class UpdateDataRevHandler : accessor::ReadListener {
                     vTaskDelay(10);
                 }
             }
-            // std::ignore = bit_utils::int_to_bytes(
-            //     m.data_rev, data_rev_backing.begin(),
-            //     data_rev_backing.end());
-            // data_rev_accessor.write(data_rev_backing, 0);
-            // current_data_rev = m.data_rev;
+            std::ignore = bit_utils::int_to_bytes(
+                m.data_rev, data_rev_backing.begin(), data_rev_backing.end());
+            data_rev_accessor.write(data_rev_backing, 0);
+            current_data_rev = m.data_rev;
         }
     }
 
     void visit(const MigrateDataMessage& m) {
+        // "finish data rev" before data rev is finished for migration to ensure
+        // that reads can properly occur
+        tail_accessor.finish_data_rev();
+
         if (m.data_rev == current_data_rev + 1) {
             migrating = true;
-            key = m.data_table[migration_index].first;
-            length = m.data_table[migration_index].second;
+            key = m.data_table[0].first;
+            length = m.data_table[0].second;
+            intermediate_data_rev = m.data_rev;
+
+            // reset the accessor backing to make sure it's empty for the next
+            // read
+            accessor_backing.fill(0);
 
             // get data that was previously at key
             table_creator.get_data(key, length, 0);
-            // remove the first item from data_table_copy so that when the read
-            // completes and the helper function is called, it will know to
-            // migrate the data to the new table entry and then move on to the
-            // next item in the data table copy
-            // data_table_copy.erase(data_table_copy.begin());
-
-            // migrate_message_helper();
         }
     }
 
@@ -114,15 +116,14 @@ class UpdateDataRevHandler : accessor::ReadListener {
         //     vTaskDelay(10);
         // }
 
+        current_data_rev = intermediate_data_rev;
+
         // reassign item to the next item in data table
-        // else {
-        //     std::ignore = bit_utils::int_to_bytes(migrate_message.data_rev,
-        //                                           data_rev_backing.begin(),
-        //                                           data_rev_backing.end());
-        //     data_rev_accessor.write(data_rev_backing, 0);
-        //
-        //     current_data_rev = migrate_message.data_rev;
-        // }
+        std::ignore = bit_utils::int_to_bytes(
+            current_data_rev, data_rev_backing.begin(), data_rev_backing.end());
+        data_rev_accessor.write(data_rev_backing, 0);
+
+        migrating = false;
     }
 
     // method to set boundary of ot_library... not currently necessary, but may
@@ -172,6 +173,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
         // to be as a default
         auto delivery_state =
             std::vector<uint8_t>(addresses::data_revision_length, 0xFF);
+        // read_complete gets called twice:
+        // 1. at the beginning to read the current data revision
+        // 2. during a migration read to read the data table for a key
         if (migrating) {
             migrate_message_helper();
         } else {
@@ -180,14 +184,15 @@ class UpdateDataRevHandler : accessor::ReadListener {
                 data_rev_backing.fill(0x00);
                 data_rev_accessor.write(data_rev_backing, 0);
             }
+            std::ignore = bit_utils::bytes_to_int(data_rev_backing.begin(),
+                                                  data_rev_backing.end(),
+                                                  current_data_rev);
         }
-        std::ignore = bit_utils::bytes_to_int(
-            data_rev_backing.begin(), data_rev_backing.end(), current_data_rev);
         ready_for_new_message = true;
     }
     uint16_t current_data_rev = 0;
+    uint16_t intermediate_data_rev = 0;
     bool ready_for_new_message = false;
-    uint16_t migration_index = 0;
     bool migrating = false;
     uint16_t key = 0;
     uint16_t length = 0;
@@ -199,6 +204,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
         data_revision::DataRevisionType{};
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;
     EEPromClient& eeprom_client;
+    dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor;
 };
 
 /**
@@ -230,11 +236,12 @@ class UpdateDataRevTask {
             while (!handler.ready()) {
                 vTaskDelay(10);
             }
-            handler.handle_message(i);
-        }
 
-        while (handler.busy_migrating()) {
-            vTaskDelay(10);
+            handler.handle_message(i);
+
+            while (handler.busy_migrating()) {
+                vTaskDelay(10);
+            }
         }
 
         tail_accessor->finish_data_rev();

@@ -79,6 +79,8 @@ class BookAccessor
         // with the header and some extra bytes afterwards to fill the
         // page.
         std::array<uint8_t, types::page_length> page_data{0};
+        std::array<uint8_t, (types::page_length * types::pages_per_book)>
+            book_data{0};
 
         if (!data.empty()) {
             if (data.size() > types::book_data_length) {
@@ -94,20 +96,15 @@ class BookAccessor
             // data_container.begin());
             std::array<uint8_t, 2> crc = calc_crc(data_container);
 
-            // make CRC the first two bytes of the page
+            // copy CRC, counter, and data to page_data
             std::memcpy(page_data.data(), crc.data(), 2);
-            // std::copy_n(crc.begin(), 2, page_data.begin());
-            // make Counter the next two bytes of the page
             std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
-            // std::copy_n(reinterpret_cast<uint8_t*>(&counter),
-            // sizeof(counter),
-            //             page_data.begin() + 2);
-            // make the data the rest of the page
             std::memcpy(page_data.data() + types::book_header_length,
                         data_container.data(), data.size());
-            // std::copy_n(data_container.begin(), data_container.size(),
-            //             page_data.begin() + types::book_header_length +
-            //             1);
+
+            // copy page_data to book_data (creating the full 4 pages of data to
+            // write)
+            std::memcpy(book_data.data(), page_data.data(), page_data.size());
         }
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
@@ -148,23 +145,23 @@ class BookAccessor
 
                 if (!data.empty()) {
                     this->write_at_offset(
-                        accessor::AccessorBuffer(page_data.begin(),
-                                                 page_data.end()),
-                        new_ptr, new_ptr + types::page_length, 0);
+                        accessor::AccessorBuffer(book_data.begin(),
+                                                 book_data.end()),
+                        new_ptr, new_ptr + (types::page_length * 4), 0);
                 }
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
                 if (!data.empty()) {
-                    std::copy_n(page_data.begin(), page_data.size(),
+                    std::copy_n(book_data.begin(), book_data.size(),
                                 write_buffer.begin());
                     if (!migrating) {
                         action_cmd_m.action = TableAction::INITALIZE;
+                        // call a read to the previous table entry so we know
+                        // where to put the data
+                        tail_accessor.start_update();
                     }
                 }
-                // call a read to the previous table entry so we know where
-                // to put the data
-                tail_accessor.start_update();
 
                 this->eeprom_client.send_eeprom_queue(
                     message::ReadEepromMessage{
@@ -322,7 +319,7 @@ class BookAccessor
     std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
     DataBufferType<BUFFER_SIZE>& buffer;
     types::address current_book_address = addresses::ot_library_begin;
-    std::array<uint8_t, types::page_length> write_buffer_internal{0};
+    std::array<uint8_t, (types::page_length * 4)> write_buffer_internal{0};
     accessor::AccessorBuffer write_buffer{write_buffer_internal.begin(),
                                           write_buffer_internal.end()};
 
@@ -550,11 +547,22 @@ class BookAccessor
                 } else {
                     // First write the new table entry
                     message::WriteEepromMessage write;
-                    write.memory_address = tail_accessor.get_data_tail();
+
+                    // if we're migrating we want to write the new table entry
+                    // to the same place as the old one, if we're not we want to
+                    // write it to the tail
+                    if (migrating) {
+                        write.memory_address =
+                            m.memory_address + (2 * conf.addr_bytes);
+                    } else {
+                        write.memory_address = tail_accessor.get_data_tail();
+                    }
+
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
                     uint16_t new_addr = data_addr - (types::page_length * 4);
                     new_addr &= 0xFF00;
+                    new_addr -= types::page_length;
                     write_iter = bit_utils::int_to_bytes(
                         new_addr, write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -574,10 +582,11 @@ class BookAccessor
                     // If we passed data into the create write that data
                     // into the memory
                     if (do_initalize) {
+                        // initialize all 4 pages at once
                         this->write_at_offset(
-                            write_buffer,
-                            (data_addr - (types::page_length * 4)) & 0xFF00,
-                            types::page_length, m.message_index);
+                            write_buffer, new_addr,
+                            new_addr + (types::page_length * 4),
+                            m.message_index);
                     }
                 }
                 break;

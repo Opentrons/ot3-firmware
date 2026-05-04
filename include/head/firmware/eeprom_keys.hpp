@@ -9,6 +9,9 @@ static constexpr uint16_t R_ERROR_COUNT_KEY = 3;
 
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev2;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev3;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev4;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev5;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev6;
 
-extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
-    table_updater;
+extern const std::vector<eeprom::data_rev_task::TaskMessage> table_updater;
