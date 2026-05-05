@@ -202,9 +202,15 @@ class BookAccessor
 
             // format data to page
             std::array<uint8_t, types::page_length> page_data{0};
+            std::array<uint8_t, types::book_data_length> data_container{0};
+
+            // copy data into data_container to make sure it's the right size
+            // for CRC caluclations
+            std::copy_n(data.begin(), len, data_container.begin());
+
             // counter will be updated in table_action_callback
             uint16_t counter = 0;
-            std::array<uint8_t, 2> crc = calc_crc(data);
+            std::array<uint8_t, 2> crc = calc_crc(data_container);
 
             // make CRC the first two bytes of the page
             std::copy_n(crc.begin(), 2, page_data.begin());
@@ -212,7 +218,7 @@ class BookAccessor
             std::copy_n(reinterpret_cast<uint8_t*>(&counter), sizeof(counter),
                         page_data.begin() + 2);
             // make the data the rest of the page
-            std::copy_n(data.begin(), data.size(),
+            std::copy_n(data_container.begin(), data_container.size(),
                         page_data.begin() + types::book_header_length + 1);
 
             // copy the data to our internal buffer (write_buffer is used as
@@ -326,9 +332,13 @@ class BookAccessor
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
         -> std::array<uint8_t, 2> {
-        uint16_t crc =
-            crc16_compute(data.cbegin(), static_cast<uint8_t>(num_bytes));
         std::array<uint8_t, 2> crc_byte{};
+        crc16_reset_accumulator();
+
+        // divide num_bytes by 4 because crc16_compute takes in number of 32 bit
+        // words, not number of bytes
+        uint16_t crc =
+            crc16_compute(data.begin(), static_cast<uint8_t>(num_bytes));
         std::copy_n(reinterpret_cast<uint8_t*>(&crc), 2, crc_byte.begin());
         // std::memcpy(crc_byte.data(), &crc, sizeof(crc));
 
