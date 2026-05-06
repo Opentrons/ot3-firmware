@@ -238,12 +238,12 @@ class EEPromMessageHandler {
             return;
         }
 
-        // auto token = id_map.add(m);
-        // if (!token) {
-        //     LOG("No space in the id map.");
-        //     // TODO (amit, 2022-05-04): Should we re-enqueue the message?
-        //     return;
-        // }
+        auto token = ot_id_map.add(m);
+        if (!token) {
+            LOG("No space in the id map.");
+            // TODO (amit, 2022-05-04): Should we re-enqueue the message?
+            return;
+        }
 
         // The transaction will write the memory address, then read the
         // data.
@@ -264,21 +264,21 @@ class EEPromMessageHandler {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
 
-        // auto transaction = i2c::messages::Transaction{
-        //     .message_index = m.message_index,
-        //     .address = hw_iface.get_eeprom_address(),
-        //     .bytes_to_read = m.length,
-        //     .bytes_to_write =
-        //         static_cast<std::size_t>(iter - write_buffer.begin()),
-        //     .write_buffer{write_buffer}};
-        // // The transaction identifier uses the token returned from id_map.add
-        // auto transaction_id =
-        //     i2c::messages::TransactionIdentifier{.token = token.value()};
+        auto transaction = i2c::messages::Transaction{
+            .message_index = m.message_index,
+            .address = hw_iface.get_eeprom_address(),
+            .bytes_to_read = m.length,
+            .bytes_to_write =
+                static_cast<std::size_t>(iter - write_buffer.begin()),
+            .write_buffer{write_buffer}};
+        // The transaction identifier uses the token returned from ot_id_map.add
+        auto transaction_id =
+            i2c::messages::TransactionIdentifier{.token = token.value()};
 
-        // if (!writer.transact(transaction, transaction_id, own_queue)) {
-        //     // The writer cannot accept this message. Remove it from the
-        //     id_map. id_map.remove(token.value());
-        // }
+        if (!writer.transact(transaction, transaction_id, own_queue)) {
+            // The writer cannot accept this message. Remove it from the id_map.
+            ot_id_map.remove(token.value());
+        }
     }
 
     void visit(message::ConfigRequestMessage &m) {
@@ -292,8 +292,11 @@ class EEPromMessageHandler {
 
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
+    // TODO: combine into one map with a variant for the message type
     i2c::transaction::IdMap<message::ReadEepromMessage, MAX_INFLIGHT_READS>
         id_map{};
+    i2c::transaction::IdMap<message::OTLibraryReadMessage, MAX_INFLIGHT_READS>
+        ot_id_map{};
     hardware_iface::EEPromHardwareIface &hw_iface;
 };
 
@@ -301,7 +304,7 @@ class EEPromMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
   public:
     using Messages = TaskMessage;
@@ -339,7 +342,7 @@ class EEPromTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage &m) {
-    {client.send_eeprom_queue(m)};
+    { client.send_eeprom_queue(m) };
 };
 
 }  // namespace task

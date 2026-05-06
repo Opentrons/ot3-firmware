@@ -78,7 +78,7 @@ class BookAccessor
         // "page_data" is what will be written to the EEPROM. Just data
         // with the header and some extra bytes afterwards to fill the
         // page.
-        std::array<uint8_t, (types::page_length * 4)> page_data{0};
+        std::array<uint8_t, types::page_length> page_data{0};
 
         if (!data.empty()) {
             if (data.size() > types::book_data_length) {
@@ -137,11 +137,31 @@ class BookAccessor
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                 }
 
+                // create empty page for use in initilazation
+
                 if (!data.empty()) {
                     this->write_at_offset(
                         accessor::AccessorBuffer(page_data.begin(),
                                                  page_data.end()),
-                        new_ptr, new_ptr + (types::page_length * 4), 0);
+                        new_ptr, new_ptr + types::page_length, 0);
+                    // write 3 empty pages after the data
+                    for (size_t i = 1; i < types::pages_per_book; i++) {
+                        this->write_at_offset(
+                            accessor::AccessorBuffer(empty_page.begin(),
+                                                     empty_page.end()),
+                            new_ptr + (i * types::page_length),
+                            new_ptr + ((i + 1) * types::page_length), 0);
+                    }
+                } else {
+                    for (size_t i = 0; i < types::pages_per_book; i++) {
+                        // if there is no data, just write empty pages for the
+                        // whole book
+                        this->write_at_offset(
+                            accessor::AccessorBuffer(empty_page.begin(),
+                                                     empty_page.end()),
+                            new_ptr + (i * types::page_length),
+                            new_ptr + ((i + 1) * types::page_length), 0);
+                    }
                 }
             } else {
                 action_cmd_m.offset = 0;
@@ -322,6 +342,11 @@ class BookAccessor
     std::array<uint8_t, (types::page_length * 4)> write_buffer_internal{0};
     accessor::AccessorBuffer write_buffer{write_buffer_internal.begin(),
                                           write_buffer_internal.end()};
+    // empty page to write when we need to write an empty page (for
+    // initalization or to fill empty pages after data). This is just to avoid
+    // having to create a new empty page array every time we need to write an
+    // empty page
+    std::array<uint8_t, types::page_length> empty_page{0};
 
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data)
@@ -566,6 +591,8 @@ class BookAccessor
                     auto* write_iter = write.data.begin();
                     uint16_t new_addr = data_addr - (types::page_length * 4);
                     new_addr &= 0xFF00;
+                    // subtract a page to account for the fact that the final
+                    // page of the EEPROM is off-limits
                     new_addr -= types::page_length;
                     write_iter = bit_utils::int_to_bytes(
                         new_addr, write_iter,
@@ -586,20 +613,39 @@ class BookAccessor
                     // If we passed data into the create write that data
                     // into the memory
                     if (do_initalize) {
-                        // initialize all 4 pages at once
-                        this->write_at_offset(
-                            write_buffer, new_addr,
-                            new_addr + (types::page_length * 4),
-                            m.message_index);
+                        // initialize the first page
+                        this->write_at_offset(write_buffer, new_addr,
+                                              new_addr + types::page_length,
+                                              m.message_index);
+
+                        // initialize the 3 pages after the data page to be
+                        // empty (all 0s)
+                        for (size_t i = 1; i < types::pages_per_book; i++) {
+                            this->write_at_offset(
+                                accessor::AccessorBuffer(empty_page.begin(),
+                                                         empty_page.end()),
+                                new_addr + (i * types::page_length),
+                                new_addr + ((i + 1) * types::page_length), 0);
+                        }
+                    } else {
+                        // initialize all 4 pages to be empty (all 0s)
+                        for (size_t i = 0; i < types::pages_per_book; i++) {
+                            this->write_at_offset(
+                                accessor::AccessorBuffer(empty_page.begin(),
+                                                         empty_page.end()),
+                                new_addr + (i * types::page_length),
+                                new_addr + ((i + 1) * types::page_length), 0);
+                        }
                     }
                 }
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
-                // NOTE: To avoid writing to much extra code, when writing
-                // the "data_len" gets received here (send from read_final)
-                // actually contains the new counter value to be applied to
-                // the page. NOT the length of the data to be written.
+                // NOTE: To avoid writing to much extra code, when
+                // writing the "data_len" gets received here (send from
+                // read_final) actually contains the new counter value
+                // to be applied to the page. NOT the length of the data
+                // to be written.
 
                 // copy counter value into bytes 2 and 3 of write_buffer
                 std::ignore =
