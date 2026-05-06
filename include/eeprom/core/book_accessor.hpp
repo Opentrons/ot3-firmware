@@ -345,12 +345,17 @@ class BookAccessor
                     }
                     // if not, then we have found the most recent value
                     else {
-                        most_recent_valid = read;
-                        most_recent_index = &read - &reads[0];
+                        uint16_t index = &prev - &reads[0];
+                        // re-arrange reads so most recent value is first
+                        std::rotate(reads.begin(), reads.begin() + index,
+                                    reads.end());
                         break;
                     }
                 }
             }
+            // set most recent index and most recent valid again
+            most_recent_index = 0;
+            most_recent_valid = reads[most_recent_index];
 
             std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
             bool crc_valid = false;
