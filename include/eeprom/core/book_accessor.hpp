@@ -318,7 +318,6 @@ class BookAccessor
         std::memcpy(&read_11, &all_reads[3][2], sizeof(read_10));
 
         // find maximum value
-        // TODO implement counter wraparound
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
         uint16_t most_recent_index = 0;
         uint16_t most_recent_valid = reads[most_recent_index];
@@ -329,35 +328,35 @@ class BookAccessor
             std::span(all_reads[0])
                 .subspan(types::book_header_length + 1, returned_data_len);
 
-        if (action_cmd_m.action == TableAction::READ) {
-            // handle counter wraparound
-            if (most_recent_index == 0 && most_recent_valid >= 65000) {
-                // re-sort to go from smallest to largest
-                std::sort(reads.begin(), reads.end());
-                // keep track of previous value to compute difference
-                uint16_t prev = reads[0];
+        // sort reads from largest to smallest
+        std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
 
-                for (auto& read : reads) {
-                    // check if previous read is close enough to current read to
-                    // be considered a wraparound
-                    if (read - prev <= 2) {
-                        prev = read;
-                    }
-                    // if not, then we have found the most recent value
-                    else {
-                        uint16_t index = &prev - &reads[0];
-                        // re-arrange reads so most recent value is first
-                        std::rotate(reads.begin(), reads.begin() + index,
-                                    reads.end());
-                        break;
-                    }
+        // handle counter wraparound
+        if (most_recent_index == 0 && most_recent_valid >= 65000) {
+            // keep track of previous value to compute difference
+            uint16_t prev = reads[0];
+
+            for (auto& read : reads) {
+                // check if previous read is close enough to current read to
+                // be a non-wraparound value
+                if (prev - read <= 1) {
+                    prev = read;
+                }
+                // if not, then we have found the most recent value
+                else {
+                    uint16_t index = &read - &reads[0];
+                    // re-arrange reads so most recent value is first
+                    std::rotate(reads.begin(), reads.begin() + index,
+                                reads.end());
+                    break;
                 }
             }
+        }
+        if (action_cmd_m.action == TableAction::READ) {
             // set most recent index and most recent valid again
             most_recent_index = 0;
             most_recent_valid = reads[most_recent_index];
 
-            std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
             bool crc_valid = false;
 
             while (!crc_valid) {
@@ -427,11 +426,10 @@ class BookAccessor
             uint16_t read_10_offset = 0x0080;
             uint16_t read_11_offset = 0x00C0;
 
-            // reverse reads list, so we write to the page that was read the
-            // longest time ago
-            std::sort(reads.begin(), reads.end());
-
-            uint16_t least_recent = reads[0];
+            // because of the wraparound counter logic, we can be assured that
+            // the last page is the least recently written page, so we can use
+            // that to determine where to write the new data
+            uint16_t least_recent = reads[reads.size() - 1];
 
             uint16_t page_address = current_book_address;
 
@@ -455,12 +453,11 @@ class BookAccessor
             write_iter = bit_utils::int_to_bytes(page_address, write_iter,
                                                  write_iter + conf.addr_bytes);
             // copy new counter value into next 2 bytes of data
-            uint16_t new_counter = reads[reads.size() - 1] + 1;
+            uint16_t new_counter = reads[0] + 1;
             if (new_counter >= 65000) {
                 // reset counter to avoid overflow, this will cause some
                 // confusion in determining the most recent page, but it is
-                // necessary to avoid counter overflow which would cause
-                // even more confusion in determining the most recent page
+                // necessary to avoid counter overflow
                 new_counter = 0;
             }
             write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
