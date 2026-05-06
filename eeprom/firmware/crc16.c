@@ -7,12 +7,6 @@ static CRC_HandleTypeDef hcrc;
 
 void MX_CRC_Init(void) {
     __HAL_RCC_CRC_CLK_ENABLE();
-    // hcrc.Instance = CRC;
-    // hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
-    // hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
-    // hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
-    // hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
-    // hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
     hcrc.Instance = CRC;
     hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
     hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;

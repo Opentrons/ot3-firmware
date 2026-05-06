@@ -78,9 +78,7 @@ class BookAccessor
         // "page_data" is what will be written to the EEPROM. Just data
         // with the header and some extra bytes afterwards to fill the
         // page.
-        std::array<uint8_t, types::page_length> page_data{0};
-        std::array<uint8_t, (types::page_length * types::pages_per_book)>
-            book_data{0};
+        std::array<uint8_t, (types::page_length * 4)> page_data{0};
 
         if (!data.empty()) {
             if (data.size() > types::book_data_length) {
@@ -101,10 +99,6 @@ class BookAccessor
             std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
             std::memcpy(page_data.data() + types::book_header_length,
                         data_container.data(), data.size());
-
-            // copy page_data to book_data (creating the full 4 pages of data to
-            // write)
-            std::memcpy(book_data.data(), page_data.data(), page_data.size());
         }
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
@@ -145,15 +139,15 @@ class BookAccessor
 
                 if (!data.empty()) {
                     this->write_at_offset(
-                        accessor::AccessorBuffer(book_data.begin(),
-                                                 book_data.end()),
+                        accessor::AccessorBuffer(page_data.begin(),
+                                                 page_data.end()),
                         new_ptr, new_ptr + (types::page_length * 4), 0);
                 }
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
                 if (!data.empty()) {
-                    std::copy_n(book_data.begin(), book_data.size(),
+                    std::copy_n(page_data.begin(), page_data.size(),
                                 write_buffer.begin());
                     if (!migrating) {
                         action_cmd_m.action = TableAction::INITALIZE;
