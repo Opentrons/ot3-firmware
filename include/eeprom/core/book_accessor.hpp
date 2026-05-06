@@ -394,7 +394,6 @@ class BookAccessor
         std::memcpy(&read_11, &all_reads[3][2], sizeof(read_10));
 
         // find maximum value
-        // TODO implement counter wraparound
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
         uint16_t most_recent_index = 0;
         uint16_t most_recent_valid = reads[most_recent_index];
