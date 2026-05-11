@@ -190,7 +190,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     CanClient& can_client;
     eeprom::dev_data::DataBufferType<8> accessor_backing =
         eeprom::dev_data::DataBufferType<8>{};
-    // eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor_old;
     eeprom::book_accessor::BookAccessor<EEPromClient, 8> usage_data_accessor;
 };
 

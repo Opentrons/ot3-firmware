@@ -144,14 +144,34 @@ class BookAccessor
                         accessor::AccessorBuffer(page_data.begin(),
                                                  page_data.end()),
                         new_ptr, new_ptr + types::page_length, 0);
+
+                    // this->write_at_offset(
+                    //     accessor::AccessorBuffer(page_data.begin(),
+                    //                              page_data.end()),
+                    //     new_ptr + types::page_length,
+                    //     new_ptr + (2 * types::page_length), 0);
+                    //
+                    // this->write_at_offset(
+                    //     accessor::AccessorBuffer(page_data.begin(),
+                    //                              page_data.end()),
+                    //     new_ptr + (2 * types::page_length),
+                    //     new_ptr + (3 * types::page_length), 0);
+                    //
+                    // this->write_at_offset(
+                    //     accessor::AccessorBuffer(page_data.begin(),
+                    //                              page_data.end()),
+                    //     new_ptr + (3 * types::page_length),
+                    //     new_ptr + (4 * types::page_length), 0);
+                    //
                     // write 3 empty pages after the data
-                    for (size_t i = 1; i < types::pages_per_book; i++) {
-                        this->write_at_offset(
-                            accessor::AccessorBuffer(empty_page.begin(),
-                                                     empty_page.end()),
-                            new_ptr + (i * types::page_length),
-                            new_ptr + ((i + 1) * types::page_length), 0);
-                    }
+                    // for (size_t i = 1; i < types::pages_per_book; i++) {
+                    //     vTaskDelay(1000);
+                    //     this->write_at_offset(
+                    //         accessor::AccessorBuffer(empty_page.begin(),
+                    //                                  empty_page.end()),
+                    //         new_ptr + (i * types::page_length),
+                    //         new_ptr + ((i + 1) * types::page_length), 0);
+                    // }
                 } else {
                     for (size_t i = 0; i < types::pages_per_book; i++) {
                         // if there is no data, just write empty pages for the
@@ -404,6 +424,14 @@ class BookAccessor
             std::span(all_reads[0])
                 .subspan(types::book_header_length + 1, returned_data_len);
 
+        // NOTE: testing
+        // zero out base cases
+        for (auto& read : reads) {
+            if (read == 0xFF) {
+                read = 0;
+            }
+        }
+
         // sort reads from largest to smallest
         std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
 
@@ -509,8 +537,8 @@ class BookAccessor
 
             uint16_t page_address = current_book_address;
 
-            // NOTE: this logic will break once a location eventually wears
-            // out. It does not prevent writes to that location.
+            // NOTE: this logic will break once a location eventually wears out.
+            // It does not prevent writes to that location.
 
             if (least_recent == read_00) {
                 page_address |= static_cast<types::address>(read_00_offset);
@@ -652,24 +680,26 @@ class BookAccessor
 
                         // initialize the 3 pages after the data page to be
                         // empty (all 0s)
-                        for (size_t i = 1; i < types::pages_per_book; i++) {
-                            this->write_at_offset(
-                                accessor::AccessorBuffer(empty_page.begin(),
-                                                         empty_page.end()),
-                                new_addr + (i * types::page_length),
-                                new_addr + ((i + 1) * types::page_length), 0);
-                        }
-                    } else {
-                        // initialize all 4 pages to be empty (all 0s)
-                        for (size_t i = 0; i < types::pages_per_book; i++) {
-                            this->write_at_offset(
-                                accessor::AccessorBuffer(empty_page.begin(),
-                                                         empty_page.end()),
-                                new_addr + (i * types::page_length),
-                                new_addr + ((i + 1) * types::page_length), 0);
-                        }
+                        // for (size_t i = 1; i < types::pages_per_book; i++) {
+                        //     this->write_at_offset(
+                        //         accessor::AccessorBuffer(empty_page.begin(),
+                        //                                  empty_page.end()),
+                        //         new_addr + (i * types::page_length),
+                        //         new_addr + ((i + 1) * types::page_length),
+                        //         0);
                     }
                 }
+                // else {
+                //     // initialize all 4 pages to be empty (all 0s)
+                //     for (size_t i = 0; i < types::pages_per_book; i++) {
+                //         this->write_at_offset(
+                //             accessor::AccessorBuffer(empty_page.begin(),
+                //                                      empty_page.end()),
+                //             new_addr + (i * types::page_length),
+                //             new_addr + ((i + 1) * types::page_length), 0);
+                //     }
+                // }
+                //}
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;

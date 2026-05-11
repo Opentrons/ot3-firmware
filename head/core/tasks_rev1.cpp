@@ -269,7 +269,23 @@ void head_tasks::MotorQueueClient::send_move_status_reporter_queue(
 void head_tasks::HeadQueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
 #if PCBA_PRIMARY_REVISION != 'b'
+    // auto sent = false;
+    // while (!sent) {
+    //     // wait for 10 ticks, then try sending
+    //     vTaskDelay(10);
+    //     sent = eeprom_queue->try_write(m);
+    //
+    //     // if send fails, wait and try again
+    // }
+    // while (!sent) {
+    //     sent = eeprom_queue->try_write(m);
+    //     if (!sent) {
+    //         vTaskDelay(10);
+    //     }
+    // }
+
     eeprom_queue->try_write(m);
+
 #else
     std::ignore = m;
 #endif

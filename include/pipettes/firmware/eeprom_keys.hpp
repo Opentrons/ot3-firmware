@@ -24,10 +24,28 @@ extern const eeprom::data_rev_task::DataTableUpdateMessage
     data_table_rev3_sing_mult;
 extern const eeprom::data_rev_task::DataTableUpdateMessage
     data_table_rev4_sing_mult;
+extern const eeprom::data_rev_task::MigrateDataMessage
+    data_table_rev5_sing_mult;
+extern const eeprom::data_rev_task::MigrateDataMessage
+    data_table_rev6_sing_mult;
+extern const eeprom::data_rev_task::MigrateDataMessage
+    data_table_rev7_sing_mult;
+extern const eeprom::data_rev_task::MigrateDataMessage
+    data_table_rev8_sing_mult;
+extern const eeprom::data_rev_task::MigrateDataMessage
+    data_table_rev_dud_sing_mult;  // dummy message to make sure we don't try to
+                                   // migrate when we shouldn't for single/mult
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1_96ch;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev2_96ch;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev3_96ch;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev4_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev5_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev6_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev7_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev8_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev9_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev10_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev11_96ch;
+extern const eeprom::data_rev_task::MigrateDataMessage data_table_rev12_96ch;
 
-extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
-    table_updater;
+extern const std::vector<eeprom::data_rev_task::TaskMessage> table_updater;
