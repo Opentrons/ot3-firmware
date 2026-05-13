@@ -206,7 +206,7 @@ class EEPromAccessor {
   private:
     /**
      * Handle a completed read.
-     * @param msg The message
+printf "STOPPED AT BREAKPOINT 2\n"     * @param msg The message
      */
     void callback(const eeprom::message::EepromMessage& msg) {
         // TODO (ryan 07-18-22) handle errors in response
@@ -215,7 +215,12 @@ class EEPromAccessor {
             (type_data.begin() + (msg.memory_address - begin_read_addr));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
-        if (bytes_recieved == bytes_to_read) {
+        // NOTE: tentative switch to >= from == in case we get back more data
+        // than we expected, we don't want to wait for a read complete that will
+        // never come. Changed for testing purposes, may want to change back if
+        // we want to be strict about only accepting the expected amount of
+        // data.
+        if (bytes_recieved >= bytes_to_read) {
             read_listener.read_complete(msg.message_index);
         }
     }
@@ -229,7 +234,12 @@ class EEPromAccessor {
                     (type_data.begin() + (m.memory_address - begin_read_addr));
                 std::copy_n(m.data.cbegin(), m.length, buffer_ptr);
                 bytes_recieved += m.length;
-                if (bytes_recieved == bytes_to_read) {
+                // NOTE: tentative switch to >= from == in case we get back more
+                // data than we expected, we don't want to wait for a read
+                // complete that will never come. Changed for testing purposes,
+                // may want to change back if we want to be strict about only
+                // accepting the expected amount of data.
+                if (bytes_recieved >= bytes_to_read) {
                     read_listener.read_complete(m.message_index);
                 }
             },
