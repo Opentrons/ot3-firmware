@@ -53,7 +53,8 @@ class BookAccessor
     explicit BookAccessor(
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
         DataBufferType<BUFFER_SIZE>& buffer,
-        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
+        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor,
+        std::array<std::array<uint8_t, types::page_length>, 4>& all_reads)
         : accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
               eeprom_client, *this,
@@ -61,10 +62,16 @@ class BookAccessor
                                        intermediate_buffer.end())),
           tail_accessor(tail_accessor),
           read_listener(read_listener),
-          buffer(buffer) {
+          buffer(buffer),
+          all_reads(all_reads) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
         crc16_init();
+        for (auto& read : all_reads) {
+            read.fill(0x00);
+        }
+
+        write_buffer_internal.fill(0x00);
     }
 
     template <size_t NUM_BYTES>
@@ -79,7 +86,8 @@ class BookAccessor
         // "page_data" is what will be written to the EEPROM. Just data
         // with the header and some extra bytes afterwards to fill the
         // page.
-        std::array<uint8_t, types::page_length> page_data{0};
+        std::array<uint8_t, types::page_length> page_data{};
+        page_data.fill(0x00);
 
         if (!data.empty()) {
             if (data.size() > types::page_data) {
@@ -145,44 +153,6 @@ class BookAccessor
                         accessor::AccessorBuffer(page_data.begin(),
                                                  page_data.end()),
                         new_ptr, new_ptr + types::page_length, 0);
-
-                    // this->write_at_offset(
-                    //     accessor::AccessorBuffer(page_data.begin(),
-                    //                              page_data.end()),
-                    //     new_ptr + types::page_length,
-                    //     new_ptr + (2 * types::page_length), 0);
-                    //
-                    // this->write_at_offset(
-                    //     accessor::AccessorBuffer(page_data.begin(),
-                    //                              page_data.end()),
-                    //     new_ptr + (2 * types::page_length),
-                    //     new_ptr + (3 * types::page_length), 0);
-                    //
-                    // this->write_at_offset(
-                    //     accessor::AccessorBuffer(page_data.begin(),
-                    //                              page_data.end()),
-                    //     new_ptr + (3 * types::page_length),
-                    //     new_ptr + (4 * types::page_length), 0);
-                    //
-                    // write 3 empty pages after the data
-                    // for (size_t i = 1; i < types::pages_per_book; i++) {
-                    //     vTaskDelay(1000);
-                    //     this->write_at_offset(
-                    //         accessor::AccessorBuffer(empty_page.begin(),
-                    //                                  empty_page.end()),
-                    //         new_ptr + (i * types::page_length),
-                    //         new_ptr + ((i + 1) * types::page_length), 0);
-                    // }
-                } else {
-                    for (size_t i = 0; i < types::pages_per_book; i++) {
-                        // if there is no data, just write empty pages for the
-                        // whole book
-                        this->write_at_offset(
-                            accessor::AccessorBuffer(empty_page.begin(),
-                                                     empty_page.end()),
-                            new_ptr + (i * types::page_length),
-                            new_ptr + ((i + 1) * types::page_length), 0);
-                    }
                 }
             } else {
                 action_cmd_m.offset = 0;
@@ -236,8 +206,10 @@ class BookAccessor
             LOG("Writing %d bytes to data partition", types::page_length);
 
             // format data to page
-            std::array<uint8_t, types::page_length> page_data{0};
-            std::array<uint8_t, types::page_data> data_container{0};
+            std::array<uint8_t, types::page_length> page_data{};
+            std::array<uint8_t, types::page_data> data_container{};
+            page_data.fill(0x00);
+            data_container.fill(0x00);
 
             // copy data into data_container to make sure it's the right size
             // for CRC caluclations
@@ -255,7 +227,7 @@ class BookAccessor
                         page_data.begin() + 2);
             // make the data the rest of the page
             std::copy_n(data_container.begin(), data_container.size(),
-                        page_data.begin() + types::book_header_length + 1);
+                        page_data.begin() + types::book_header_length);
 
             // copy the data to our internal buffer (write_buffer is used as
             // an internal buffer so it isn't overwritten by the read that
@@ -290,6 +262,11 @@ class BookAccessor
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
                   uint32_t message_index) {
         if (read_write_ready()) {
+            // reset all_reads
+            for (auto& read : all_reads) {
+                read.fill(0);
+            }
+
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
                 LOG("Error, attemping to read uninitalized value");
@@ -340,7 +317,11 @@ class BookAccessor
     }
 
     void read_complete(uint32_t message_index) override {
-        // NOTE: for testing, read one page at a time
+        // receives read data 4 times, once for each page. After the 4th time,
+        // the data from all 4 pages is processed together and the final
+        // callback is called with the processed data. This is because the book
+        // is split into 4 pages and we need to read all 4 pages to get the full
+        // data
 
         // save what's in buffer to all_reads
         std::copy_n(intermediate_buffer.begin(), types::page_length,
@@ -350,19 +331,11 @@ class BookAccessor
             // increment read_count
             read_count++;
             // kick off another read of the next page
-            this->start_read_at_offset(types::page_length * read_count,
-                                       types::page_length * (read_count + 1),
-                                       message_index);
+            this->start_read_at_offset(
+                current_book_address + (types::page_length * read_count),
+                current_book_address + (types::page_length * (read_count + 1)),
+                message_index);
         } else {
-            // split big read into 4 pages
-            // for (uint8_t i = 0; i < 4; i++) {
-            //     // 1. save what's in buffer to all_reads
-            //     std::copy_n((intermediate_buffer.begin() +
-            //                  (static_cast<ptrdiff_t>(types::page_length *
-            //                  i))),
-            //                 types::page_length, all_reads[i].begin());
-            // }
-            // reset read_count and call read_final
             read_count = 0;
             read_final(message_index);
         }
@@ -377,17 +350,16 @@ class BookAccessor
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     uint8_t read_count = 0;
-    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
     DataBufferType<BUFFER_SIZE>& buffer;
     types::address current_book_address = addresses::ot_library_begin;
-    std::array<uint8_t, (types::page_length * 4)> write_buffer_internal{0};
+    std::array<uint8_t, types::page_length> write_buffer_internal{};
     accessor::AccessorBuffer write_buffer{write_buffer_internal.begin(),
                                           write_buffer_internal.end()};
+    std::array<std::array<uint8_t, types::page_length>, 4>& all_reads;
     // empty page to write when we need to write an empty page (for
     // initalization or to fill empty pages after data). This is just to avoid
     // having to create a new empty page array every time we need to write an
     // empty page
-    std::array<uint8_t, types::page_length> empty_page{0};
 
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data) -> uint16_t {
@@ -442,6 +414,20 @@ class BookAccessor
         //             reinterpret_cast<uint8_t*>(&read_11));
         std::memcpy(&read_11, &all_reads[3][2], sizeof(read_11));
 
+        // quickly zero out all reads that are xFFFF
+        if (read_00 == 0xFFFF) {
+            read_00 = 0x0000;
+        }
+        if (read_01 == 0xFFFF) {
+            read_01 = 0x0000;
+        }
+        if (read_10 == 0xFFFF) {
+            read_10 = 0x0000;
+        }
+        if (read_11 == 0xFFFF) {
+            read_11 = 0x0000;
+        }
+
         // find maximum value
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
         uint16_t most_recent_index = 0;
@@ -449,20 +435,13 @@ class BookAccessor
         uint16_t most_recent_valid = reads[most_recent_index];
 
         // std::array<uint8_t, 56> data_for_return{};
-        const types::data_length returned_data_len = action_cmd_m.len;
+        // const types::data_length returned_data_len = action_cmd_m.len;
         // auto returned_data =
         //     std::span(all_reads[0])
         //         .subspan(types::book_header_length, returned_data_len);
 
-        std::array<uint8_t, BUFFER_SIZE> returned_data{0xFF};
-
-        // NOTE: testing
-        // zero out base cases
-        for (auto& read : reads) {
-            if (read == 0xFFFF) {
-                read = 0x0000;
-            }
-        }
+        std::array<uint8_t, types::page_data> returned_data{};
+        returned_data.fill(0xFF);
 
         // sort reads from largest to smallest
         std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
@@ -491,6 +470,7 @@ class BookAccessor
         if (action_cmd_m.action == TableAction::READ) {
             // set most recent index and most recent valid again
             most_recent_index = 0;
+            size_t all_reads_index = 0;
             most_recent_valid = reads[most_recent_index];
 
             bool crc_valid = false;
@@ -503,59 +483,54 @@ class BookAccessor
                 if (most_recent_index >= 4) {
                     std::array<uint8_t, BUFFER_SIZE> error{0xAA};
                     // writes an error to the buffer
-                    // TODO ? maybe come up with a way to recover the data
+                    // TODO: ? maybe come up with a way to recover the data
                     // when this happens?
 
                     std::copy_n(error.begin(), error.size(),
-                                returned_data.begin());
+                                this->buffer.begin());
 
-                    break;
+                    // tell object that called that the read is abailable, even
+                    // though it's just an error message, to avoid leaving it
+                    // hanging indefinitely or passing the wrong data
+                    read_listener.read_complete(message_index);
+                    return;
                 }
 
                 most_recent_valid = reads[most_recent_index];
 
                 if (most_recent_valid == read_00) {
-                    // returned_data = std::span(all_reads[0])
-                    //                     .subspan(types::book_header_length,
-                    //                              returned_data_len);
                     crc_valid = check_crc(all_reads[0]);
-                    std::copy_n(
-                        all_reads[0].begin() + types::book_header_length,
-                        returned_data_len, returned_data.begin());
+                    all_reads_index = 0;
+                    break;
 
                 } else if (most_recent_valid == read_01) {
-                    // returned_data = std::span(all_reads[1])
-                    //                     .subspan(types::book_header_length,
-                    //                              returned_data_len);
                     crc_valid = check_crc(all_reads[1]);
-                    std::copy_n(
-                        all_reads[1].begin() + types::book_header_length,
-                        returned_data_len, returned_data.begin());
+                    all_reads_index = 1;
+                    break;
 
                 } else if (most_recent_valid == read_10) {
-                    // returned_data = std::span(all_reads[2])
-                    //                     .subspan(types::book_header_length,
-                    //                              returned_data_len);
                     crc_valid = check_crc(all_reads[2]);
-                    std::copy_n(
-                        all_reads[2].begin() + types::book_header_length,
-                        returned_data_len, returned_data.begin());
+                    all_reads_index = 2;
+                    break;
 
                 } else if (most_recent_valid == read_11) {
-                    // returned_data = std::span(all_reads[3])
-                    //                     .subspan(types::book_header_length,
-                    //                              returned_data_len);
                     crc_valid = check_crc(all_reads[3]);
-                    std::copy_n(
-                        all_reads[3].begin() + types::book_header_length,
-                        returned_data_len, returned_data.begin());
+                    all_reads_index = 3;
+                    break;
                 }
 
                 most_recent_index++;
             }
 
-            std::copy_n(returned_data.begin(), returned_data_len,
-                        this->buffer.begin());
+            std::array<uint8_t, types::page_length>& relevant_page =
+                all_reads[all_reads_index];
+
+            // std::copy_n(relevant_page.begin() + types::book_header_length, 4,
+            //             this->buffer.begin());
+
+            std::memcpy(this->buffer.data(),
+                        relevant_page.data() + types::book_header_length,
+                        BUFFER_SIZE);
 
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
@@ -569,31 +544,33 @@ class BookAccessor
             // because all_reads contains 4 pages in the order they were
             // read (00, 01, 11, 10), we can use the most_recent_valid
             // variable to determine where to write the new data
-            uint16_t read_00_offset = 0x0000;
-            uint16_t read_01_offset = 0x0040;
-            uint16_t read_10_offset = 0x0080;
-            uint16_t read_11_offset = 0x00C0;
+            types::address read_00_offset = 0;
+            types::address read_01_offset = types::page_length;
+            types::address read_10_offset = types::page_length * 2;
+            types::address read_11_offset = types::page_length * 3;
 
             // because of the wraparound counter logic, we can be assured that
             // the last page is the least recently written page, so we can use
             // that to determine where to write the new data
             uint16_t least_recent = reads[least_recent_index];
 
-            uint16_t page_address = current_book_address;
+            types::address page_address = current_book_address;
 
             // NOTE: this logic will break once a location eventually wears out.
             // It does not prevent writes to that location.
 
             if (least_recent == read_00) {
-                page_address |= static_cast<types::address>(read_00_offset);
+                page_address += read_00_offset;
             } else if (least_recent == read_01) {
-                page_address |= static_cast<types::address>(read_01_offset);
+                page_address += read_01_offset;
             } else if (least_recent == read_10) {
-                page_address |= static_cast<types::address>(read_10_offset);
+                page_address += read_10_offset;
             } else if (least_recent == read_11) {
-                page_address |= static_cast<types::address>(read_11_offset);
+                page_address += read_11_offset;
             }
 
+            // clear write_msg.data just in case
+            write_msg.data.fill(0x00);
             // storing this in data instead of memory address because table
             // action callback cheks data to determine write location
             uint8_t* write_iter = write_msg.data.begin();
@@ -618,11 +595,6 @@ class BookAccessor
             action_cmd_m.action = TableAction::WRITE;
 
             table_action_callback(write_msg);
-        }
-
-        // reset all_reads for next time
-        for (auto& read : all_reads) {
-            read.fill(0);
         }
     }
 
@@ -665,7 +637,6 @@ class BookAccessor
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
-
         bool do_initalize = false;
         bool migrating = false;
         switch (action_cmd_m.action) {
@@ -699,7 +670,6 @@ class BookAccessor
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
                     uint16_t new_addr = data_addr - (types::page_length * 4);
-                    new_addr &= 0xFF00;
                     // subtract a page to account for the fact that the final
                     // page of the EEPROM is off-limits
                     new_addr -= types::page_length;
@@ -726,36 +696,15 @@ class BookAccessor
                         this->write_at_offset(write_buffer, new_addr,
                                               new_addr + types::page_length,
                                               m.message_index);
-
-                        // initialize the 3 pages after the data page to be
-                        // empty (all 0s)
-                        // for (size_t i = 1; i < types::pages_per_book; i++) {
-                        //     this->write_at_offset(
-                        //         accessor::AccessorBuffer(empty_page.begin(),
-                        //                                  empty_page.end()),
-                        //         new_addr + (i * types::page_length),
-                        //         new_addr + ((i + 1) * types::page_length),
-                        //         0);
                     }
                 }
-                // else {
-                //     // initialize all 4 pages to be empty (all 0s)
-                //     for (size_t i = 0; i < types::pages_per_book; i++) {
-                //         this->write_at_offset(
-                //             accessor::AccessorBuffer(empty_page.begin(),
-                //                                      empty_page.end()),
-                //             new_addr + (i * types::page_length),
-                //             new_addr + ((i + 1) * types::page_length), 0);
-                //     }
-                // }
-                //}
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
                 // NOTE: To avoid writing to much extra code, when
                 // writing the "data_len" gets received here (send from
                 // read_final) actually contains the new counter value
-                // to be applied to the page. NOT the length of the data
+
                 // to be written.
 
                 // copy counter value into bytes 2 and 3 of write_buffer
@@ -772,13 +721,6 @@ class BookAccessor
             case TableAction::READ:
                 data_addr += action_cmd_m.offset;
                 current_book_address = data_addr;
-                // read all 4 whole pages at the same time
-                // this->start_read_at_offset(data_addr,
-                //                            data_addr + (types::page_length *
-                //                            4), m.message_index);
-
-                // NOTE: for testing, read one page at a time instead of all 4.
-                // Strange race condition when trying to read all 4 at once
                 this->start_read_at_offset(
                     data_addr, data_addr + types::page_length, m.message_index);
                 break;

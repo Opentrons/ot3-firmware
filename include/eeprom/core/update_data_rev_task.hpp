@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#pragma GCC push_options
-#pragma GCC optimize("O0")
 
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
@@ -13,6 +11,10 @@
 #include "eeprom/core/types.hpp"
 #include "eeprom/firmware/crc16.h"
 #include "types.hpp"
+
+// to be passed to EEPROM. breaks unless it's statically allocated at the file
+// level for some reason. Likely a quirk of this god forsaken language
+static std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads;
 
 namespace eeprom {
 namespace data_rev_task {
@@ -49,7 +51,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
-                             tail_accessor},
+                             tail_accessor, all_reads},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client),
           tail_accessor(tail_accessor) {
@@ -256,4 +258,3 @@ class UpdateDataRevTask {
 
 }  // namespace data_rev_task
 }  // namespace eeprom
-#pragma GCC pop_options

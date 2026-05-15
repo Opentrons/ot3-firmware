@@ -24,6 +24,10 @@ static constexpr uint16_t distance_data_usage_len = 8;
 static constexpr uint16_t force_time_data_usage_len = 4;
 static constexpr uint16_t error_count_usage_len = 4;
 
+// to be passed to EEPROM. breaks unless it's statically allocated at the file
+// level for some reason. Likely a quirk of this god forsaken language
+static std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads;
+
 template <typename NUM_T>
     requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
 [[nodiscard]] auto check_for_default_val(NUM_T val, size_t len = 0) -> NUM_T {
@@ -51,7 +55,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
           usage_data_accessor{eeprom_client, *this, accessor_backing,
-                              tail_accessor} {}
+                              tail_accessor, all_reads} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;

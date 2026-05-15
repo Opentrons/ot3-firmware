@@ -25,13 +25,5 @@ constexpr data_length page_length = 64;
 
 constexpr uint8_t pages_per_book = 4;
 
-enum class DataSize : uint16_t {
-    PAGE = 64,
-    BOOK = 256,
-};
-
-template <DataSize SIZE>
-using OTLibraryData = std::array<uint8_t, static_cast<size_t>(SIZE)>;
-
 }  // namespace types
 }  // namespace eeprom
