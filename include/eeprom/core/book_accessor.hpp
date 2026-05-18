@@ -1,5 +1,7 @@
 #pragma once
 #include <sys/types.h>
+
+#include <algorithm>
 #pragma GCC push_options
 #pragma GCC optimize("O0")
 
@@ -669,7 +671,7 @@ class BookAccessor
 
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
-                    uint16_t new_addr = data_addr - (types::page_length * 4);
+                    uint16_t new_addr = data_addr - (types::page_length * 3);
                     // subtract a page to account for the fact that the final
                     // page of the EEPROM is off-limits
                     new_addr -= types::page_length;
@@ -702,15 +704,18 @@ class BookAccessor
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
                 // NOTE: To avoid writing to much extra code, when
-                // writing the "data_len" gets received here (send from
+                // writing, the "data_len" gets received here (send from
                 // read_final) actually contains the new counter value
-
                 // to be written.
 
                 // copy counter value into bytes 2 and 3 of write_buffer
-                std::ignore =
-                    bit_utils::int_to_bytes(data_len, write_buffer.begin() + 2,
-                                            write_buffer.begin() + 4);
+                // std::ignore =
+                //     bit_utils::int_to_bytes(data_len, write_buffer.begin() +
+                //     2,
+                //                             write_buffer.begin() + 4);
+
+                // copy directly into internal buffer
+                std::memcpy(write_buffer_internal.data() + 2, &data_len, 2);
 
                 this->write_at_offset(write_buffer, data_addr,
                                       data_addr + types::page_length,
