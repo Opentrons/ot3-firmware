@@ -36,8 +36,7 @@ using table_entry_action = dev_data::table_entry_action;
 
 struct BookAccessorIntermediate {
   protected:
-    DataBufferType<static_cast<size_t>(types::page_length * 4)>
-        intermediate_buffer;
+    DataBufferType<static_cast<size_t>(types::page_length)> intermediate_buffer;
 };
 
 /*Accessor for OT Library. Takes byte arrays as data. Ensure they are in
@@ -66,12 +65,11 @@ class BookAccessor
           read_listener(read_listener),
           buffer(buffer),
           all_reads(all_reads) {
+        for (auto& read : all_reads) {
+            read.fill(0xff);
+        }
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
-        crc16_init();
-        for (auto& read : all_reads) {
-            read.fill(0x00);
-        }
 
         write_buffer_internal.fill(0x00);
     }
@@ -99,17 +97,17 @@ class BookAccessor
             }
             uint16_t counter = 1;
             // move data to larger container
-            std::array<uint8_t, types::page_data> data_container;
-            std::memcpy(data_container.data(), data.data(), data.size());
-            // std::copy_n(data.begin(), data.size(),
-            // data_container.begin());
+            std::array<uint8_t, types::page_data> data_container{};
+            data_container.fill(0x00);
+            std::copy(data.begin(), data.end(), data_container.begin());
             uint16_t crc = calc_crc(data_container);
 
             // copy CRC, counter, and data to page_data
             std::memcpy(page_data.data(), &crc, 2);
             std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
-            std::memcpy(page_data.data() + types::book_header_length,
-                        data_container.data(), data.size());
+
+            std::copy(data_container.begin(), data_container.end(),
+                      page_data.begin() + types::book_header_length);
         }
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
@@ -214,7 +212,7 @@ class BookAccessor
             data_container.fill(0x00);
 
             // copy data into data_container to make sure it's the right size
-            // for CRC caluclations
+            // for CRC calculations
             std::copy_n(data.begin(), len, data_container.begin());
 
             // counter will be updated in table_action_callback
@@ -266,7 +264,7 @@ class BookAccessor
         if (read_write_ready()) {
             // reset all_reads
             for (auto& read : all_reads) {
-                read.fill(0);
+                read.fill(0xff);
             }
 
             auto table_location = calculate_table_entry_start(key);
@@ -328,10 +326,10 @@ class BookAccessor
         // save what's in buffer to all_reads
         std::copy_n(intermediate_buffer.begin(), types::page_length,
                     all_reads[read_count].begin());
+        // increment read_count
+        read_count++;
 
         if (read_count < 4) {
-            // increment read_count
-            read_count++;
             // kick off another read of the next page
             this->start_read_at_offset(
                 current_book_address + (types::page_length * read_count),
@@ -365,7 +363,8 @@ class BookAccessor
 
     template <size_t num_bytes>
     auto calc_crc(std::array<uint8_t, num_bytes> data) -> uint16_t {
-        crc16_reset_accumulator();
+        crc16_init();
+        // crc16_reset_accumulator();
 
         // divide num_bytes by 4 because crc16_compute takes in number of 32 bit
         // words, not number of bytes
@@ -375,24 +374,20 @@ class BookAccessor
         return crc;
     }
 
-    auto check_crc(std::array<uint8_t, types::page_length> bytes) -> bool {
-        // // Grab CRC from byte array
-        // uint16_t given_crc{};
-        // std::memcpy(&given_crc, bytes.data(), sizeof(given_crc));
-        //
-        // // calculate the CRC from the given data
-        // // Note: only the used bytes will be used in CRC caluclations
-        // std::array<uint8_t, types::page_data> given_data{0};
-        // std::memcpy(given_data.data(), bytes.data() +
-        // types::book_header_length,
-        //             types::page_data);
-        //
-        // uint16_t calculated_crc =
-        // calc_crc<types::page_data>(given_data);
-        //
-        // return (calculated_crc == given_crc);
-        std::ignore = bytes;
-        return true;
+    auto check_crc(std::array<uint8_t, types::page_length>& bytes) -> bool {
+        // Grab CRC from byte array
+        uint16_t given_crc{};
+        std::memcpy(&given_crc, bytes.data(), sizeof(given_crc));
+
+        // calculate the CRC from the given data
+        // Note: only the used bytes will be used in CRC caluclations
+        std::array<uint8_t, types::page_data> given_data{0};
+        std::copy_n(bytes.begin() + types::book_header_length, types::page_data,
+                    given_data.begin());
+
+        uint16_t calculated_crc = calc_crc<types::page_data>(given_data);
+
+        return (calculated_crc == given_crc);
     }
 
     void read_final(uint16_t message_index) {
@@ -403,17 +398,9 @@ class BookAccessor
         uint16_t read_11 = 0;
         // convert counter from bytes to longs
 
-        // std::copy_n(all_reads[0].begin() + 2, 2,
-        //             reinterpret_cast<uint8_t*>(&read_00));
         std::memcpy(&read_00, &all_reads[0][2], sizeof(read_00));
-        // std::copy_n(all_reads[1].begin() + 2, 2,
-        //             reinterpret_cast<uint8_t*>(&read_01));
         std::memcpy(&read_01, &all_reads[1][2], sizeof(read_01));
-        // std::copy_n(all_reads[2].begin() + 2, 2,
-        //             reinterpret_cast<uint8_t*>(&read_10));
         std::memcpy(&read_10, &all_reads[2][2], sizeof(read_10));
-        // std::copy_n(all_reads[3].begin() + 2, 2,
-        //             reinterpret_cast<uint8_t*>(&read_11));
         std::memcpy(&read_11, &all_reads[3][2], sizeof(read_11));
 
         // quickly zero out all reads that are xFFFF
@@ -527,13 +514,8 @@ class BookAccessor
             std::array<uint8_t, types::page_length>& relevant_page =
                 all_reads[all_reads_index];
 
-            // std::copy_n(relevant_page.begin() + types::book_header_length, 4,
-            //             this->buffer.begin());
-
-            std::memcpy(this->buffer.data(),
-                        relevant_page.data() + types::book_header_length,
-                        BUFFER_SIZE);
-
+            std::copy_n(relevant_page.begin() + types::book_header_length,
+                        BUFFER_SIZE, this->buffer.begin());
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
         }
@@ -707,12 +689,6 @@ class BookAccessor
                 // writing, the "data_len" gets received here (send from
                 // read_final) actually contains the new counter value
                 // to be written.
-
-                // copy counter value into bytes 2 and 3 of write_buffer
-                // std::ignore =
-                //     bit_utils::int_to_bytes(data_len, write_buffer.begin() +
-                //     2,
-                //                             write_buffer.begin() + 4);
 
                 // copy directly into internal buffer
                 std::memcpy(write_buffer_internal.data() + 2, &data_len, 2);
