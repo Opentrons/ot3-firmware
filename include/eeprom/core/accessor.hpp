@@ -159,7 +159,9 @@ class EEPromAccessor {
 
         begin_read_addr = read_addr;
         while (bytes_remain > 0) {
-            amount_to_read = std::min(bytes_remain, types::max_data_length);
+            amount_to_read = std::min(
+                bytes_remain,
+                static_cast<types::data_length>(types::max_data_length));
             eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = read_addr,

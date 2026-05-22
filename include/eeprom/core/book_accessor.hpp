@@ -2,9 +2,6 @@
 #include <sys/types.h>
 
 #include <algorithm>
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
@@ -419,9 +416,6 @@ class BookAccessor
 
         // find maximum value
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
-        uint16_t most_recent_index = 0;
-        uint16_t least_recent_index = reads.size() - 1;
-        uint16_t most_recent_valid = reads[most_recent_index];
 
         // std::array<uint8_t, 56> data_for_return{};
         // const types::data_length returned_data_len = action_cmd_m.len;
@@ -434,6 +428,9 @@ class BookAccessor
 
         // sort reads from largest to smallest
         std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
+        uint16_t most_recent_index = 0;
+        uint16_t least_recent_index = reads.size() - 1;
+        uint16_t most_recent_valid = reads[most_recent_index];
 
         // handle counter wraparound
         if (most_recent_index == 0 && most_recent_valid >= 65000) {
@@ -563,7 +560,7 @@ class BookAccessor
                                                  write_iter + conf.addr_bytes);
             // copy new counter value into next 2 bytes of data
             uint16_t new_counter = reads[0] + 1;
-            if (new_counter >= 65000) {
+            if (new_counter > 65000) {
                 // reset counter to avoid overflow, this will cause some
                 // confusion in determining the most recent page, but it is
                 // necessary to avoid counter overflow
@@ -718,4 +715,3 @@ class BookAccessor
 
 }  // namespace book_accessor
 }  // namespace eeprom
-#pragma GCC pop_options
