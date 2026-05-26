@@ -26,7 +26,6 @@ static constexpr uint16_t error_count_usage_len = 4;
 
 // to be passed to EEPROM. breaks unless it's statically allocated at the file
 // level for some reason. Likely a quirk of this god forsaken language
-static std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads;
 
 template <typename NUM_T>
     requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
@@ -195,6 +194,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     eeprom::dev_data::DataBufferType<8> accessor_backing =
         eeprom::dev_data::DataBufferType<8>{};
     eeprom::book_accessor::BookAccessor<EEPromClient, 8> usage_data_accessor;
+    std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads{};
 };
 
 /**
