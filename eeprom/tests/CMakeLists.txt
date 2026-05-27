@@ -15,6 +15,7 @@ add_executable(
         test_revision.cpp
         test_dev_data.cpp
         test_update_data_rev_task.cpp
+        test_book_accessor.cpp
 )
 
 target_include_directories(eeprom PUBLIC ${CMAKE_SOURCE_DIR}/include)

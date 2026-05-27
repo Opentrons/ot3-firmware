@@ -15,8 +15,8 @@ namespace tasks {
 
 namespace move_group_task {
 
-constexpr std::size_t max_groups = 3;
-constexpr std::size_t max_moves_per_group = 12;
+constexpr std::size_t max_groups = 2;
+constexpr std::size_t max_moves_per_group = 3;
 
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
