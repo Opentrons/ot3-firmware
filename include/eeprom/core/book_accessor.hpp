@@ -48,7 +48,8 @@ class BookAccessor
         DataBufferType<BUFFER_SIZE>& buffer,
         dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor,
         eeprom::CRC16Base& crc16)
-        : accessor::EEPromAccessor<EEpromTaskClient,
+        : BookAccessorIntermediate{},
+          accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
               eeprom_client, *this,
               accessor::AccessorBuffer(intermediate_buffer.begin(),
@@ -76,15 +77,14 @@ class BookAccessor
             }
             uint16_t counter = 1;
             // move data to larger container
-            std::array<uint8_t, types::book_data_length> data_container;
+            std::array<uint8_t, types::book_data_length> data_container{};
             std::copy_n(data.begin(), data.size(), data_container.begin());
             std::array<uint8_t, 2> crc = calc_crc(data_container);
 
             // make CRC the first two bytes of the page
             std::copy_n(crc.begin(), 2, page_data.begin());
             // make Counter the next two bytes of the page
-            std::copy_n(reinterpret_cast<uint8_t*>(&counter), sizeof(counter),
-                        page_data.begin() + 2);
+            std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
             // make the data the rest of the page
             std::copy_n(data_container.begin(), data_container.size(),
                         page_data.begin() + types::book_header_length + 1);
@@ -254,7 +254,7 @@ class BookAccessor
             // 1. save what's in buffer to all_reads
             std::copy_n((intermediate_buffer.begin() +
                          (static_cast<ptrdiff_t>(types::page_length * i))),
-                        types::page_length, all_reads[i].begin());
+                        types::page_length, all_reads.at(i).begin());
         }
         read_final(message_index);
     }
@@ -321,7 +321,7 @@ class BookAccessor
         // find maximum value
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
         uint16_t most_recent_index = 0;
-        uint16_t most_recent_valid = reads[most_recent_index];
+        uint16_t most_recent_valid = reads.at(most_recent_index];
 
         // std::array<uint8_t, 56> data_for_return{};
         types::data_length returned_data_len = action_cmd_m.len;
@@ -330,7 +330,7 @@ class BookAccessor
                 .subspan(types::book_header_length + 1, returned_data_len);
 
         // sort reads from largest to smallest
-        std::sort(reads.begin(), reads.end(), std::greater<uint16_t>());
+        std::sort(reads.begin(), reads.end(), std::greater<>());
 
         // handle counter wraparound
         if (most_recent_index == 0 && most_recent_valid >= 65000) {
