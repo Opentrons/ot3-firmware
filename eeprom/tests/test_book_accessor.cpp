@@ -42,7 +42,8 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit([this](auto o) -> auto { this->visit(o); }, message);
+        std::visit(
+            [this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};
