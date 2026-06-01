@@ -364,7 +364,7 @@ class BookAccessor
             find_most_recent(message_index, reads, read_00, read_01, read_10,
                              read_11);
         } else if (action_cmd_m.action == TableAction::READ_BEFORE_WRITE) {
-            find_next_write(reads, read_00, read_01, read_10, read_11);
+            find_next_write(reads, read0, read1, read2, read3);
         }
     }
 
@@ -429,6 +429,10 @@ class BookAccessor
 
         std::copy_n(relevant_page.begin() + types::book_header_length,
                     BUFFER_SIZE, this->buffer.begin());
+        // cache the key that was just read so that if we need to do a write
+        // right after we can bypass the read and just write to the same
+        // place
+        cached_key = action_cmd_m.key;
 
         // tell object that called the read that the read is avaiable
         read_listener.read_complete(message_index);
@@ -449,18 +453,49 @@ class BookAccessor
         types::address read2_offset = types::page_length * 2;
         types::address read3_offset = types::page_length * 3;
 
-        uint16_t least_recent = reads[reads.size() - 1];
-        uint16_t page_address = current_book_address;
+        if (least_recent == read_00) {
+            page_address |= static_cast<types::address>(read_00_offset);
+        } else if (least_recent == read_01) {
+            page_address |= static_cast<types::address>(read_01_offset);
+        } else if (least_recent == read_10) {
+            page_address |= static_cast<types::address>(read_10_offset);
+        } else if (least_recent == read_11) {
+            page_address |= static_cast<types::address>(read_11_offset);
+        }
+
+        // storing this in data instead of memory address because table
+        // action callback cheks data to determine write location
+        uint8_t* write_iter = write_msg.data.begin();
+        // copy page address into first 2 bytes of data
+        write_iter = bit_utils::int_to_bytes(page_address, write_iter,
+                                             write_iter + conf.addr_bytes);
+        // copy new counter value into next 2 bytes of data
+        uint16_t new_counter = reads[0] + 1;
+        if (new_counter >= 65000) {
+            // reset counter to avoid overflow, this will cause some
+            // confusion in determining the most recent page, but it is
+            // necessary to avoid counter overflow
+            new_counter = 0;
+        }
+        write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
+                                             write_iter + conf.addr_bytes);
+        write_msg.length = conf.addr_bytes;
+        // just fill memory address with beginning of lookup table tail
+        write_msg.memory_address = addresses::lookup_table_tail_begin;
+
+        // NOTE: this logic will break once a location eventually wears
+        // out. It does not prevent writes to that location.
 
         if (least_recent == read0) {
-            page_address |= static_cast<types::address>(read0_offset);
+            page_address += read0_offset;
         } else if (least_recent == read1) {
-            page_address |= static_cast<types::address>(read1_offset);
+            page_address += read1_offset;
         } else if (least_recent == read2) {
-            page_address |= static_cast<types::address>(read2_offset);
+            page_address += read2_offset;
         } else if (least_recent == read3) {
-            page_address |= static_cast<types::address>(read3_offset);
+            page_address += read3_offset;
         }
+
         // clear write_msg.data just in case
         write_msg.data.fill(0x00);
         // storing this in data instead of memory address because table
