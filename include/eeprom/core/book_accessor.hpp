@@ -324,10 +324,6 @@ class BookAccessor
         uint16_t most_recent_valid = reads.at(most_recent_index);
 
         // std::array<uint8_t, 56> data_for_return{};
-        types::data_length returned_data_len = action_cmd_m.len;
-        auto returned_data =
-            std::span(all_reads[0])
-                .subspan(types::book_header_length + 1, returned_data_len);
 
         // sort reads from largest to smallest
         std::sort(reads.begin(), reads.end(), std::greater<>());
@@ -354,124 +350,141 @@ class BookAccessor
             }
         }
         if (action_cmd_m.action == TableAction::READ) {
-            // set most recent index and most recent valid again
-            most_recent_index = 0;
-            most_recent_valid = reads[most_recent_index];
-
-            bool crc_valid = false;
-
-            while (!crc_valid) {
-                // This while loop will keep looping through pages read
-                // until it finds one whose written CRC matches the one
-                // calcluated breaks if it has tried more than 4 times (the
-                // number of pages in a book)
-                if (most_recent_index >= 4) {
-                    std::array<uint8_t, BUFFER_SIZE> error{0};
-                    // writes an error to the buffer
-                    // TODO ? maybe come up with a way to recover the data
-                    // when this happens?
-
-                    std::copy_n(error.begin(), error.size(),
-                                returned_data.begin());
-
-                    break;
-                }
-
-                most_recent_valid = reads.at(most_recent_index);
-
-                if (most_recent_valid == read_00) {
-                    returned_data = std::span(all_reads[0])
-                                        .subspan(types::book_header_length + 1,
-                                                 returned_data_len);
-                    crc_valid = check_crc(all_reads[0]);
-
-                } else if (most_recent_valid == read_01) {
-                    returned_data = std::span(all_reads[1])
-                                        .subspan(types::book_header_length + 1,
-                                                 returned_data_len);
-                    crc_valid = check_crc(all_reads[1]);
-
-                } else if (most_recent_valid == read_10) {
-                    returned_data = std::span(all_reads[2])
-                                        .subspan(types::book_header_length + 1,
-                                                 returned_data_len);
-                    crc_valid = check_crc(all_reads[2]);
-
-                } else if (most_recent_valid == read_11) {
-                    returned_data = std::span(all_reads[3])
-                                        .subspan(types::book_header_length + 1,
-                                                 returned_data_len);
-                    crc_valid = check_crc(all_reads[3]);
-                }
-
-                most_recent_index++;
-            }
-
-            std::copy_n(returned_data.begin(), returned_data.size(),
-                        this->buffer.begin());
-
-            // tell object that called the read that the read is avaiable
-            read_listener.read_complete(message_index);
+            find_most_recent(message_index, reads, read_00, read_01, read_10,
+                             read_11);
         }
 
         else if (action_cmd_m.action == TableAction::READ_BEFORE_WRITE) {
-            // create a new eeprom message to send to table_action_callback
-
-            message::EepromMessage write_msg;
-
-            // because all_reads contains 4 pages in the order they were
-            // read (00, 01, 11, 10), we can use the most_recent_valid
-            // variable to determine where to write the new data
-            uint16_t read_00_offset = 0x0000;
-            uint16_t read_01_offset = 0x0040;
-            uint16_t read_10_offset = 0x0080;
-            uint16_t read_11_offset = 0x00C0;
-
-            // because of the wraparound counter logic, we can be assured that
-            // the last page is the least recently written page, so we can use
-            // that to determine where to write the new data
-            uint16_t least_recent = reads[reads.size() - 1];
-
-            uint16_t page_address = current_book_address;
-
-            // NOTE: this logic will break once a location eventually wears
-            // out. It does not prevent writes to that location.
-
-            if (least_recent == read_00) {
-                page_address |= static_cast<types::address>(read_00_offset);
-            } else if (least_recent == read_01) {
-                page_address |= static_cast<types::address>(read_01_offset);
-            } else if (least_recent == read_10) {
-                page_address |= static_cast<types::address>(read_10_offset);
-            } else if (least_recent == read_11) {
-                page_address |= static_cast<types::address>(read_11_offset);
-            }
-
-            // storing this in data instead of memory address because table
-            // action callback cheks data to determine write location
-            uint8_t* write_iter = write_msg.data.begin();
-            // copy page address into first 2 bytes of data
-            write_iter = bit_utils::int_to_bytes(page_address, write_iter,
-                                                 write_iter + conf.addr_bytes);
-            // copy new counter value into next 2 bytes of data
-            uint16_t new_counter = reads[0] + 1;
-            if (new_counter >= 65000) {
-                // reset counter to avoid overflow, this will cause some
-                // confusion in determining the most recent page, but it is
-                // necessary to avoid counter overflow
-                new_counter = 0;
-            }
-            write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
-                                                 write_iter + conf.addr_bytes);
-            write_msg.length = conf.addr_bytes;
-            // just fill memory address with beginning of lookup table tail
-            write_msg.memory_address = addresses::lookup_table_tail_begin;
-
-            // set table action to write
-            action_cmd_m.action = TableAction::WRITE;
-
-            table_action_callback(write_msg);
+            find_next_write(reads, read_00, read_01, read_10, read_11);
         }
+    }
+
+    void find_most_recent(uint16_t message_index,
+                          std::array<uint16_t, 4>& reads, uint16_t read_00,
+                          uint16_t read_01, uint16_t read_10,
+                          uint16_t read_11) {
+        // set most recent index and most recent valid again
+        uint16_t most_recent_index = 0;
+        uint16_t most_recent_valid = reads.at(most_recent_index);
+
+        bool crc_valid = false;
+
+        types::data_length returned_data_len = action_cmd_m.len;
+        auto returned_data =
+            std::span(all_reads[0])
+                .subspan(types::book_header_length + 1, returned_data_len);
+
+        while (!crc_valid) {
+            // This while loop will keep looping through pages read
+            // until it finds one whose written CRC matches the one
+            // calcluated breaks if it has tried more than 4 times (the
+            // number of pages in a book)
+            if (most_recent_index >= 4) {
+                std::array<uint8_t, BUFFER_SIZE> error{0};
+                // writes an error to the buffer
+                // TODO ? maybe come up with a way to recover the data
+                // when this happens?
+
+                std::copy_n(error.begin(), error.size(), returned_data.begin());
+
+                break;
+            }
+
+            most_recent_valid = reads.at(most_recent_index);
+
+            if (most_recent_valid == read_00) {
+                returned_data = std::span(all_reads[0])
+                                    .subspan(types::book_header_length + 1,
+                                             returned_data_len);
+                crc_valid = check_crc(all_reads[0]);
+
+            } else if (most_recent_valid == read_01) {
+                returned_data = std::span(all_reads[1])
+                                    .subspan(types::book_header_length + 1,
+                                             returned_data_len);
+                crc_valid = check_crc(all_reads[1]);
+
+            } else if (most_recent_valid == read_10) {
+                returned_data = std::span(all_reads[2])
+                                    .subspan(types::book_header_length + 1,
+                                             returned_data_len);
+                crc_valid = check_crc(all_reads[2]);
+
+            } else if (most_recent_valid == read_11) {
+                returned_data = std::span(all_reads[3])
+                                    .subspan(types::book_header_length + 1,
+                                             returned_data_len);
+                crc_valid = check_crc(all_reads[3]);
+            }
+
+            most_recent_index++;
+        }
+
+        std::copy_n(returned_data.begin(), returned_data.size(),
+                    this->buffer.begin());
+
+        // tell object that called the read that the read is avaiable
+        read_listener.read_complete(message_index);
+    }
+
+    void find_next_write(std::array<uint16_t, 4>& reads, uint16_t read_00,
+                         uint16_t read_01, uint16_t read_10, uint16_t read_11) {
+        // create a new eeprom message to send to table_action_callback
+
+        message::EepromMessage write_msg;
+
+        // because all_reads contains 4 pages in the order they were
+        // read (00, 01, 11, 10), we can use the most_recent_valid
+        // variable to determine where to write the new data
+        uint16_t read_00_offset = 0x0000;
+        uint16_t read_01_offset = 0x0040;
+        uint16_t read_10_offset = 0x0080;
+        uint16_t read_11_offset = 0x00C0;
+
+        // because of the wraparound counter logic, we can be assured that
+        // the last page is the least recently written page, so we can use
+        // that to determine where to write the new data
+        uint16_t least_recent = reads[reads.size() - 1];
+
+        uint16_t page_address = current_book_address;
+
+        // NOTE: this logic will break once a location eventually wears
+        // out. It does not prevent writes to that location.
+
+        if (least_recent == read_00) {
+            page_address |= static_cast<types::address>(read_00_offset);
+        } else if (least_recent == read_01) {
+            page_address |= static_cast<types::address>(read_01_offset);
+        } else if (least_recent == read_10) {
+            page_address |= static_cast<types::address>(read_10_offset);
+        } else if (least_recent == read_11) {
+            page_address |= static_cast<types::address>(read_11_offset);
+        }
+
+        // storing this in data instead of memory address because table
+        // action callback cheks data to determine write location
+        uint8_t* write_iter = write_msg.data.begin();
+        // copy page address into first 2 bytes of data
+        write_iter = bit_utils::int_to_bytes(page_address, write_iter,
+                                             write_iter + conf.addr_bytes);
+        // copy new counter value into next 2 bytes of data
+        uint16_t new_counter = reads[0] + 1;
+        if (new_counter >= 65000) {
+            // reset counter to avoid overflow, this will cause some
+            // confusion in determining the most recent page, but it is
+            // necessary to avoid counter overflow
+            new_counter = 0;
+        }
+        write_iter = bit_utils::int_to_bytes(new_counter, write_iter,
+                                             write_iter + conf.addr_bytes);
+        write_msg.length = conf.addr_bytes;
+        // just fill memory address with beginning of lookup table tail
+        write_msg.memory_address = addresses::lookup_table_tail_begin;
+
+        // set table action to write
+        action_cmd_m.action = TableAction::WRITE;
+
+        table_action_callback(write_msg);
     }
 
     void config_req_callback(const message::ConfigResponseMessage& m) {
