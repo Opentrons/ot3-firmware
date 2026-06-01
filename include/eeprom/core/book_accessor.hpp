@@ -387,7 +387,6 @@ class BookAccessor
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
-    
 
         bool do_initalize = false;
         switch (action_cmd_m.action) {
