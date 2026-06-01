@@ -321,7 +321,7 @@ class BookAccessor
         // find maximum value
         std::array<uint16_t, 4> reads = {read_00, read_01, read_10, read_11};
         uint16_t most_recent_index = 0;
-        uint16_t most_recent_valid = reads.at(most_recent_index];
+        uint16_t most_recent_valid = reads.at(most_recent_index);
 
         // std::array<uint8_t, 56> data_for_return{};
         types::data_length returned_data_len = action_cmd_m.len;
