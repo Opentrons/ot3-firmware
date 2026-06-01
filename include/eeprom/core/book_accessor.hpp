@@ -313,6 +313,7 @@ class BookAccessor
         uint16_t read_10 = 0;
         // convert counter from bytes to longs
 
+        std::memcpy(&read_00, &all_reads[0][2], sizeof(read_00));
         std::memcpy(&read_01, &all_reads[1][2], sizeof(read_01));
         std::memcpy(&read_10, &all_reads[2][2], sizeof(read_11));
         std::memcpy(&read_11, &all_reads[3][2], sizeof(read_10));
@@ -327,12 +328,6 @@ class BookAccessor
         auto returned_data =
             std::span(all_reads[0])
                 .subspan(types::book_header_length + 1, returned_data_len);
-
-        for (auto& read : reads) {
-            if (read == 0xFFFF) {
-                read = 0x0000;
-            }
-        }
 
         // sort reads from largest to smallest
         std::sort(reads.begin(), reads.end(), std::greater<>());
