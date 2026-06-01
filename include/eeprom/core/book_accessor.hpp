@@ -246,6 +246,7 @@ class BookAccessor
 
     auto table_ready() -> bool {
         return config_updated && tail_accessor.get_tail_updated();
+        // return true;
     }
 
     void read_complete(uint32_t message_index) override {
@@ -591,6 +592,8 @@ class BookAccessor
             case TableAction::READ_BEFORE_WRITE:
                 [[fallthrough]];
             case TableAction::READ:
+                // TODO: ask Ryan if this is unnecessary
+                // action_cmd_m.len = data_len;
                 data_addr += action_cmd_m.offset;
                 current_book_address = data_addr;
                 // read all 4 whole pages at the same time
