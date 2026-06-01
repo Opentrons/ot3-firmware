@@ -246,7 +246,6 @@ class BookAccessor
 
     auto table_ready() -> bool {
         return config_updated && tail_accessor.get_tail_updated();
-        // return true;
     }
 
     void read_complete(uint32_t message_index) override {
@@ -306,6 +305,8 @@ class BookAccessor
 
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
+        // TODO: Change names to reflect the fact that we are not doing one
+        // large read instead of 4 small ones
         uint16_t read_00 = 0;
         uint16_t read_01 = 0;
         uint16_t read_11 = 0;
@@ -376,7 +377,7 @@ class BookAccessor
                     break;
                 }
 
-                most_recent_valid = reads[most_recent_index];
+                most_recent_valid = reads.at(most_recent_index);
 
                 if (most_recent_valid == read_00) {
                     returned_data = std::span(all_reads[0])
