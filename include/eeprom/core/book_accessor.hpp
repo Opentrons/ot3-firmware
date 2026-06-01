@@ -36,8 +36,6 @@ struct BookAccessorIntermediate {
  *
  * SIZE is the size of the buffer*/
 
-// TODO: Remove this one size for everything, make each method have its own
-// template size parameter
 template <task::TaskClient EEpromTaskClient, size_t SIZE>
 class BookAccessor
     : BookAccessorIntermediate,
@@ -389,6 +387,7 @@ class BookAccessor
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
+    
 
         bool do_initalize = false;
         switch (action_cmd_m.action) {
