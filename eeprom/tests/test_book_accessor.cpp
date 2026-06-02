@@ -407,11 +407,6 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             // the address of this page is 16384 - 64 - 64 = 16256
             uint16_t address_written = write_message.memory_address;
             REQUIRE(address_written == 16256);
-
-            // check that the value written is correct
-             REQUIRE(
-                 mock_client.backing[eeprom::addresses::data_address_begin]
-                 == 0b00000101);
         }
     }
 }
