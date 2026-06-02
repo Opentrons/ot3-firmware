@@ -409,9 +409,9 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             REQUIRE(address_written == 16256);
 
             // check that the value written is correct
-            // REQUIRE(
-            //     mock_client.backing[eeprom::addresses::data_address_begin]
-            //     == 0b00000101);
+             REQUIRE(
+                 mock_client.backing[eeprom::addresses::data_address_begin]
+                 == 0b00000101);
         }
     }
 }
