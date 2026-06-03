@@ -14,7 +14,7 @@ template <std::size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
 using DataTailType = std::array<uint8_t, addresses::lookup_table_tail_length>;
 
-enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE };
+enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE, MIGRATE };
 
 struct table_entry_action {
     uint16_t key;
@@ -399,6 +399,7 @@ class DevDataAccessor
         const auto* data_iter = m.data.begin();
         types::address data_addr = 0;
         types::data_length data_len = 0;
+
         data_iter = bit_utils::bytes_to_int(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_addr);
@@ -409,11 +410,15 @@ class DevDataAccessor
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
+
         bool do_initalize = false;
         switch (action_cmd_m.action) {
-            // When we recive a message started from a create, the message will
-            // contain the table entry for the previous key, we need this data
-            // to assign the new key a storage location
+                // When we recive a message started from a create, the message
+                // will contain the table entry for the previous key, we need
+                // this data to assign the new key a storage location
+            case TableAction::MIGRATE:
+                // introduced for BookAccessor
+                [[fallthrough]];
             case TableAction::INITALIZE:
                 do_initalize = true;
                 // don't break this is just an extension of create

@@ -20,11 +20,11 @@ class MockCRC : public eeprom::CRC16Base {
      */
     uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
         std::ignore = length;
-        std::array<uint8_t, eeprom::types::book_data_length> data_byte{};
+        std::array<uint8_t, eeprom::types::page_data> data_byte{};
         std::memcpy(data_byte.data(), data, sizeof(*data));
 
         std::array<uint8_t, 2> crc_byte =
-            calc_crc<eeprom::types::book_data_length>(data_byte);
+            calc_crc<eeprom::types::page_data>(data_byte);
         uint16_t crc;
         std::memcpy(&crc, crc_byte.data(), sizeof(crc));
 

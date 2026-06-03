@@ -1,11 +1,12 @@
 #pragma once
 
-// #include <array>
 #include <cassert>
 
+#include "FreeRTOS.h"
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "messages.hpp"
+#include "task.h"
 #include "task.hpp"
 #include "types.hpp"
 
@@ -16,8 +17,9 @@ class AccessorBuffer {
   public:
     AccessorBuffer() = default;
     template <typename B_ITER, typename L_ITER>
-    requires bit_utils::ByteIterator<B_ITER> &&
-        std::sentinel_for<B_ITER, L_ITER> && std::contiguous_iterator<B_ITER>
+        requires bit_utils::ByteIterator<B_ITER> &&
+                     std::sentinel_for<B_ITER, L_ITER> &&
+                     std::contiguous_iterator<B_ITER>
     explicit AccessorBuffer(B_ITER begin, L_ITER limit)
         : buffer_start(begin), buffer_limit(limit) {}
     auto size() -> size_t { return buffer_limit - buffer_start; }
@@ -124,6 +126,9 @@ class EEPromAccessor {
                 .length = amount_to_write,
                 .data = write});
 
+            //            vTaskDelay(2 * portTICK_PERIOD_MS);  // delay to avoid
+            //            overwhelming
+            // the i2c task
             write_addr += amount_to_write;
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             type_iter += amount_to_write;
@@ -165,43 +170,7 @@ class EEPromAccessor {
         }
     }
 
-    auto OT_start_read_at_offset(types::data_length offset,
-                                 types::data_length limit_offset,
-                                 uint32_t message_index) -> void {
-        // reset bytes_recieved to 0 so the response handler knows how much data
-        // to wait for
-        bytes_recieved = 0;
-        bytes_to_read = limit_offset - offset;
-        if (bytes_to_read > type_data.size()) {
-            LOG("error, attempting to read %lu bytes and max read size is "
-                "%lu\n",
-                bytes_to_read, type_data.size());
-        }
-
-        types::data_length amount_to_read = 0;
-        types::address read_addr = begin + offset;
-        types::data_length bytes_remain = (limit_offset + begin) - read_addr;
-
-        begin_read_addr = read_addr;
-        while (bytes_remain > 0) {
-            amount_to_read = std::min(bytes_remain, types::page_length);
-            eeprom_client.send_eeprom_queue(
-                eeprom::message::OTLibraryReadMessage{
-                    .message_index = message_index,
-                    .memory_address = read_addr,
-                    .length = amount_to_read,
-                    .callback = OT_callback,
-                    .callback_param = this});
-            bytes_remain -= amount_to_read;
-            read_addr += amount_to_read;
-        }
-    }
-
   private:
-    /**
-     * Handle a completed read.
-     * @param msg The message
-     */
     void callback(const eeprom::message::EepromMessage& msg) {
         // TODO (ryan 07-18-22) handle errors in response
         auto* buffer_ptr =
@@ -212,22 +181,6 @@ class EEPromAccessor {
         if (bytes_recieved == bytes_to_read) {
             read_listener.read_complete(msg.message_index);
         }
-    }
-
-    void OT_callback(const eeprom::message::EepromDataMessage& msg) {
-        std::visit(
-            [this](auto& m) {
-                // TODO (ryan 07-18-22) handle errors in response
-                auto* buffer_ptr =
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    (type_data.begin() + (m.memory_address - begin_read_addr));
-                std::copy_n(m.data.cbegin(), m.length, buffer_ptr);
-                bytes_recieved += m.length;
-                if (bytes_recieved == bytes_to_read) {
-                    read_listener.read_complete(m.message_index);
-                }
-            },
-            msg);
     }
 
     /**
@@ -246,20 +199,6 @@ class EEPromAccessor {
     types::address begin_read_addr = 0;
     size_t bytes_recieved = 0;
     size_t bytes_to_read = 0;
-
-    /**
-     * Handle a completed read.
-     * @param msg The message
-     * @param param This pointer.
-     */
-    static void OT_callback(const eeprom::message::EepromDataMessage& msg,
-                            void* param) {
-        auto* self =
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<EEPromAccessor<EEPromTaskClient, data_begin>*>(
-                param);
-        self->OT_callback(msg);
-    }
 };
 
 }  // namespace accessor

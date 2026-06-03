@@ -20,6 +20,7 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "eeprom/firmware/crc16.h"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 #include "gripper/firmware/utility_gpio.h"
@@ -69,6 +70,7 @@ static constexpr auto eeprom_chip =
 #else
 static constexpr auto eeprom_chip =
     eeprom::hardware_iface::EEPromChipType::ST_M24128_BF;
+// static eeprom::CRC16Accelerated crc16;
 #endif
 
 class EEPromHardwareInterface
