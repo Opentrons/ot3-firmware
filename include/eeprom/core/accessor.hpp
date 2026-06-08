@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 
 #include "FreeRTOS.h"
@@ -111,13 +112,14 @@ class EEPromAccessor {
                          uint32_t message_index) -> void {
         types::data_length amount_to_write = 0;
         types::data_length write_remain = limit_offset - offset;
+        types::data_length max_write_size = types::page_length / 2;
         auto write = types::EepromData{};
         auto* type_iter = data.begin();
         types::address write_addr = begin + offset;
         types::address limit_addr = begin + limit_offset;
         // NOLINTNEXTLINE(modernize-use-nullptr)
         while (type_iter < data.end() && write_addr < limit_addr) {
-            amount_to_write = std::min(write_remain, types::max_data_length);
+            amount_to_write = std::min(write_remain, max_write_size);
 
             std::copy_n(type_iter, amount_to_write, write.begin());
             eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
@@ -155,10 +157,11 @@ class EEPromAccessor {
         types::data_length amount_to_read = 0;
         types::address read_addr = begin + offset;
         types::data_length bytes_remain = (limit_offset + begin) - read_addr;
+        types::data_length max_read_size = types::page_length / 2;
 
         begin_read_addr = read_addr;
         while (bytes_remain > 0) {
-            amount_to_read = std::min(bytes_remain, types::max_data_length);
+            amount_to_read = std::min(bytes_remain, max_read_size);
             eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
                 .message_index = message_index,
                 .memory_address = read_addr,
