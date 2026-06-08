@@ -112,7 +112,6 @@ class EEPromAccessor {
                          uint32_t message_index) -> void {
         types::data_length amount_to_write = 0;
         types::data_length write_remain = limit_offset - offset;
-        types::data_length max_write_size = types::page_length / 2;
         auto write = types::EepromData{};
         auto* type_iter = data.begin();
         types::address write_addr = begin + offset;
@@ -157,7 +156,6 @@ class EEPromAccessor {
         types::data_length amount_to_read = 0;
         types::address read_addr = begin + offset;
         types::data_length bytes_remain = (limit_offset + begin) - read_addr;
-        types::data_length max_read_size = types::page_length / 2;
 
         begin_read_addr = read_addr;
         while (bytes_remain > 0) {
