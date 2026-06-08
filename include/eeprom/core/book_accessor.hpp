@@ -25,7 +25,9 @@ namespace book_accessor {
 
 template <size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
-using DataTailType = using TableAction = dev_data::TableAction;
+using DataTailType =
+    std::array<uint8_t, eeprom::addresses::lookup_table_tail_length>;
+using TableAction = dev_data::TableAction;
 using table_entry_action = dev_data::table_entry_action;
 
 struct BookAccessorIntermediate {
@@ -113,7 +115,7 @@ class BookAccessor
             if (key == 0) {
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
-                write.memory_address = adressess::ot_library_lookup_table_start;
+                write.memory_address = addresses::ot_library_lookup_table_start;
                 write.length = 2 * conf.addr_bytes;
                 // data pointers are offsets from the start of the data
                 // section of the eeprom, so we subtract ot_library_begin
