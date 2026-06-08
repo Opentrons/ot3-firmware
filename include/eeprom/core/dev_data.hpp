@@ -76,7 +76,7 @@ class DevDataTailAccessor
                        data_tail_buff.begin())) {
             // Value is set to default so update it to data section start
             auto init_tail = DataTailType{};
-            data_tail = addresses::data_address_begin;
+            data_tail = addresses::ot_library_lookup_table_start;
             std::ignore = bit_utils::int_to_bytes(
                 data_tail, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);

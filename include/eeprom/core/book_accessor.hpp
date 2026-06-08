@@ -25,9 +25,7 @@ namespace book_accessor {
 
 template <size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
-using DataTailType =
-    std::array<uint8_t, eeprom::addresses::lookup_table_tail_length>;
-using TableAction = dev_data::TableAction;
+using DataTailType = using TableAction = dev_data::TableAction;
 using table_entry_action = dev_data::table_entry_action;
 
 struct BookAccessorIntermediate {
@@ -115,7 +113,7 @@ class BookAccessor
             if (key == 0) {
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
-                write.memory_address = addresses::data_address_begin;
+                write.memory_address = adressess::ot_library_lookup_table_start;
                 write.length = 2 * conf.addr_bytes;
                 // data pointers are offsets from the start of the data
                 // section of the eeprom, so we subtract ot_library_begin
@@ -140,9 +138,7 @@ class BookAccessor
                     len, data_iter, data_iter + conf.addr_bytes);
                 this->eeprom_client.send_eeprom_queue(write);
 
-                if (!migrating) {
-                    tail_accessor.increase_data_tail(2 * conf.addr_bytes);
-                }
+                tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                 // create empty page for use in initilazation
 
@@ -607,8 +603,10 @@ class BookAccessor
     // Calculates data's location on the lookup table
     auto calculate_table_entry_start(uint16_t key) -> types::address {
         types::address addr = 0;
+        // offset and align to the nearest page
         if (config_updated) {
-            addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
+            addr = addresses::ot_library_lookup_table_start +
+                   (key * 2 * conf.addr_bytes);
         }
         return addr;
     }
@@ -673,11 +671,7 @@ class BookAccessor
                         write_iter + conf.addr_bytes);
                     this->eeprom_client.send_eeprom_queue(write);
 
-                    // After writing the table entry use the tail accessor
-                    // to update the tail
-                    if (!migrating) {
-                        tail_accessor.increase_data_tail(2 * conf.addr_bytes);
-                    }
+                    tail_accessor.increase_data_tail(2 * conf.addr_bytes);
 
                     // If we passed data into the create write that data
                     // into the memory
