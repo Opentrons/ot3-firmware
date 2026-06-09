@@ -100,7 +100,9 @@ constexpr types::address data_revision_address_end =
     data_revision_address_begin + data_revision_length;
 
 constexpr types::data_length lookup_table_tail_length = 2;
-constexpr types::address lookup_table_tail_begin = data_revision_address_end;
+// set to 4 * page length to give new lookup table entries room to grow without
+// overwriting the data section
+constexpr types::address lookup_table_tail_begin = types::page_length * 4;
 constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
@@ -115,7 +117,7 @@ constexpr types::address ot_library_end =
 // ot_library_lookup_table starts at page 4 to give it room to grow without
 // overwriting the lookup table
 constexpr types::address ot_library_lookup_table_start =
-    (types::page_length * types::pages_per_book);
+    lookup_table_tail_begin;
 
 /*
  *Wrapper class for ot_library_end and ot_library_begin
