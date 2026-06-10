@@ -89,20 +89,17 @@ constexpr types::address boundary_address_begin = revision_address_end;
 constexpr types::address boundary_address_end =
     boundary_address_begin + boundary_address_length;
 
-constexpr types::data_length reserved_length = 2;
-constexpr types::address reserved_address_begin = boundary_address_end;
-constexpr types::address reserved_address_end =
-    reserved_address_begin + reserved_length;
+constexpr types::data_length lookup_table_tail_length = 2;
+constexpr types::address ot_lookup_table_tail_begin = boundary_address_end;
+constexpr types::address ot_lookup_table_tail_end =
+    ot_lookup_table_tail_begin + lookup_table_tail_length;
 
 constexpr types::data_length data_revision_length = 2;
-constexpr types::address data_revision_address_begin = reserved_address_end;
+constexpr types::address data_revision_address_begin = ot_lookup_table_tail_end;
 constexpr types::address data_revision_address_end =
     data_revision_address_begin + data_revision_length;
 
-constexpr types::data_length lookup_table_tail_length = 2;
-// set to 4 * page length to give new lookup table entries room to grow without
-// overwriting the data section
-constexpr types::address lookup_table_tail_begin = types::page_length * 4;
+constexpr types::address lookup_table_tail_begin = data_revision_address_end;
 constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
@@ -116,8 +113,7 @@ constexpr types::address ot_library_end =
     types::page_length;
 // ot_library_lookup_table starts at page 4 to give it room to grow without
 // overwriting the lookup table
-constexpr types::address ot_library_lookup_table_start =
-    lookup_table_tail_begin;
+constexpr types::address ot_library_table = types::page_length * 4;
 
 /*
  *Wrapper class for ot_library_end and ot_library_begin

@@ -8,6 +8,9 @@
 #include <cstring>
 #include <unordered_map>
 
+// #pragma GCC push_options
+// #pragma GCC optimize("Og")
+
 #include "accessor.hpp"
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
@@ -115,7 +118,7 @@ class BookAccessor
             if (key == 0) {
                 // double check if this is writig to the data_table
                 message::WriteEepromMessage write;
-                write.memory_address = addresses::ot_library_lookup_table_start;
+                write.memory_address = addresses::ot_library_table;
                 write.length = 2 * conf.addr_bytes;
                 // data pointers are offsets from the start of the data
                 // section of the eeprom, so we subtract ot_library_begin
@@ -607,8 +610,7 @@ class BookAccessor
         types::address addr = 0;
         // offset and align to the nearest page
         if (config_updated) {
-            addr = addresses::ot_library_lookup_table_start +
-                   (key * 2 * conf.addr_bytes);
+            addr = addresses::ot_library_table + (key * 2 * conf.addr_bytes);
         }
         return addr;
     }
@@ -628,10 +630,10 @@ class BookAccessor
             data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
         bool do_initalize = false;
-        bool migrating = false;
+        // bool migrating = false;
         switch (action_cmd_m.action) {
             case TableAction::MIGRATE:
-                migrating = true;
+                // migrating = true;
                 [[fallthrough]];
             case TableAction::INITALIZE:
                 do_initalize = true;
@@ -650,12 +652,7 @@ class BookAccessor
                     // if we're migrating we want to write the new table
                     // entry to the same place as the old one, if we're not
                     // we want to write it to the tail
-                    if (migrating) {
-                        write.memory_address =
-                            m.memory_address + (2 * conf.addr_bytes);
-                    } else {
-                        write.memory_address = tail_accessor.get_data_tail();
-                    }
+                    write.memory_address = tail_accessor.get_data_tail();
 
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
@@ -720,3 +717,4 @@ class BookAccessor
 
 }  // namespace book_accessor
 }  // namespace eeprom
+// #pragma GCC pop_options

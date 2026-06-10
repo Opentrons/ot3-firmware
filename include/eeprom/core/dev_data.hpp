@@ -12,7 +12,7 @@ namespace dev_data {
 
 template <std::size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
-using DataTailType = std::array<uint8_t, addresses::lookup_table_tail_length>;
+using DataTailType = std::array<uint8_t, addresses::ot_lookup_table_tail_begin>;
 
 enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE, MIGRATE };
 
@@ -35,19 +35,18 @@ struct DevDataTailIntermediate {
 };
 
 // helper class to handle reading writing the data_tail value
-template <task::TaskClient EEPromTaskClient>
+template <task::TaskClient EEPromTaskClient,
+          types::address data_begin = addresses::lookup_table_tail_begin>
 class DevDataTailAccessor
     : DevDataTailIntermediate,
-      public accessor::EEPromAccessor<EEPromTaskClient,
-                                      addresses::lookup_table_tail_begin>,
+      public accessor::EEPromAccessor<EEPromTaskClient, data_begin>,
       accessor::ReadListener {
-    using accessor::EEPromAccessor<
-        EEPromTaskClient, addresses::lookup_table_tail_begin>::EEPromAccessor;
+    using accessor::EEPromAccessor<EEPromTaskClient,
+                                   data_begin>::EEPromAccessor;
 
   public:
     explicit DevDataTailAccessor(EEPromTaskClient& eeprom_client)
-        : accessor::EEPromAccessor<EEPromTaskClient,
-                                   addresses::lookup_table_tail_begin>::
+        : accessor::EEPromAccessor<EEPromTaskClient, data_begin>::
               EEPromAccessor(eeprom_client, *this,
                              accessor::AccessorBuffer(data_tail_buff.begin(),
                                                       data_tail_buff.end())) {}
@@ -76,7 +75,7 @@ class DevDataTailAccessor
                        data_tail_buff.begin())) {
             // Value is set to default so update it to data section start
             auto init_tail = DataTailType{};
-            data_tail = addresses::ot_library_lookup_table_start;
+            data_tail = data_begin;
             std::ignore = bit_utils::int_to_bytes(
                 data_tail, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
@@ -93,7 +92,7 @@ class DevDataTailAccessor
 
     auto increase_data_tail(const DataTailType& data_added) -> void {
         tail_updated = false;
-        auto read_addr = addresses::lookup_table_tail_begin;
+        auto read_addr = data_begin;
         auto bytes_remain = addresses::lookup_table_tail_length;
         types::data_length amount_to_read =
             std::min(bytes_remain, types::max_data_length);
@@ -180,7 +179,8 @@ class DevDataAccessor
     explicit DevDataAccessor(
         EEPromTaskClient& eeprom_client, accessor::ReadListener& listener,
         DataBufferType<SIZE>& buffer,
-        DevDataTailAccessor<EEPromTaskClient>& tail_accessor)
+        DevDataTailAccessor<EEPromTaskClient,
+                            addresses::lookup_table_tail_begin>& tail_accessor)
         : accessor::EEPromAccessor<EEPromTaskClient,
                                    addresses::data_address_begin>::
               EEPromAccessor(

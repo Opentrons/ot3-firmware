@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+// #pragma GCC push_options
+// #pragma GCC optimize("O0")
+
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
 #include "eeprom/core/book_accessor.hpp"
@@ -259,3 +262,4 @@ class UpdateDataRevTask {
 
 }  // namespace data_rev_task
 }  // namespace eeprom
+// #pragma GCC pop_options
