@@ -5,8 +5,10 @@
 // #pragma GCC push_options
 // #pragma GCC optimize("O0")
 
+#include "addresses.hpp"
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
+#include "dev_data.hpp"
 #include "eeprom/core/book_accessor.hpp"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
@@ -58,7 +60,11 @@ class UpdateDataRevHandler : accessor::ReadListener {
                              tail_accessor, all_reads},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client),
-          tail_accessor(tail_accessor) {
+          dev_data_tail_accessor(
+              dev_data::DevDataTailAccessor<EEPromClient,
+                                            addresses::lookup_table_tail_begin>(
+                  eeprom_client)),
+          book_tail_accessor(tail_accessor) {
         data_rev_accessor.start_read(0);
     }
 
@@ -96,7 +102,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     void visit(const MigrateDataMessage& m) {
         // "finish data rev" before data rev is finished for migration to ensure
         // that reads can properly occur
-        tail_accessor.finish_data_rev();
+        dev_data_tail_accessor.finish_data_rev();
 
         if (m.data_rev == current_data_rev + 1) {
             migrating = true;
@@ -210,7 +216,10 @@ class UpdateDataRevHandler : accessor::ReadListener {
         data_revision::DataRevisionType{};
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;
     EEPromClient& eeprom_client;
-    dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor;
+    dev_data::DevDataTailAccessor<EEPromClient,
+                                  addresses::lookup_table_tail_begin>
+        dev_data_tail_accessor;
+    dev_data::DevDataTailAccessor<EEPromClient>& book_tail_accessor;
 };
 
 /**

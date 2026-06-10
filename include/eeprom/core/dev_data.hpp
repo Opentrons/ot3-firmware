@@ -62,7 +62,10 @@ class DevDataTailAccessor
         config_updated = true;
     }
 
-    auto data_rev_complete() -> bool { return data_rev_finished; }
+    auto data_rev_complete() -> bool {
+        return true;
+        // return data_rev_finished;
+    }
 
     auto finish_data_rev() -> void { data_rev_finished = true; }
 
