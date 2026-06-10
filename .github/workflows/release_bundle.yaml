@@ -20,10 +20,10 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 20
     steps:
-      - uses: "actions/checkout@v2"
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           fetch-depth: 0
-      - uses: "actions/cache@v3"
+      - uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
@@ -37,7 +37,7 @@ jobs:
         run: |
           cmake --install ./build-cross
       - name: 'Upload application artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-applications-${{github.ref_name}}'
           path: |
@@ -53,31 +53,31 @@ jobs:
               popd
           done
       - name: 'Upload all-images artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-images-${{github.ref_name}}'
           path: |
             dist/images/*.hex
       - name: 'Upload robot-images artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-robot-images-${{github.ref_name}}'
           path: |
             dist/robot-images/*.hex
       - name: 'Upload pipette-images artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-pipette-images-${{github.ref_name}}'
           path: |
             dist/pipette-images/*.hex
       - name: 'Upload gripper-images artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-gripper-images-${{github.ref_name}}'
           path: |
             dist/gripper-images/*.hex
       - name: 'Upload hepa-uv-images artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 'firmware-hepa-uv-images-${{github.ref_name}}'
           path: |
@@ -90,7 +90,7 @@ jobs:
     if: github.ref_type == 'tag'
     steps:
       - name: 'Download artifacts'
-        uses: 'actions/download-artifact@v4'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: .
       - name: 'Create zips for each sub-artifact'
@@ -102,7 +102,7 @@ jobs:
           done
 
       - name: 'Create a release'
-        uses: 'ncipollo/release-action@v1.12.0'
+        uses: ncipollo/release-action@a2e71bdd4e7dab70ca26a852f29600c98b33153e # v1.12.0
         with:
           draft: true
           generateReleaseNotes: true
@@ -110,7 +110,7 @@ jobs:
           allowUpdates: true
 
       - name: 'Add firmware category zips'
-        uses: 'ncipollo/release-action@v1.12.0'
+        uses: ncipollo/release-action@a2e71bdd4e7dab70ca26a852f29600c98b33153e # v1.12.0
         with:
           artifacts: ./firmware-*-${{github.ref_name}}.zip
           artifactContentType: application/zip
@@ -121,7 +121,7 @@ jobs:
           omitPrereleaseDuringUpdate: true
 
       - name: 'Add latest firmware images'
-        uses: 'ncipollo/release-action@v1.12.0'
+        uses: ncipollo/release-action@a2e71bdd4e7dab70ca26a852f29600c98b33153e # v1.12.0
         with:
           artifacts: './firmware-*-images-${{github.ref_name}}/*.hex'
           artifactContentType: text/plain
