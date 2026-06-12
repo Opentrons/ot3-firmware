@@ -5,7 +5,6 @@
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "messages.hpp"
-#include "task.h"
 #include "task.hpp"
 #include "types.hpp"
 
