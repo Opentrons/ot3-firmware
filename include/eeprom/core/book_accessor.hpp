@@ -300,14 +300,6 @@ class BookAccessor
         get_data(key, 0, 0, message_index);
     }
 
-    auto data_part_exists(uint16_t key) -> bool {
-        if (table_ready()) {
-            return calculate_table_entry_start(key) <
-                   tail_accessor.get_data_tail();
-        }
-        return false;
-    }
-
     auto read_write_ready() -> bool {
         return table_ready() && tail_accessor.data_rev_complete();
     }
