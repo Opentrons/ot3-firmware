@@ -341,12 +341,15 @@ class BookAccessor
         }
     }
 
+    void set_testing(bool testing) { is_testing = testing; }
+
   private:
     // fields, decide what they are
     // Add a tail accessor?
     dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
+    bool is_testing{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     uint8_t read_count = 0;
