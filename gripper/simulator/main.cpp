@@ -1,8 +1,12 @@
 #include <signal.h>
 
+#include <bitset>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <variant>
+#include <vector>
 
 extern "C" {
 __attribute__((weak)) void crc16_init(void) {}
