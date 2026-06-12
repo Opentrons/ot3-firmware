@@ -100,8 +100,7 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit(
-            [this](auto o) -> auto { this->visit(o); }, message);
+        std::visit([this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};
@@ -122,8 +121,7 @@ struct BMockEEpromTaskClient {
         to_be_sent.length = message.length;
         to_be_sent.message_index = message.message_index;
 
-        auto data_to_be_sent =
-            std::array<uint8_t, static_cast<size_t>(types::page_length)>{};
+        auto data_to_be_sent = eeprom::types::EepromData{};
 
         if (message.memory_address < (backing.size() / 2)) {
             // front half of the device: just return what's actually stored
@@ -217,6 +215,10 @@ struct BMockEEpromTaskClient {
         const auto callback = message.callback;
 
         callback(to_be_sent, message.callback_param);
+
+        to_be_sent.data.fill(0x00);
+
+        callback(to_be_sent, message.callback_param);
         messages_received.push_back(message);
     }
 
@@ -303,7 +305,7 @@ SCENARIO("Creating a data partition") {
             auto write_message =
                 std::get<eeprom::message::WriteEepromMessage>(message);
             REQUIRE(write_message.memory_address ==
-                    eeprom::addresses::data_address_begin);
+                    eeprom::addresses::ot_library_table);
 
             // check that address to be written is correct
 
