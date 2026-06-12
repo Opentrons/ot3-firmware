@@ -47,7 +47,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     auto operator=(const UpdateDataRevHandler&)
         -> UpdateDataRevHandler& = delete;
 
-    override ~UpdateDataRevHandler() =
+    ~UpdateDataRevHandler() override =
         default;  // Destructor (virtual because it overrides a base class)
     UpdateDataRevHandler(UpdateDataRevHandler&&) =
         delete;  // Delete Move Constructor
