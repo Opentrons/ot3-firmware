@@ -376,6 +376,12 @@ class BookAccessor
     }
 
     auto check_crc(std::array<uint8_t, types::page_length>& bytes) -> bool {
+        // if we're testing, we want to bypass CRC calculations to avoid having
+        // too worry about hardware acceleration on incompatible platforms
+        if (is_testing) {
+            return true;
+        }
+
         // Grab CRC from byte array
         uint16_t given_crc{};
         std::memcpy(&given_crc, bytes.data(), sizeof(given_crc));

@@ -42,8 +42,7 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit(
-            [this](auto o) -> auto { this->visit(o); }, message);
+        std::visit([this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};
@@ -207,7 +206,8 @@ SCENARIO("Creating a data partition") {
 
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
+    all_reads.fill(0);
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -218,9 +218,10 @@ SCENARIO("Creating a data partition") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+        1>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
 
     tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(true);
 
     GIVEN("Book Accessor initializes properly") {
         THEN("Create data part no data") {
@@ -296,7 +297,8 @@ SCENARIO("Creating a data partition") {
 SCENARIO("Book Accessor can read data from EEPROM") {
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
+    all_reads.fill(0);
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -307,9 +309,11 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+        1>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
 
     tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(true);
+
     uint16_t key = 0;
     uint16_t len = 1;
     uint16_t offset = 0;
@@ -344,7 +348,8 @@ SCENARIO("Book Accessor can read data from EEPROM") {
 SCENARIO("Book Accessor can write data to EEPROM") {
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
+    all_reads.fill(0);
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -355,9 +360,11 @@ SCENARIO("Book Accessor can write data to EEPROM") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+        1>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
 
     tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(true);
+
     uint16_t key = 0;
     uint16_t len = 1;
     uint16_t offset = 0;

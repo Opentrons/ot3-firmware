@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-#include "FreeRTOS.h"
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "messages.hpp"
@@ -126,9 +125,6 @@ class EEPromAccessor {
                 .length = amount_to_write,
                 .data = write});
 
-            //            vTaskDelay(2 * portTICK_PERIOD_MS);  // delay to avoid
-            //            overwhelming
-            // the i2c task
             write_addr += amount_to_write;
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             type_iter += amount_to_write;
