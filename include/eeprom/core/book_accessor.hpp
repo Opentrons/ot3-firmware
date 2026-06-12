@@ -498,7 +498,7 @@ class BookAccessor
                 return;
             }
 
-            most_recent_valid = reads[most_recent_index];
+            most_recent_valid = reads.at(most_recent_index);
 
             if (most_recent_valid == read0) {
                 crc_valid = check_crc(all_reads[0]);

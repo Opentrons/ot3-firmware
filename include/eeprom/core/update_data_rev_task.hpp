@@ -47,6 +47,13 @@ class UpdateDataRevHandler : accessor::ReadListener {
     auto operator=(const UpdateDataRevHandler&)
         -> UpdateDataRevHandler& = delete;
 
+    virtual ~UpdateDataRevHandler() =
+        default;  // Destructor (virtual because it overrides a base class)
+    UpdateDataRevHandler(UpdateDataRevHandler&&) =
+        delete;  // Delete Move Constructor
+    auto operator=(UpdateDataRevHandler&&)
+        -> UpdateDataRevHandler& = delete;  // Delete Move Assignment
+
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
@@ -214,7 +221,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;
