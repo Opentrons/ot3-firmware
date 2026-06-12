@@ -28,7 +28,7 @@ static constexpr uint16_t error_count_usage_len = 4;
 // level for some reason. Likely a quirk of this god forsaken language
 
 template <typename NUM_T>
-    requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
+requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
 [[nodiscard]] auto check_for_default_val(NUM_T val, size_t len = 0) -> NUM_T {
     // in most cases we want to use the compare to the actual max value,
     // but during the processing of GetUsageRequest the NUM_T is always uint64_t
@@ -201,7 +201,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
  * The task entry point.
  */
 template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UsageStorageTask {
   public:
     using Messages = TaskMessage;
@@ -249,7 +249,7 @@ class UsageStorageTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
-    { client.send_usage_storage_queue(m) };
+    {client.send_usage_storage_queue(m)};
 };
 
 }  // namespace usage_storage_task

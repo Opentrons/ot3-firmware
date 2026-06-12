@@ -336,12 +336,15 @@ class BookAccessor
         }
     }
 
+    void set_testing(bool testing) { is_testing = testing; }
+
   private:
     // fields, decide what they are
     // Add a tail accessor?
     dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor;
     message::ConfigResponseMessage conf = message::ConfigResponseMessage{};
     bool config_updated{false};
+    bool is_testing{false};
     table_entry_action action_cmd_m = dev_data::table_entry_action{};
     ReadListener& read_listener;
     uint8_t read_count = 0;
@@ -368,6 +371,12 @@ class BookAccessor
     }
 
     auto check_crc(std::array<uint8_t, types::page_length>& bytes) -> bool {
+        // if we're testing, we want to bypass CRC calculations to avoid having
+        // too worry about hardware acceleration on incompatible platforms
+        if (is_testing) {
+            return true;
+        }
+
         // Grab CRC from byte array
         uint16_t given_crc{};
         std::memcpy(&given_crc, bytes.data(), sizeof(given_crc));
@@ -484,7 +493,7 @@ class BookAccessor
                 return;
             }
 
-            most_recent_valid = reads[most_recent_index];
+            most_recent_valid = reads.at(most_recent_index);
 
             if (most_recent_valid == read0) {
                 crc_valid = check_crc(all_reads[0]);

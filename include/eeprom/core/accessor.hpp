@@ -2,11 +2,9 @@
 
 #include <cassert>
 
-#include "FreeRTOS.h"
 #include "addresses.hpp"
 #include "common/core/bit_utils.hpp"
 #include "messages.hpp"
-#include "task.h"
 #include "task.hpp"
 #include "types.hpp"
 
@@ -17,9 +15,8 @@ class AccessorBuffer {
   public:
     AccessorBuffer() = default;
     template <typename B_ITER, typename L_ITER>
-        requires bit_utils::ByteIterator<B_ITER> &&
-                     std::sentinel_for<B_ITER, L_ITER> &&
-                     std::contiguous_iterator<B_ITER>
+    requires bit_utils::ByteIterator<B_ITER> &&
+        std::sentinel_for<B_ITER, L_ITER> && std::contiguous_iterator<B_ITER>
     explicit AccessorBuffer(B_ITER begin, L_ITER limit)
         : buffer_start(begin), buffer_limit(limit) {}
     auto size() -> size_t { return buffer_limit - buffer_start; }
@@ -127,9 +124,6 @@ class EEPromAccessor {
                 .length = amount_to_write,
                 .data = write});
 
-            //            vTaskDelay(2 * portTICK_PERIOD_MS);  // delay to avoid
-            //            overwhelming
-            // the i2c task
             write_addr += amount_to_write;
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             type_iter += amount_to_write;
