@@ -22,32 +22,33 @@ SCENARIO("Writing serial number") {
             subject.write(sn_data, 1234);
 
             THEN("there is an eeprom write") {
-                REQUIRE(
-                    queue_client.messages.size() ==
-                    (addresses::serial_number_length / types::max_data_length) +
-                        (addresses::serial_number_length %
-                             types::max_data_length !=
-                         0));
+                REQUIRE(queue_client.messages.size() ==
+                        (addresses::serial_number_length /
+                         (types::page_length / 2)) +
+                            (addresses::serial_number_length %
+                                 (types::page_length / 2) !=
+                             0));
                 message::WriteEepromMessage write_message;
                 types::data_length expected_bytes;
                 for (size_t i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
-                        ((sn_data.size() - (i * types::max_data_length)) >
-                                 types::max_data_length
-                             ? types::max_data_length
-                             : sn_data.size() % types::max_data_length);
+                        ((sn_data.size() - (i * (types::page_length / 2))) >
+                                 (types::page_length / 2)
+                             ? (types::page_length / 2)
+                             : sn_data.size() % (types::page_length / 2));
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
                     REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::serial_number_address_begin +
-                                (i * types::max_data_length));
+                                (i * (types::page_length / 2)));
 
                     REQUIRE(write_message.length == expected_bytes);
-                    REQUIRE(std::equal(write_message.data.begin(),
-                                       &(write_message.data[expected_bytes]),
-                                       &(sn_data[i * types::max_data_length])));
+                    REQUIRE(
+                        std::equal(write_message.data.begin(),
+                                   &(write_message.data[expected_bytes]),
+                                   &(sn_data[i * (types::page_length / 2)])));
                 }
             }
         }
@@ -69,29 +70,29 @@ SCENARIO("Reading serial number") {
             subject.start_read(1234);
 
             THEN("there is an eeprom read") {
-                REQUIRE(
-                    queue_client.messages.size() ==
-                    (addresses::serial_number_length / types::max_data_length) +
-                        (addresses::serial_number_length %
-                             types::max_data_length !=
-                         0));
+                REQUIRE(queue_client.messages.size() ==
+                        (addresses::serial_number_length /
+                         (types::page_length / 2)) +
+                            (addresses::serial_number_length %
+                                 (types::page_length / 2) !=
+                             0));
 
                 types::data_length expected_bytes;
                 message::ReadEepromMessage read_message;
                 for (size_t i = 0; i < queue_client.messages.size(); i++) {
-                    expected_bytes =
-                        ((addresses::serial_number_length -
-                          (i * types::max_data_length)) > types::max_data_length
-                             ? types::max_data_length
-                             : addresses::serial_number_length %
-                                   types::max_data_length);
+                    expected_bytes = ((addresses::serial_number_length -
+                                       (i * (types::page_length / 2))) >
+                                              (types::page_length / 2)
+                                          ? (types::page_length / 2)
+                                          : addresses::serial_number_length %
+                                                (types::page_length / 2));
 
                     read_message = std::get<message::ReadEepromMessage>(
                         queue_client.messages[i]);
 
                     REQUIRE(read_message.memory_address ==
                             addresses::serial_number_address_begin +
-                                (i * types::max_data_length));
+                                (i * (types::page_length / 2)));
                     REQUIRE(read_message.length == expected_bytes);
                     REQUIRE(read_message.callback_param == &subject);
                     REQUIRE(read_message.message_index == 1234);
@@ -109,19 +110,20 @@ SCENARIO("Reading serial number") {
 
             auto data = types::EepromData{};
             auto expected_num_read_response =
-                (addresses::serial_number_length / types::max_data_length) +
-                (addresses::serial_number_length % types::max_data_length != 0);
+                (addresses::serial_number_length / (types::page_length / 2)) +
+                (addresses::serial_number_length % (types::page_length / 2) !=
+                 0);
 
             for (auto i = 0; i < expected_num_read_response; i++) {
                 num_bytes =
                     ((addresses::serial_number_length -
-                      (i * types::max_data_length)) > types::max_data_length
-                         ? types::max_data_length
+                      (i * (types::page_length / 2))) > (types::page_length / 2)
+                         ? (types::page_length / 2)
                          : addresses::serial_number_length %
-                               types::max_data_length);
+                               (types::page_length / 2));
                 read_message = std::get<message::ReadEepromMessage>(
                     queue_client.messages[i]);
-                std::copy_n(sn_data.begin() + (i * types::max_data_length),
+                std::copy_n(sn_data.begin() + (i * (types::page_length / 2)),
                             num_bytes, data.begin());
                 read_message.callback(
                     message::EepromMessage{

@@ -451,8 +451,8 @@ SCENARIO("writing large data to partition") {
             // after reading the table entry the driver should queue a bunch of
             // writes
             REQUIRE(queue_client.messages.size() ==
-                    1 + (json_blob.size() / types::max_data_length) +
-                        (json_blob.size() % types::max_data_length != 0));
+                    1 + (json_blob.size() / (types::page_length / 2)) +
+                        (json_blob.size() % (types::page_length / 2) != 0));
         }
     }
 }
@@ -654,8 +654,8 @@ SCENARIO("reading large data from partition") {
             // after reading the table entry the driver should queue a bunch of
             // reads
             REQUIRE(queue_client.messages.size() ==
-                    1 + (json_blob.size() / types::max_data_length) +
-                        (json_blob.size() % types::max_data_length != 0));
+                    1 + (json_blob.size() / (types::page_length / 2)) +
+                        (json_blob.size() % (types::page_length / 2) != 0));
         }
     }
 }
