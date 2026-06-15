@@ -325,12 +325,6 @@ class BookAccessor
         std::copy_n(intermediate_buffer.begin(), types::page_length,
                     all_reads[read_count].begin());
 
-        printf("read contents: ");
-        for (int i = 0; i < types::page_length; i++) {
-            printf("%02X ", intermediate_buffer[i]);
-        }
-        printf("\n");
-
         // increment read_count
         read_count++;
 
@@ -404,13 +398,6 @@ class BookAccessor
     }
 
     void read_final(uint16_t message_index) {
-        for (const auto& read : all_reads) {
-            printf("Read page: ");
-            for (int i = 0; i < types::page_length; i++) {
-                printf("%02X ", read[i]);
-            }
-            printf("\n");
-        }
         // create variables representing read page addresses
         uint16_t read0 = 0;
         uint16_t read1 = 0;
@@ -476,14 +463,12 @@ class BookAccessor
     void find_most_recent(uint16_t message_index,
                           std::array<uint16_t, 4>& reads, uint16_t read0,
                           uint16_t read1, uint16_t read2, uint16_t read3) {
-        printf("Finding most recent valid page\n");
         // change action_cmd_m.len to the length of the
         // data stored in the
         // page. This information is in bytes 4 and 5 of the header
         uint16_t data_len = 0;
         std::memcpy(&data_len, &all_reads[0][4], sizeof(data_len));
         action_cmd_m.len = data_len;
-        printf("Data length: %d\n", data_len);
 
         // set most recent index and most recent valid again
         uint16_t most_recent_index = 0;
@@ -498,10 +483,6 @@ class BookAccessor
             // calcluated breaks if it has tried more than 4 times (the
             // number of pages in a book)
             if (most_recent_index >= 4) {
-                printf(
-                    "Error, no valid pages found after checking all pages, "
-                    "sending "
-                    "error message\n");
                 std::array<uint8_t, BUFFER_SIZE> error{};
                 error.fill(0xAA);
                 // writes an error to the buffer
@@ -520,27 +501,19 @@ class BookAccessor
             most_recent_valid = reads.at(most_recent_index);
 
             if (most_recent_valid == read0) {
-                printf("checking crc for read0\n");
                 crc_valid = check_crc(all_reads[0]);
-                printf("crc valid: %d\n", crc_valid);
                 all_reads_index = 0;
 
             } else if (most_recent_valid == read1) {
-                printf("checking crc for read1\n");
                 crc_valid = check_crc(all_reads[1]);
-                printf("crc valid: %d\n", crc_valid);
                 all_reads_index = 1;
 
             } else if (most_recent_valid == read2) {
-                printf("checking crc for read2\n");
                 crc_valid = check_crc(all_reads[2]);
-                printf("crc valid: %d\n", crc_valid);
                 all_reads_index = 2;
 
             } else if (most_recent_valid == read3) {
-                printf("checking crc for read3\n");
                 crc_valid = check_crc(all_reads[3]);
-                printf("crc valid: %d\n", crc_valid);
                 all_reads_index = 3;
             }
 
