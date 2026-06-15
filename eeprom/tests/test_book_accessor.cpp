@@ -121,7 +121,8 @@ struct BMockEEpromTaskClient {
         to_be_sent.length = message.length;
         to_be_sent.message_index = message.message_index;
 
-        auto data_to_be_sent = eeprom::types::EepromData{};
+        auto data_to_be_sent =
+            std::array<uint8_t, static_cast<size_t>(types::page_length)>{};
 
         if (message.memory_address < (backing.size() / 2)) {
             // front half of the device: just return what's actually stored
@@ -213,10 +214,6 @@ struct BMockEEpromTaskClient {
         to_be_sent.data = data_to_be_sent;
 
         const auto callback = message.callback;
-
-        callback(to_be_sent, message.callback_param);
-
-        to_be_sent.data.fill(0x00);
 
         callback(to_be_sent, message.callback_param);
         messages_received.push_back(message);
