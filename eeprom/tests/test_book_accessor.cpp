@@ -100,8 +100,7 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit(
-            [this](auto o) -> auto { this->visit(o); }, message);
+        std::visit([this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};
@@ -139,28 +138,33 @@ struct BMockEEpromTaskClient {
             // generate arrays that aren't the valid one
 
             if (read_option == VALID) {
+                printf("read counter: %d\n", read_counter);
                 switch (read_counter) {
                         // first in page, counter value 2
                     case 0:
-                        data_to_be_sent[2] = 0b00000010;  // counter
-                        data_to_be_sent[9] = 0b00000010;  // value
+                        data_to_be_sent[2] = 0x02;        // counter
+                        data_to_be_sent[4] = 0x08;        // len
+                        data_to_be_sent[8] = 0b00000010;  // value
                         break;
                         // second page in book, counter value 3
                     case 1:
-                        data_to_be_sent[2] = 0b00000011;
-                        data_to_be_sent[9] = 0b00000011;
+                        data_to_be_sent[2] = 0x04;
+                        data_to_be_sent[4] = 0x08;  // len
+                        data_to_be_sent[8] = 0b00000011;
                         break;
                         // third (current) page in book, counter value 4
                     case 2:
                         data_to_be_sent[2] = 0b00000100;
                         data_to_be_sent[0] = 0b10000100;  // CRC
                         data_to_be_sent[1] = 0b01000000;  // still CRC
-                        data_to_be_sent[9] = 0b00000100;
+                        data_to_be_sent[4] = 0x08;        // len
+                        data_to_be_sent[8] = 0b00000100;
                         break;
                         // fourth page in book, counter value 1
                     case 3:
                         data_to_be_sent[2] = 0b00000001;
-                        data_to_be_sent[9] = 0b00000001;
+                        data_to_be_sent[4] = 0x08;  // len
+                        data_to_be_sent[8] = 0b00000001;
                         read_counter =
                             -1;  // reset counter so that if the object tries to
                                  // read again it will get the same values and
@@ -174,11 +178,13 @@ struct BMockEEpromTaskClient {
                         // first in page, counter value 1
                     case 0:
                         data_to_be_sent[2] = 0b00000001;  // counter
+                        data_to_be_sent[4] = 0x08;        // len
                         data_to_be_sent[9] = 0b00000001;  // value
                         break;
                         // second page in book, counter value 2
                     case 1:
                         data_to_be_sent[2] = 0b00000010;
+                        data_to_be_sent[4] = 0x08;  // len
                         data_to_be_sent[9] = 0b00000010;
                         break;
                         // third (current) page in book, counter value 3 valid
@@ -187,12 +193,14 @@ struct BMockEEpromTaskClient {
                         data_to_be_sent[2] = 0b00000011;
                         data_to_be_sent[0] = 0b10000100;  // CRC
                         data_to_be_sent[1] = 0b01000000;  // still CRC
+                        data_to_be_sent[4] = 0x08;        // len
                         data_to_be_sent[9] = 0b00000100;
                         break;
                         // fourth page in book, counter value 3 invalid (no)
                         // CRC; data value 7
                     case 3:
                         data_to_be_sent[2] = 0b00000100;
+                        data_to_be_sent[4] = 0x08;  // len
                         data_to_be_sent[9] = 0b00001001;
                         read_counter =
                             -1;  // reset counter so that if the object tries to
@@ -288,7 +296,7 @@ SCENARIO("Creating a data partition") {
     GIVEN("Book Accessor initializes properly") {
         THEN("Create data part no data") {
             uint16_t key = 0;
-            uint16_t len = 1;
+            uint16_t len = 8;
             // std::array<uint8_t, 1> data{0b00000100};
             std::array<uint8_t, 0> empty_data{};
 
@@ -379,7 +387,7 @@ SCENARIO("Book Accessor can read data from EEPROM") {
     test_book_accessor.set_testing(true);
 
     uint16_t key = 0;
-    uint16_t len = 1;
+    uint16_t len = 8;
     uint16_t offset = 0;
     uint32_t message_index = 0;
 
@@ -404,7 +412,7 @@ SCENARIO("Book Accessor can read data from EEPROM") {
             mock_client.read_option = ReadOption::ALL_INVALID;
             test_book_accessor.get_data(key, len, offset, message_index);
             // check that the value read is correct
-            REQUIRE(buffer[0] == 0b00000000);
+            REQUIRE(buffer[0] == 0xAA);
         }
     }
 }
@@ -483,11 +491,6 @@ SCENARIO("Book Accessor can write data to EEPROM") {
             uint16_t address_written = write_message.memory_address;
             printf("Address written: %d", address_written);
             REQUIRE(address_written == 16064);
-
-            // check that the value written is correct
-            // REQUIRE(
-            //     mock_client.backing[eeprom::addresses::data_address_begin] ==
-            //     0b00000101);
         }
     }
 }
