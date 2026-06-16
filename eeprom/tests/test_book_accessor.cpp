@@ -125,7 +125,7 @@ struct BMockEEpromTaskClient {
 
         if (is_first_chunk) {
             if (read_option == ALL_INVALID) {
-                // Change all CRCs to 0
+                // invert the CRCs
                 data_to_be_sent[0] = static_cast<uint8_t>(~data_to_be_sent[0]);
                 data_to_be_sent[1] = static_cast<uint8_t>(~data_to_be_sent[1]);
             } else if (read_option == ONE_INVALID) {
