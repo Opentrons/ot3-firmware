@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <unordered_map>
 
 #include "accessor.hpp"
 #include "addresses.hpp"
