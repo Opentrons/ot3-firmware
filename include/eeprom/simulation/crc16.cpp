@@ -1,13 +1,11 @@
 #include <bitset>
 #include <cstdint>
-#include <variant>
 #include <vector>
 
 extern "C" {
-__attribute__((weak)) void crc16_init(void) {}
+void crc16_init(void) {}
 
-__attribute__((weak)) uint16_t crc16_compute(const uint8_t* data,
-                                             uint8_t length) {
+auto crc16_compute(const uint8_t* data, uint8_t length) -> uint16_t {
     // Guard against zero-length data (like empty_data initialization)
     // to prevent underflows or out-of-bound indexing in the bitset logic
     if (length == 0 || data == nullptr) {

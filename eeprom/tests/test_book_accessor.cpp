@@ -5,10 +5,9 @@
 #include <vector>
 
 extern "C" {
-__attribute__((weak)) void crc16_init(void) {}
+void crc16_init(void) {}
 
-__attribute__((weak)) uint16_t crc16_compute(const uint8_t* data,
-                                             uint8_t length) {
+uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     if (length == 0 || data == nullptr) {
         return 0;
     }
@@ -90,8 +89,7 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit(
-            [this](auto o) -> auto { this->visit(o); }, message);
+        std::visit([this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};

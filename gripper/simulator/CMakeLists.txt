@@ -31,7 +31,6 @@ set(GRIPPER_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/eeprom_keys.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/crc16.cpp
         )
 
 add_executable(
