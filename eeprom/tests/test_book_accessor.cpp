@@ -4,51 +4,6 @@
 #include <variant>
 #include <vector>
 
-extern "C" {
-void crc16_init(void) {}
-
-uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
-    if (length == 0 || data == nullptr) {
-        return 0;
-    }
-
-    std::vector<uint8_t> data_vec(data, data + length);
-    std::bitset<2048> data_bitset;
-    for (size_t i = 0; i < length; ++i) {
-        for (size_t bit = 0; bit < 8; ++bit) {
-            data_bitset[(i * 8) + bit] = (data_vec[i] >> bit) & 1;
-        }
-    }
-
-    std::bitset<17> generator(0b10001000000100001);
-    constexpr uint16_t generator_position = 16;
-
-    std::bitset<2048 + generator_position> bit_data;
-    for (size_t i = 0; i < length * 8; i++) {
-        bit_data[i] = data_bitset[i];
-    }
-    bit_data <<= generator_position;
-    uint16_t data_position = (length * 8) + generator_position - 1;
-
-    while (data_position >= generator_position) {
-        if (!bit_data.test(data_position)) {
-            data_position--;
-            continue;
-        }
-        uint16_t difference = data_position - generator_position;
-        std::bitset<2048 + generator_position> divisor(generator.to_ullong());
-        divisor <<= difference;
-        bit_data ^= divisor;
-    }
-
-    std::bitset<16> crc;
-    for (int i = 15; i >= 0; i--) {
-        crc[i] = bit_data[i];
-    }
-    return static_cast<uint16_t>(crc.to_ullong());
-}
-}
-
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "eeprom/core/book_accessor.hpp"
@@ -89,8 +44,7 @@ struct BMockEEpromTaskClient {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     void send_eeprom_queue(const task::TaskMessage& message) {
-        std::visit(
-            [this](auto o) -> auto { this->visit(o); }, message);
+        std::visit([this](auto o) -> auto { this->visit(o); }, message);
     }
 
     std::vector<task::TaskMessage> messages_received{};
