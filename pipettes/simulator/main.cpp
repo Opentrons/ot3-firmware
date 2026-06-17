@@ -15,6 +15,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
+#include "eeprom/firmware/crc16.h"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "pipettes/core/central_tasks.hpp"

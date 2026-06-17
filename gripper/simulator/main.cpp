@@ -10,6 +10,7 @@
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/simulation/state_manager.hpp"
+#include "eeprom/firmware/crc16.h"
 #include "eeprom/simulation/eeprom.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
