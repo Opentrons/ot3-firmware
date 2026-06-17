@@ -15,25 +15,25 @@ jobs:
     steps:
 
       - name: Checkout opentrons-emulation repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           repository: Opentrons/opentrons-emulation
           ref: v3.0.1
 
       - name: Checkout ot3-firmware repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           path: ot3-firmware
 
       - name: Setup Emulation
-        uses: Opentrons/opentrons-emulation@v3.0.1
+        uses: Opentrons/opentrons-emulation@a9b08625252a02ee1bf8edc149b19116c0c6e0a8 # v3.0.1
         with:
           cache-break: ${{ github.event.inputs.cache-break }}
           command: setup-python-only
 
       - name: Substitute current sha into yaml
         id: sub-step
-        uses: Opentrons/opentrons-emulation@v3.0.1
+        uses: Opentrons/opentrons-emulation@a9b08625252a02ee1bf8edc149b19116c0c6e0a8 # v3.0.1
         with:
           command: yaml-sub
           substitutions: >-
@@ -45,13 +45,13 @@ jobs:
 
 
       - name: Build Emulator
-        uses: Opentrons/opentrons-emulation@v3.0.1
+        uses: Opentrons/opentrons-emulation@a9b08625252a02ee1bf8edc149b19116c0c6e0a8 # v3.0.1
         with:
           command: setup
           input-file: ${{ github.workspace }}/output.yaml
 
       - name: Run Emulation
-        uses: Opentrons/opentrons-emulation@v3.0.1
+        uses: Opentrons/opentrons-emulation@a9b08625252a02ee1bf8edc149b19116c0c6e0a8 # v3.0.1
         with:
           command: run
           input-file: ${{ github.workspace }}/output.yaml
@@ -63,7 +63,7 @@ jobs:
         run: "curl --request GET --header 'opentrons-version: *' http://localhost:31950/modules"
 
       - name: Teardown Emulation
-        uses: Opentrons/opentrons-emulation@v3.0.1
+        uses: Opentrons/opentrons-emulation@a9b08625252a02ee1bf8edc149b19116c0c6e0a8 # v3.0.1
         with:
           input-file: ${{ github.workspace }}/output.yaml
           command: teardown
