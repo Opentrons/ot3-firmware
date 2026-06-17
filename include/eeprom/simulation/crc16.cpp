@@ -1,11 +1,20 @@
+#include "eeprom/firmware/crc16.h"
+
 #include <bitset>
 #include <cstdint>
 #include <vector>
 
 extern "C" {
+// methods don't do anything
+void crc16_reset_accumulator() {}
+
+uint16_t crc16_accumulate(const uint8_t* data, uint8_t length) {
+    return crc16_compute(data, length);
+}
+
 void crc16_init(void) {}
 
-auto crc16_compute(const uint8_t* data, uint8_t length) -> uint16_t {
+uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     // Guard against zero-length data (like empty_data initialization)
     // to prevent underflows or out-of-bound indexing in the bitset logic
     if (length == 0 || data == nullptr) {
