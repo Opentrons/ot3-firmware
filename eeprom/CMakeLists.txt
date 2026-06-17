@@ -2,6 +2,7 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     add_subdirectory(tests)
 else()
   add_subdirectory(firmware)
+  add_subdirectory(simulation)
 endif()
 
 file(GLOB_RECURSE EEPROM_SOURCE_FOR_FORMAT ./*.cpp ./*.hpp ../include/eeprom/*.hpp)
