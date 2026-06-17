@@ -122,10 +122,6 @@ class UpdateDataRevHandler : accessor::ReadListener {
         book_table_creator.create_data_part(key, length, accessor_backing,
                                             true);
 
-        // while (!table_creator.table_ready()) {
-        //     vTaskDelay(10);
-        // }
-
         current_data_rev = intermediate_data_rev;
 
         // reassign item to the next item in data table
@@ -138,24 +134,22 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     // method to set boundary of ot_library... not currently necessary, but may
     // be useful in the future
-    //
-    // void set_ot_library_boundary(MigrateDataMessage&
-    // m) {
-    //     // sort the data table to make sure keys are properly ordered
-    //     auto data_table_length = m.data_table.size();
-    //     std::sort(m.data_table.begin(), m.data_table.end());
-    //
-    //     // access final pair of data table and extract contents
-    //     std::pair<types::address, types::data_length> data_end =
-    //         m.data_table[data_table_length - 1];
-    //     types::address key = data_end.first;
-    //     types::data_length length = data_end.second;
-    //
-    //     // update the "tail" of ot_library (through ot_library_end address)
-    //     // to end of previous data
-    //     addresses::DataAddressWrapper::set_data_boundary(
-    //         table_creator.find_data_end(key, length), eeprom_client);
-    // }
+    void set_ot_library_boundary(MigrateDataMessage& m) {
+        // sort the data table to make sure keys are properly ordered
+        auto data_table_length = m.data_table.size();
+        std::sort(m.data_table.begin(), m.data_table.end());
+
+        // access final pair of data table and extract contents
+        std::pair<types::address, types::data_length> data_end =
+            m.data_table[data_table_length - 1];
+        types::address key = data_end.first;
+        types::data_length length = data_end.second;
+
+        // update the "tail" of ot_library (through ot_library_end address)
+        // to end of previous data
+        addresses::DataAddressWrapper::set_data_boundary(
+            table_creator.find_data_end(key, length), eeprom_client);
+    }
 
     void visit(const OTLibraryUpdateMessage& m) {
         if (m.data_rev == current_data_rev + 1) {
@@ -221,7 +215,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;

@@ -70,7 +70,6 @@ static constexpr auto eeprom_chip =
 #else
 static constexpr auto eeprom_chip =
     eeprom::hardware_iface::EEPromChipType::ST_M24128_BF;
-// static eeprom::CRC16Accelerated crc16;
 #endif
 
 class EEPromHardwareInterface
