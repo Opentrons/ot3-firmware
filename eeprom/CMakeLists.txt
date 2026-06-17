@@ -1,6 +1,6 @@
 if (NOT ${CMAKE_CROSSCOMPILING})
   add_subdirectory(simulation)
-    add_subdirectory(tests)
+  add_subdirectory(tests)
 else()
   add_subdirectory(firmware)
 endif()

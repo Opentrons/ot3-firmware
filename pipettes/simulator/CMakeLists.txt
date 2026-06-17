@@ -50,6 +50,7 @@ function(add_simulator_executable TARGET)
 
     target_can_simlib(${TARGET})
     target_ot_motor_control(${TARGET})
+    target_eeprom_sim(${TARGET})
 
     if(${TARGET} STREQUAL "pipettes-single-simulator")
         target_pipettes_core_single(${TARGET} "proto")
