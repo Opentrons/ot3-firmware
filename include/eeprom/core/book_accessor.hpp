@@ -266,10 +266,6 @@ class BookAccessor
             }
 
             auto table_location = calculate_table_entry_start(key);
-            // if (table_location > tail_accessor.get_data_tail()) {
-            //     LOG("Error, attemping to read uninitalized value");
-            //     return;
-            // }
 
             if (!(action_cmd_m.action == TableAction::READ_BEFORE_WRITE)) {
                 action_cmd_m = table_entry_action{.key = key,
