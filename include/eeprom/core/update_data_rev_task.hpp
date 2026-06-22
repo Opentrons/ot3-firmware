@@ -224,7 +224,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;
