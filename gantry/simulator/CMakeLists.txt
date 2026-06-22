@@ -54,6 +54,8 @@ foreach(AXIS IN LISTS AXES)
   target_ot_motor_control(gantry-${AXIS}-simulator)
 
   target_i2c_simlib(gantry-${AXIS}-simulator)
+  
+  target_eeprom_sim(gantry-${AXIS}-simulator)
 
   target_link_libraries(gantry-${AXIS}-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost Boost::program_options state_manager)
 

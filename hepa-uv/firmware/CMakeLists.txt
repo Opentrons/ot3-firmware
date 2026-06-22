@@ -68,6 +68,7 @@ macro(hepa_uv_loop)
     target_ot_motor_control(${REVISION_TARGET})
 
     target_i2c_firmware(${REVISION_TARGET})
+    target_eeprom_firmware(${REVISION_TARGET})
 
     target_link_libraries(${REVISION_TARGET}
             PUBLIC STM32G491RETx

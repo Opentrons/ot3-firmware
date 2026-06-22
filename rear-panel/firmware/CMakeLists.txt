@@ -94,6 +94,7 @@ macro(rearpanel_loop)
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
   target_rear_panel_core_rev1(${REVISION_TARGET})
   target_i2c_firmware(${REVISION_TARGET})
+  target_eeprom_firmware(${REVISION_TARGET})
 
   target_link_libraries(${REVISION_TARGET}
           PUBLIC

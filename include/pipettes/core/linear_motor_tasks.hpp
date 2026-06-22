@@ -39,7 +39,9 @@ void start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor);
+        tail_accessor,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        book_tail_accessor);
 
 // 96/384 linear motor tasks
 void start_tasks(
@@ -50,7 +52,9 @@ void start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor);
+        tail_accessor,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        book_tail_accessor);
 
 /**
  * Access to all the linear motion task queues on the pipette.

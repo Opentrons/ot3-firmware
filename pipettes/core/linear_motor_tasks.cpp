@@ -41,7 +41,9 @@ void linear_motor_tasks::start_tasks(
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) {
+        tail_accessor,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        book_tail_accessor) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -65,7 +67,7 @@ void linear_motor_tasks::start_tasks(
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
-        table_updater);
+        book_tail_accessor, table_updater);
 
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
@@ -92,7 +94,9 @@ void linear_motor_tasks::start_tasks(
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
     can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
     eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
-        tail_accessor) {
+        tail_accessor,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        book_tail_accessor) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -116,7 +120,7 @@ void linear_motor_tasks::start_tasks(
         tail_accessor);
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
-        table_updater);
+        book_tail_accessor, table_updater);
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;

@@ -13,7 +13,7 @@
 namespace move_group_task {
 
 constexpr std::size_t max_groups = 3;
-constexpr std::size_t max_moves_per_group = 12;
+constexpr std::size_t max_moves_per_group = 6;
 #ifdef USE_SENSOR_MOVE
 using MoveGroupType = move_group::MoveGroupManager<
     max_groups, max_moves_per_group, can::messages::AddLinearMoveRequest,

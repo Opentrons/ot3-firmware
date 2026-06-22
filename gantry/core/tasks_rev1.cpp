@@ -51,6 +51,7 @@ static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
+static auto book_tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 /**
  * Start gantry ::tasks.
  */
@@ -89,7 +90,8 @@ void gantry::tasks::start_tasks(
         5, "usage storage", ::queues, ::queues, tail_accessor);
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", ::queues, tail_accessor, table_updater);
+        5, "data_rev_update", ::queues, tail_accessor, book_tail_accessor,
+        table_updater);
 
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;

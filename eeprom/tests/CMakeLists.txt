@@ -41,6 +41,7 @@ add_revision(TARGET eeprom REVISION a1)
 
 target_link_libraries(eeprom PUBLIC Catch2::Catch2 common-core)
 target_i2c_simlib(eeprom)
+target_eeprom_sim(eeprom)
 
 catch_discover_tests(eeprom)
 add_build_and_test_target(eeprom)

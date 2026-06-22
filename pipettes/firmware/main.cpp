@@ -144,6 +144,8 @@ static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
+static auto book_tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == tip_sense_gpio_primary.pin) {
@@ -200,7 +202,7 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
-        tail_accessor);
+        tail_accessor, book_tail_accessor);
     gear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, gear_motion,
         peripheral_tasks::get_spi_client(), conf, id, gmh_tsks, tail_accessor);
@@ -237,7 +239,7 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
-        tail_accessor);
+        tail_accessor, book_tail_accessor);
 }
 
 auto main() -> int {

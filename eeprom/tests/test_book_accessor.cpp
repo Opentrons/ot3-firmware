@@ -1,5 +1,8 @@
+#include <algorithm>
+#include <bitset>
 #include <cstdint>
 #include <variant>
+#include <vector>
 
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
@@ -8,10 +11,10 @@
 #include "eeprom/core/task.hpp"
 #include "eeprom/core/types.hpp"
 #include "eeprom/firmware/crc16.h"
-#include "eeprom/tests/mock_crc.hpp"
 #include "eeprom/tests/mock_eeprom_listener.hpp"
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
+
 using namespace eeprom;
 
 class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
@@ -31,7 +34,6 @@ enum ReadOption {
 template <class I2CQueueWriter, class OwnQueue>
 struct BMockEEpromTaskClient {
     ReadOption read_option = VALID;
-    int read_counter = 0;
 
     BMockEEpromTaskClient() {
         writer.set_queue(&i2c_queue);
@@ -47,7 +49,6 @@ struct BMockEEpromTaskClient {
     }
 
     std::vector<task::TaskMessage> messages_received{};
-
     std::array<uint8_t, 16384> backing{};
 
   private:
@@ -57,117 +58,75 @@ struct BMockEEpromTaskClient {
         i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     MockHardwareIface hardware_iface =
         MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
-    void visit(const message::OTLibraryReadMessage& message) {
-        // structure return message
-        message::OTLibraryPageMessage to_be_sent =
-            eeprom::message::OTLibraryPageMessage{};
-        to_be_sent.memory_address = message.memory_address;
-        to_be_sent.length = message.length;
-        to_be_sent.message_index = 0;
-
-        auto data_to_be_sent =
-            std::array<uint8_t, static_cast<size_t>(types::DataSize::PAGE)>{};
-
-        // TODO Make Data that will be sent back from "EEPROM"
-        // generate arrays that aren't the valid one
-
-        if (read_option == VALID) {
-            switch (read_counter) {
-                    // first in page, counter value 2
-                case 0:
-                    data_to_be_sent[2] = 0b00000010;  // counter
-                    data_to_be_sent[9] = 0b00000010;  // value
-                    break;
-                    // second page in book, counter value 3
-                case 1:
-                    data_to_be_sent[2] = 0b00000011;
-                    data_to_be_sent[9] = 0b00000011;
-                    break;
-                    // third (current) page in book, counter value 4
-                case 2:
-                    data_to_be_sent[2] = 0b00000100;
-                    data_to_be_sent[0] = 0b10000100;  // CRC
-                    data_to_be_sent[1] = 0b01000000;  // still CRC
-                    data_to_be_sent[9] = 0b00000100;
-                    break;
-                    // fourth page in book, counter value 1
-                case 3:
-                    data_to_be_sent[2] = 0b00000001;
-                    data_to_be_sent[9] = 0b00000001;
-                    read_counter =
-                        -1;  // reset counter so that if the object tries to
-                             // read again it will get the same values and
-                             // not an out of bounds value
-                             // negative one because the counter is
-                             // incremented at the end of this block
-                    break;
-            }
-        } else if (read_option == ONE_INVALID) {
-            switch (read_counter) {
-                    // first in page, counter value 1
-                case 0:
-                    data_to_be_sent[2] = 0b00000001;  // counter
-                    data_to_be_sent[9] = 0b00000001;  // value
-                    break;
-                    // second page in book, counter value 2
-                case 1:
-                    data_to_be_sent[2] = 0b00000010;
-                    data_to_be_sent[9] = 0b00000010;
-                    break;
-                    // third (current) page in book, counter value 3 valid
-                    // CRC; data value 4
-                case 2:
-                    data_to_be_sent[2] = 0b00000011;
-                    data_to_be_sent[0] = 0b10000100;  // CRC
-                    data_to_be_sent[1] = 0b01000000;  // still CRC
-                    data_to_be_sent[9] = 0b00000100;
-                    break;
-                    // fourth page in book, counter value 3 invalid (no)
-                    // CRC; data value 7
-                case 3:
-                    data_to_be_sent[2] = 0b00000100;
-                    data_to_be_sent[9] = 0b00001001;
-                    read_counter =
-                        -1;  // reset counter so that if the object tries to
-                             // read again it will get the same values and
-                             // not an out of bounds value
-                             // negative one because the counter is
-                             // incremented at the end of this block
-                    break;
-            }
-        } else if (read_option == ALL_INVALID) {
-            // NO CRC sent at all
-            data_to_be_sent[2] = 0b00000001;  // counter
-            data_to_be_sent[9] = 0b00000001;  // value
-            read_counter = 0;
-        }
-
-        read_counter++;
-
-        to_be_sent.data = data_to_be_sent;
-
-        const message::OTReadResponseCallback callback = message.callback;
-
-        callback(to_be_sent, message.callback_param);
-        messages_received.push_back(message);
-    }
 
     void visit(const message::ReadEepromMessage& message) {
-        auto resp = message::EepromMessage{};
+        message::EepromMessage to_be_sent = eeprom::message::EepromMessage{};
+        to_be_sent.memory_address = message.memory_address;
+        to_be_sent.length = message.length;
+        to_be_sent.message_index = message.message_index;
 
-        resp.memory_address = message.memory_address;
-        resp.length = message.length;
-        resp.message_index = message.message_index;
+        auto data_to_be_sent =
+            std::array<uint8_t, static_cast<size_t>(types::page_length)>{};
+
+        // 1. Read directly from the EEPROM replica
         std::copy_n(&backing[message.memory_address], message.length,
-                    resp.data.begin());
-        message.callback(resp, message.callback_param);
+                    data_to_be_sent.begin());
+
+        // 2. Identify if this is the first chunk (where the CRC sits in bytes 0
+        // and 1)
+        bool is_first_chunk =
+            (message.memory_address % types::page_length) == 0;
+
+        if (is_first_chunk) {
+            if (read_option == ALL_INVALID) {
+                // invert the CRCs
+                data_to_be_sent[0] = static_cast<uint8_t>(~data_to_be_sent[0]);
+                data_to_be_sent[1] = static_cast<uint8_t>(~data_to_be_sent[1]);
+            } else if (read_option == ONE_INVALID) {
+                // Determine the start of the book (4 pages per book)
+                uint16_t book_start =
+                    message.memory_address -
+                    (message.memory_address %
+                     (types::page_length * types::pages_per_book));
+
+                uint16_t max_counter = 0;
+                uint16_t most_recent_addr = book_start;
+
+                // Find the most recent page by iterating through the counters
+                for (int i = 0; i < types::pages_per_book; i++) {
+                    uint16_t addr = book_start + (i * types::page_length);
+                    uint16_t counter;
+                    std::memcpy(&counter, &backing[addr + 2], sizeof(counter));
+
+                    // Ignore uninitialized pages (0xFFFF) and find max
+                    if (counter != 0xFFFF) {
+                        // Handle potential wrap-around when finding max
+                        if (max_counter > 65000 && counter < 1000) {
+                            max_counter = counter;
+                            most_recent_addr = addr;
+                        } else if (counter >= max_counter &&
+                                   (counter - max_counter) < 1000) {
+                            max_counter = counter;
+                            most_recent_addr = addr;
+                        }
+                    }
+                }
+
+                // If THIS read is the most recent one, corrupt the CRC to
+                // trigger cascade
+                if (message.memory_address == most_recent_addr) {
+                    data_to_be_sent[0] = ~data_to_be_sent[0];
+                }
+            }
+        }
+
+        to_be_sent.data = data_to_be_sent;
+        message.callback(to_be_sent, message.callback_param);
         messages_received.push_back(message);
     }
 
     void visit(const message::WriteEepromMessage& message) {
-        // for testing purposes we don't need to do anything when we get
-        // a write message, but we could add some functionality here if
-        // we wanted
+        // Apply writes directly to the EEPROM replica
         std::copy_n(message.data.begin(), message.length,
                     &backing[message.memory_address]);
         messages_received.push_back(message);
@@ -175,17 +134,12 @@ struct BMockEEpromTaskClient {
 
     void visit(const std::monostate& message) {
         std::ignore = message;
-        // for testing purposes we don't need to do anything when we get a
-        // monostate message, but we could add some functionality here if we
-        // wanted
         messages_received.push_back(message);
     }
 
     void visit(const message::ConfigRequestMessage& message) {
         messages_received.push_back(message);
-
         auto m = task::TaskMessage{message};
-
         true_eeprom_handler.handle_message(m);
     }
 
@@ -195,19 +149,41 @@ struct BMockEEpromTaskClient {
     }
 };
 
-SCENARIO("Creating a data partition") {
-    /* NOTE: This feature is very similar to
-       * what we have in dev data, so we
-       * are not testing it as extensively here, just making sure that the
-       * book accessor can call create data without error and that it sends
-       * the correct message to the EEPROM client. We will rely on the more
-       * extensive testing of create data in dev data to make sure that
-       create
-       * data is working properly. */
+// ============================================================================
+// HELPER LAMBDA MACRO
+// ============================================================================
+// We define it as a macro here so it can easily inject the mock_client
+// reference into the local scope of each scenario without copy-pasting.
+#define DEFINE_CHECK_WRITE_HELPER                                              \
+    auto check_write = [&](uint16_t expected_counter) {                        \
+        for (auto it = mock_client.messages_received.rbegin();                 \
+             it != mock_client.messages_received.rend(); ++it) {               \
+            if (std::holds_alternative<eeprom::message::WriteEepromMessage>(   \
+                    *it)) {                                                    \
+                auto w = std::get<eeprom::message::WriteEepromMessage>(*it);   \
+                if (w.memory_address >= eeprom::addresses::ot_library_begin && \
+                    w.memory_address < eeprom::addresses::ot_library_end) {    \
+                    /* Only grab the FIRST 32-byte chunk of the page (contains \
+                     * the header) */                                          \
+                    if ((w.memory_address % types::page_length) == 0) {        \
+                        uint16_t counter;                                      \
+                        std::memcpy(&counter, w.data.data() + 2, 2);           \
+                        REQUIRE(counter == expected_counter);                  \
+                        return w.memory_address;                               \
+                    }                                                          \
+                }                                                              \
+            }                                                                  \
+        }                                                                      \
+        return static_cast<uint16_t>(0);                                       \
+    };
 
+// ============================================================================
+// SCENARIO 1: Creation
+// ============================================================================
+SCENARIO("Book Accessor - Data Partition Creation") {
     auto mock_listener = MockListener{};
-    auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
+    auto buffer = eeprom::book_accessor::DataBufferType<8>();
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -218,133 +194,43 @@ SCENARIO("Creating a data partition") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
 
     tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(false);
+    DEFINE_CHECK_WRITE_HELPER
 
-    GIVEN("Book Accessor initializes properly") {
-        THEN("Create data part no data") {
-            uint16_t key = 0;
-            uint16_t len = 1;
-            // std::array<uint8_t, 1> data{0b00000100};
-            std::array<uint8_t, 0> empty_data{};
+    GIVEN("An initialized Book Accessor EEPROM") {
+        std::array<uint8_t, 8> data_key_0 = {0, 0, 0, 0, 0, 0, 0, 0};
+        std::array<uint8_t, 8> data_key_1 = {1, 1, 1, 1, 1, 1, 1, 1};
+        uint16_t len = 8;
 
-            mock_client.messages_received.clear();
-            test_book_accessor.create_data_part<0>(key, len, empty_data);
+        THEN(
+            "We can create Key 0 and Key 1, checking address separation and "
+            "counters") {
+            test_book_accessor.create_data_part<8>(0, len, data_key_0);
+            uint16_t key_0_address = check_write(1);
+            REQUIRE(key_0_address > 0);
 
-            // 3 messages (config, read, write) sent to eeprom client (by
-            // tail_accessor flow) before the write that we care about
-            auto message = mock_client.messages_received[0];
-            REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
-                message));
-            auto write_message =
-                std::get<eeprom::message::WriteEepromMessage>(message);
-            REQUIRE(write_message.memory_address ==
-                    eeprom::addresses::data_address_begin);
+            test_book_accessor.create_data_part<8>(1, len, data_key_1);
+            uint16_t key_1_address = check_write(1);
+            REQUIRE(key_1_address > 0);
 
-            // check that address to be written is correct
-
-            uint16_t data_address_written = 0;
-
-            std::ignore = bit_utils::bytes_to_int(
-                write_message.data.cbegin(),
-                write_message.data.cbegin() + sizeof(data_address_written),
-                data_address_written);
-            // hide first byte of address, we only care that the second
-            // byte is 0
-            data_address_written &= 0x00FF;
-
-            REQUIRE(data_address_written == 0);
-        }
-        // THEN("create data part with existing data") {
-        uint16_t key = 1;
-        uint16_t len = 1;
-        // std::array<uint8_t, 1> data{0b00000100};
-        std::array<uint8_t, 0> empty_data{};
-
-        mock_client.messages_received.clear();
-        test_book_accessor.create_data_part<0>(key, len, empty_data);
-
-        // 3 messages (config, read, write) sent to eeprom client (by
-        // tail_accessor flow) before the write that we care about
-        auto message = mock_client.messages_received[0];
-        REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
-            message));
-        auto write_message =
-            std::get<eeprom::message::WriteEepromMessage>(message);
-        REQUIRE(write_message.memory_address ==
-                eeprom::addresses::data_address_begin + 4);
-
-        // check that address to be written is correct
-
-        uint16_t data_address_written = 0;
-
-        std::ignore = bit_utils::bytes_to_int(
-            write_message.data.cbegin(),
-            write_message.data.cbegin() + sizeof(data_address_written),
-            data_address_written);
-
-        // hide first byte of address, we only care that the second
-        // byte is 0
-        data_address_written &= 0x00FF;
-
-        REQUIRE(data_address_written == 0);
-        // }
-    }
-}
-
-SCENARIO("Book Accessor can read data from EEPROM") {
-    auto mock_listener = MockListener{};
-    auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
-
-    auto mock_client =
-        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-                              test_mocks::MockI2CResponseQueue>{};
-    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
-        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-                              test_mocks::MockI2CResponseQueue>>{mock_client};
-    auto test_book_accessor = book_accessor::BookAccessor<
-        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
-                              test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
-
-    tail_accessor.finish_data_rev();
-    uint16_t key = 0;
-    uint16_t len = 1;
-    uint16_t offset = 0;
-    uint32_t message_index = 0;
-
-    std::array<uint8_t, 0> empty_data{};
-    GIVEN("Book Accessor initializes properly") {
-        test_book_accessor.create_data_part<0>(key, len, empty_data);
-        THEN("Read valid data properly") {
-            mock_client.read_option = ReadOption::VALID;
-            test_book_accessor.get_data(key, len, offset, message_index);
-            // check that the value read is correct
-            REQUIRE(buffer[0] == 0b00000100);
-        }
-
-        THEN("Cascade read when one page of data is invalid") {
-            mock_client.read_option = ReadOption::ONE_INVALID;
-            test_book_accessor.get_data(key, len, offset, message_index);
-            // check that the value read is correct
-            REQUIRE(buffer[0] == 0b00000100);
-        }
-
-        THEN("Return invalid data when all pages are invalid") {
-            mock_client.read_option = ReadOption::ALL_INVALID;
-            test_book_accessor.get_data(key, len, offset, message_index);
-            // check that the value read is correct
-            REQUIRE(buffer[0] == 0b00000000);
+            // Verify they are separated by exactly one book length (4 pages)
+            // Note: create_data_part allocates backward from the end of memory
+            REQUIRE(key_0_address - key_1_address ==
+                    (types::page_length * types::pages_per_book));
         }
     }
 }
 
-SCENARIO("Book Accessor can write data to EEPROM") {
+// ============================================================================
+// SCENARIO 2: Reads, Wrapping, and Cascading
+// ============================================================================
+SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
     auto mock_listener = MockListener{};
-    auto buffer = eeprom::book_accessor::DataBufferType<1>();
-    auto mock_crc = MockCRC{};
+    auto buffer = eeprom::book_accessor::DataBufferType<8>();
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -355,58 +241,115 @@ SCENARIO("Book Accessor can write data to EEPROM") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        1>{mock_client, mock_listener, buffer, tail_accessor, mock_crc};
+        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
 
     tail_accessor.finish_data_rev();
-    uint16_t key = 0;
-    uint16_t len = 1;
-    uint16_t offset = 0;
-    // uint32_t message_index = 0;
+    test_book_accessor.set_testing(false);
 
-    std::array<uint8_t, 0> empty_data{};
-    GIVEN(
-        "Data Partition is successfully created and reads are "
-        "operational") {
-        test_book_accessor.create_data_part<0>(key, len, empty_data);
-        // make sure to set read_option to valid
-        mock_client.read_option = ReadOption::VALID;
+    GIVEN("An initialized EEPROM with a created key") {
+        uint16_t key = 0;
+        uint16_t len = 8;
+        uint16_t offset = 0;
+        uint32_t message_index = 0;
 
-        THEN("Write data properly") {
+        std::array<uint8_t, 8> data_c = {0, 0, 0, 0, 0, 0, 0, 0};  // Creation
+        std::array<uint8_t, 8> data_1 = {1, 1, 1, 1, 1, 1, 1, 1};  // Write 1
+        std::array<uint8_t, 8> data_2 = {2, 2, 2, 2, 2, 2, 2, 2};  // Write 2
+        std::array<uint8_t, 8> data_3 = {3, 3, 3, 3, 3, 3, 3, 3};  // Write 3
+        std::array<uint8_t, 8> data_4 = {4, 4, 4, 4,
+                                         4, 4, 4, 4};  // Write 4 (Wrap)
+
+        test_book_accessor.create_data_part<8>(key, len, data_c);
+
+        THEN("Reads handle page wrapping and CRC cascades successfully") {
+            // Read creation
+            test_book_accessor.get_data(key, len, offset, message_index++);
+            REQUIRE(buffer[0] == 0);
+
+            // Write 3 times (Filling up the 4-page book: Counters 2, 3, and 4)
+            test_book_accessor.write_data(key, len, data_1);
+            test_book_accessor.write_data(key, len, data_2);
+            test_book_accessor.write_data(key, len, data_3);
+
+            // Read to find most recent (Should be Counter 4 / data_3)
+            test_book_accessor.get_data(key, len, offset, message_index++);
+            REQUIRE(buffer[0] == 3);
+
+            // Write again to trigger a wrap back to Page 0 (Counter 5)
+            test_book_accessor.write_data(key, len, data_4);
+
+            // Read to ensure wrap is done properly
+            test_book_accessor.get_data(key, len, offset, message_index++);
+            REQUIRE(buffer[0] == 4);
+
+            // Cascade Test 1: ONE_INVALID
+            mock_client.read_option = ONE_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index++);
+            // Expected fallback: The wrapped page (counter 5) is invalid,
+            // fallback to counter 4 (data_3)
+            REQUIRE(buffer[0] == 3);
+
+            // Cascade Test 2: ALL_INVALID
+            mock_client.read_option = ALL_INVALID;
+            test_book_accessor.get_data(key, len, offset, message_index++);
+            // Expected fallback: Nothing valid found, error state populated
+            REQUIRE(buffer[0] == 0xAA);
+        }
+    }
+}
+
+// ============================================================================
+// SCENARIO 3: Writes
+// ============================================================================
+SCENARIO("Book Accessor - Writes") {
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<8>();
+    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
+
+    auto mock_client =
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>{};
+    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>>{mock_client};
+    auto test_book_accessor = book_accessor::BookAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>,
+        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
+
+    tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(false);
+    DEFINE_CHECK_WRITE_HELPER
+
+    GIVEN("An initialized EEPROM with a created key") {
+        uint16_t key = 0;
+        uint16_t len = 8;
+
+        std::array<uint8_t, 8> data_c = {0, 0, 0, 0, 0, 0, 0, 0};
+        std::array<uint8_t, 8> data_w1 = {1, 1, 1, 1, 1, 1, 1, 1};
+        std::array<uint8_t, 8> data_w2 = {2, 2, 2, 2, 2, 2, 2, 2};
+
+        test_book_accessor.create_data_part<8>(key, len, data_c);
+        uint16_t base_address = check_write(1);
+
+        THEN(
+            "Sequential writes increment counters and format correct memory "
+            "addresses") {
+            // Write 1
             mock_client.messages_received.clear();
-            std::array<uint8_t, 1> data_to_write{0b00000101};
-            test_book_accessor.write_data(key, len, offset, data_to_write);
+            test_book_accessor.write_data(key, len, data_w1);
 
-            // Get_data sends a few messages to the EEPROM client before the
-            // write that we care about
-            auto message = mock_client.messages_received[3];
-            REQUIRE(std::holds_alternative<eeprom::message::WriteEepromMessage>(
-                message));
+            // Should be placed on the next page (offset by 1 page length),
+            // counter = 2
+            REQUIRE(check_write(2) == base_address + types::page_length);
 
-            auto write_message =
-                std::get<eeprom::message::WriteEepromMessage>(message);
+            // Write 2
+            mock_client.messages_received.clear();
+            test_book_accessor.write_data(key, len, data_w2);
 
-            // make sure the counter value is correct in the data that is
-            // being written
-
-            auto data = write_message.data;
-            const auto* data_iter = data.begin();
-
-            // check that counter value is correct (get_data should have
-            // current counter value of 4 because of the valid read_option,
-            // so the counter value should be 5 when we write)
-            uint16_t counter_value = 0;
-            data_iter = bit_utils::bytes_to_int(data_iter + 2, data_iter + 4,
-                                                counter_value);
-            REQUIRE(counter_value == 5);
-
-            // check that addres being written is correct
-
-            // expected: 16384 (final adress of EEPROM) - 64 (page length)
-            // to find the book location. the page with the lowest address
-            // in the "VALID" case of the read is the 4th and final page.
-            // the address of this page is 16384 - 64 - 64 = 16256
-            uint16_t address_written = write_message.memory_address;
-            REQUIRE(address_written == 16256);
+            // Should be placed on the third page (offset by 2 page lengths),
+            // counter = 3
+            REQUIRE(check_write(3) == base_address + (2 * types::page_length));
         }
     }
 }

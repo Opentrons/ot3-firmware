@@ -56,6 +56,7 @@ static auto capacitive_sensor_task_builder_rear =
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
+static auto book_tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
@@ -94,7 +95,8 @@ void gripper_tasks::start_tasks(
                                                   eeprom_hw_iface);
 #if PCBA_PRIMARY_REVISION != 'b'
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", queues, tail_accessor, table_updater);
+        5, "data_rev_update", queues, tail_accessor, book_tail_accessor,
+        table_updater);
 #endif
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
