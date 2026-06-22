@@ -25,12 +25,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout ot3-firmware repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           path: ot3-firmware
 
       - name: Checkout github actions directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           sparse-checkout: |
             .github/actions
@@ -61,7 +61,7 @@ jobs:
         run: lcov_cobertura build-host/lcov/data/capture/all_targets.info
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ot3-firmware/coverage.xml

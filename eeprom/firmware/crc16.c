@@ -46,34 +46,12 @@ void crc16_init() { MX_CRC_Init(); }
  * @return Computed CRC
  */
 uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
-    return (uint16_t)~HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
-}
-// uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
-//     // make sure the data is word_aligned
-//     uint32_t aligned_buff[64];
-//     memset(aligned_buff, 0,
-//            sizeof(aligned_buff));  // initialize to 0 to avoid reading
-//                                    // uninitialized memory
-//
-//     memcpy(aligned_buff, data, length);  // copy data to aligned buffer
-//
-//     uint8_t aligned_length =
-//         (length + 3U) / 4U;  // calculate length in words, round up
-//
-//     return ~HAL_CRC_Calculate(&hcrc, aligned_buff, aligned_length);
-// }
+    uint32_t aligned_buf[64];  // 255 bytes max -> 64 words (256 bytes)
+    memset(aligned_buf, 0, sizeof(aligned_buf));
+    memcpy(aligned_buf, data, length);  // safe, alignment-agnostic copy
 
-/**
- * Continue accumulating CRC using provided data.
- * @param data Data
- * @param length Length of data
- * @return Accumulated CRC
- */
-uint16_t crc16_accumulate(const uint8_t* data, uint8_t length) {
-    return ~HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
-}
+    // length in words, rounded up
+    uint32_t word_len = (length + 3U) / 4U;
 
-/**
- * Reset the accumulated CRC value.
- */
-void crc16_reset_accumulator() { /*__HAL_CRC_DR_RESET(&hcrc);*/ }
+    return (uint16_t)~HAL_CRC_Calculate(&hcrc, aligned_buf, word_len);
+}

@@ -15,6 +15,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
+#include "eeprom/firmware/crc16.h"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "pipettes/core/central_tasks.hpp"
@@ -114,6 +115,8 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
+static auto book_tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
 
 auto initialize_motor_tasks(
     can::ids::NodeId id,
@@ -136,7 +139,7 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
-        tail_accessor);
+        tail_accessor, book_tail_accessor);
 
     // TODO Convert gear motor tasks
     gear_motor_tasks::start_tasks(
@@ -176,7 +179,7 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
-        tail_accessor);
+        tail_accessor, book_tail_accessor);
 }
 
 auto handle_options(int argc, char** argv) -> po::variables_map {

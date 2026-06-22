@@ -56,13 +56,15 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
-        dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
+        dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor,
+        dev_data::DevDataTailAccessor<EEPromClient>& book_tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
-                             tail_accessor, all_reads},
+                             book_tail_accessor, all_reads},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client),
-          tail_accessor(tail_accessor) {
+          tail_accessor(tail_accessor),
+          book_tail_accessor(book_tail_accessor) {
         data_rev_accessor.start_read(0);
     }
 
@@ -98,6 +100,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void visit(const MigrateDataMessage& m) {
+        if (m.data_table.empty()) {
+            return;
+        }
         // "finish data rev" before data rev is finished for migration to ensure
         // that reads can properly occur
         tail_accessor.finish_data_rev();
@@ -122,10 +127,6 @@ class UpdateDataRevHandler : accessor::ReadListener {
         book_table_creator.create_data_part(key, length, accessor_backing,
                                             true);
 
-        // while (!table_creator.table_ready()) {
-        //     vTaskDelay(10);
-        // }
-
         current_data_rev = intermediate_data_rev;
 
         // reassign item to the next item in data table
@@ -138,26 +139,27 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
     // method to set boundary of ot_library... not currently necessary, but may
     // be useful in the future
-    //
-    // void set_ot_library_boundary(MigrateDataMessage&
-    // m) {
-    //     // sort the data table to make sure keys are properly ordered
-    //     auto data_table_length = m.data_table.size();
-    //     std::sort(m.data_table.begin(), m.data_table.end());
-    //
-    //     // access final pair of data table and extract contents
-    //     std::pair<types::address, types::data_length> data_end =
-    //         m.data_table[data_table_length - 1];
-    //     types::address key = data_end.first;
-    //     types::data_length length = data_end.second;
-    //
-    //     // update the "tail" of ot_library (through ot_library_end address)
-    //     // to end of previous data
-    //     addresses::DataAddressWrapper::set_data_boundary(
-    //         table_creator.find_data_end(key, length), eeprom_client);
-    // }
+    void set_ot_library_boundary(MigrateDataMessage& m) {
+        // sort the data table to make sure keys are properly ordered
+        auto data_table_length = m.data_table.size();
+        std::sort(m.data_table.begin(), m.data_table.end());
+
+        // access final pair of data table and extract contents
+        std::pair<types::address, types::data_length> data_end =
+            m.data_table[data_table_length - 1];
+        types::address key = data_end.first;
+        types::data_length length = data_end.second;
+
+        // update the "tail" of ot_library (through ot_library_end address)
+        // to end of previous data
+        addresses::DataAddressWrapper::set_data_boundary(
+            table_creator.find_data_end(key, length), eeprom_client);
+    }
 
     void visit(const OTLibraryUpdateMessage& m) {
+        if (m.data_table.empty()) {
+            return;
+        }
         if (m.data_rev == current_data_rev + 1) {
             // set_ot_library_boundary(m);
 
@@ -215,6 +217,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     data_revision::DataRevAccessor<EEPromClient> data_rev_accessor;
     EEPromClient& eeprom_client;
     dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor;
+    dev_data::DevDataTailAccessor<EEPromClient>& book_tail_accessor;
 };
 
 /**
@@ -240,8 +243,10 @@ class UpdateDataRevTask {
     void operator()(
         EEPromClient* eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor,
+        dev_data::DevDataTailAccessor<EEPromClient>* book_tail_accessor,
         const std::vector<eeprom::data_rev_task::TaskMessage>* table_updater) {
-        auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor);
+        auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor,
+                                            *book_tail_accessor);
         for (const auto& i : *table_updater) {
             while (!handler.ready()) {
                 vTaskDelay(10);
@@ -255,6 +260,7 @@ class UpdateDataRevTask {
         }
 
         tail_accessor->finish_data_rev();
+        book_tail_accessor->finish_data_rev();
         vTaskDelete(nullptr);
     }
 
