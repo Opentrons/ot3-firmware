@@ -48,19 +48,3 @@ void crc16_init() { MX_CRC_Init(); }
 uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
     return (uint16_t)~HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
 }
-
-
-/**
- * Continue accumulating CRC using provided data.
- * @param data Data
- * @param length Length of data
- * @return Accumulated CRC
- */
-uint16_t crc16_accumulate(const uint8_t* data, uint8_t length) {
-    return ~HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
-}
-
-/**
- * Reset the accumulated CRC value.
- */
-void crc16_reset_accumulator() { /*__HAL_CRC_DR_RESET(&hcrc);*/ }

@@ -6,11 +6,6 @@
 
 extern "C" {
 // methods don't do anything
-void crc16_reset_accumulator() {}
-
-uint16_t crc16_accumulate(const uint8_t* data, uint8_t length) {
-    return crc16_compute(data, length);
-}
 
 void crc16_init(void) {}
 
