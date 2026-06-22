@@ -272,7 +272,9 @@ void head_tasks::MotorQueueClient::send_move_status_reporter_queue(
 void head_tasks::HeadQueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
 #if PCBA_PRIMARY_REVISION != 'b'
+
     eeprom_queue->try_write(m);
+
 #else
     std::ignore = m;
 #endif

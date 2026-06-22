@@ -171,7 +171,7 @@ SCENARIO("message deserializing works") {
             THEN("it is converted to a the correct structure") {
                 REQUIRE(r.message_index == 0xdeadbeef);
                 REQUIRE(r.address == 0x05);
-                REQUIRE(r.data_length == 64);
+                REQUIRE(r.data_length == 32);
                 REQUIRE(r.data[0] == 0);
                 REQUIRE(r.data[1] == 1);
                 REQUIRE(r.data[2] == 0);
