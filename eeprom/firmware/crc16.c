@@ -46,5 +46,12 @@ void crc16_init() { MX_CRC_Init(); }
  * @return Computed CRC
  */
 uint16_t crc16_compute(const uint8_t* data, uint8_t length) {
-    return (uint16_t)~HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
+    uint32_t aligned_buf[64];  // 255 bytes max -> 64 words (256 bytes)
+    memset(aligned_buf, 0, sizeof(aligned_buf));
+    memcpy(aligned_buf, data, length);  // safe, alignment-agnostic copy
+
+    // length in words, rounded up
+    uint32_t word_len = (length + 3U) / 4U;
+
+    return (uint16_t)~HAL_CRC_Calculate(&hcrc, aligned_buf, word_len);
 }
