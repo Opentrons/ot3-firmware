@@ -98,6 +98,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void visit(const MigrateDataMessage& m) {
+        if (m.data_table.empty()) {
+            return;
+        }
         // "finish data rev" before data rev is finished for migration to ensure
         // that reads can properly occur
         tail_accessor.finish_data_rev();
@@ -152,6 +155,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     void visit(const OTLibraryUpdateMessage& m) {
+        if (m.data_table.empty()) {
+            return;
+        }
         if (m.data_rev == current_data_rev + 1) {
             // set_ot_library_boundary(m);
 
@@ -215,7 +221,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class UpdateDataRevTask {
   public:
     using Messages = TaskMessage;
