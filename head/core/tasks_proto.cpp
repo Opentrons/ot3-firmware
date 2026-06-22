@@ -78,6 +78,8 @@ static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
+static auto book_tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{head_queues};
 /**
  * Start head tasks.
  */
@@ -122,7 +124,8 @@ void head_tasks::start_tasks(
         5, "right usage storage", right_queues, head_queues, tail_accessor);
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", head_queues, tail_accessor, table_updater);
+        5, "data_rev_update", head_queues, tail_accessor, book_tail_accessor,
+        table_updater);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;

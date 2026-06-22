@@ -75,6 +75,8 @@ static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
+static auto book_tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{head_queues};
 
 static auto left_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
@@ -123,7 +125,8 @@ void head_tasks::start_tasks(
                                                   eeprom_hw_iface);
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", head_queues, tail_accessor, table_updater);
+        5, "data_rev_update", head_queues, tail_accessor, book_tail_accessor,
+        table_updater);
 #else
     std::ignore = eeprom_hw_iface;
 #endif
