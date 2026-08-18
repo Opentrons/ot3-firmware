@@ -34,6 +34,7 @@ using namespace can::ids;
 
 constexpr auto AUTO_BASELINE_START = 10;
 constexpr auto AUTO_BASELINE_END = 20;
+static_assert(SENSOR_BUFFER_SIZE > AUTO_BASELINE_END, "Sensor buffer length must be longer than AUTO_BASELINE_END");
 
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue,
