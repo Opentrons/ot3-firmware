@@ -581,6 +581,8 @@ class BookAccessor
         // set table action to write
         action_cmd_m.action = TableAction::WRITE;
 
+        cached_key = -1;
+
         table_action_callback(write_msg);
     }
 
