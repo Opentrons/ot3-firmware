@@ -78,30 +78,24 @@ class BookAccessor
         if (migrating) {
             action_cmd_m.action = TableAction::MIGRATE;
         }
-        // "page_data" is what will be written to the EEPROM. Just data
-        // with the header and some extra bytes afterwards to fill the
-        // page.
-        types::PageData page_data{};
-        uint8_t* pd_as_bytes = page_data_begin(page_data);
         // set the length immediately. This is important for CRC calculations,
         // as the length of the data is not necessarily the same as the size of
         // the array passed in
         action_cmd_m.len = len;
-        page_data.data_flags = data_flags;
-        page_data.counter = 1;
-        page_data.length = len;
+        write_buffer_internal.data_flags = data_flags;
+        write_buffer_internal.counter = 1;
+        write_buffer_internal.length = len;
+        std::fill(std::begin(write_buffer_internal.data), std::end(write_buffer_internal.data),
+          0x00);
         if (!data.empty()) {
             if (data.size() > types::page_data) {
                 LOG("Warning, sent too much data to initalize, "
                     "truncating to %d",
                     types::page_data);
             }
-            std::copy_n(data.begin(), len, page_data.data);
-        } else {
-            std::fill(std::begin(page_data.data), std::end(page_data.data),
-                      0x00);
+            std::copy_n(data.begin(), len, write_buffer_internal.data);
         }
-        page_data.crc = calc_crc(page_data.data);
+        write_buffer_internal.crc = calc_crc(write_buffer_internal.data);
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
@@ -135,22 +129,11 @@ class BookAccessor
                 if (!migrating) {
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                 }
-
-                // create empty page for use in initilazation
-
-                if (!data.empty()) {
-                    this->write_at_offset(
-                        accessor::AccessorBuffer(
-                            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                            pd_as_bytes, pd_as_bytes + types::page_length),
-                        new_ptr, new_ptr + types::page_length, 0);
-                }
+                this->write_at_offset(write_buffer, new_ptr, new_ptr + types::page_length, 0);
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
                 if (!data.empty()) {
-                    std::copy_n(pd_as_bytes, types::page_length,
-                                write_buffer.begin());
                     if (!migrating) {
                         action_cmd_m.action = TableAction::INITALIZE;
                         // call a read to the previous table entry so we know
@@ -206,10 +189,7 @@ class BookAccessor
             write_buffer_internal.crc = calc_crc(data.begin());
             write_buffer_internal.length = len;
             // 0 out and copy into the write buffer
-            for (int i : write_buffer_internal.data) {
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-                write_buffer_internal.data[i] = 0;
-            }
+            std::fill(std::begin(write_buffer_internal.data), std::end(write_buffer_internal.data), 0);
             std::copy_n(data.begin(), len, write_buffer_internal.data);
 
             if (key == cached_key) {
