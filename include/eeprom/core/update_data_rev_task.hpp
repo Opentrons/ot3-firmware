@@ -12,10 +12,6 @@
 #include "eeprom/firmware/crc16.h"
 #include "types.hpp"
 
-// to be passed to EEPROM. breaks unless it's statically allocated at the file
-// level for some reason. Likely a quirk of this god forsaken language
-static std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads;
-
 namespace eeprom {
 namespace data_rev_task {
 
@@ -34,6 +30,7 @@ struct MigrateDataMessage {
 
 struct OTLibraryUpdateMessage {
     uint16_t data_rev;
+    uint8_t data_flags;
     std::vector<std::pair<types::address, types::data_length>> data_table;
 };
 
@@ -60,7 +57,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
         dev_data::DevDataTailAccessor<EEPromClient>& book_tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
-                             book_tail_accessor, all_reads},
+                             book_tail_accessor},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client),
           tail_accessor(tail_accessor),

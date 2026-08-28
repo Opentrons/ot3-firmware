@@ -29,18 +29,23 @@ using DataTailType =
 using TableAction = dev_data::TableAction;
 using table_entry_action = dev_data::table_entry_action;
 
+static constexpr types::address read0_offset = 0;
+static constexpr types::address read1_offset = types::page_length;
+static constexpr types::address read2_offset = types::page_length * 2;
+static constexpr types::address read3_offset = types::page_length * 3;
+
 struct BookAccessorIntermediate {
   protected:
     DataBufferType<static_cast<size_t>(types::page_length)>
         intermediate_buffer{};
 };
-
+static std::array<types::PageData, 4> all_reads = {};
 /*Accessor for OT Library. Takes byte arrays as data. Ensure they are in
  * Little Endian (in accordance with STM32 Architecture)
  *
  * SIZE is the size of the buffer*/
 
-template <task::TaskClient EEpromTaskClient, size_t BUFFER_SIZE>
+template <task::TaskClient EEpromTaskClient, uint16_t BUFFER_SIZE>
 class BookAccessor
     : BookAccessorIntermediate,
       public eeprom::accessor::EEPromAccessor<EEpromTaskClient,
@@ -50,8 +55,7 @@ class BookAccessor
     explicit BookAccessor(
         EEpromTaskClient& eeprom_client, accessor::ReadListener& read_listener,
         DataBufferType<BUFFER_SIZE>& buffer,
-        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor,
-        std::array<std::array<uint8_t, types::page_length>, 4>& all_reads)
+        dev_data::DevDataTailAccessor<EEpromTaskClient>& tail_accessor)
         : BookAccessorIntermediate(),
           accessor::EEPromAccessor<EEpromTaskClient,
                                    addresses::ot_library_begin>(
@@ -60,21 +64,15 @@ class BookAccessor
                                        intermediate_buffer.end())),
           tail_accessor(tail_accessor),
           read_listener(read_listener),
-          buffer(buffer),
-          all_reads(all_reads) {
-        for (auto& read : all_reads) {
-            read.fill(0x00);
-        }
+          buffer(buffer) {
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
-
-        write_buffer_internal.fill(0x00);
     }
 
     template <size_t NUM_BYTES>
     void create_data_part(uint16_t key, uint16_t len,
-                          std::array<uint8_t, NUM_BYTES>& data,
-                          bool migrating) {
+                          std::array<uint8_t, NUM_BYTES>& data, bool migrating,
+                          uint8_t data_flags = 0) {
         action_cmd_m.action = TableAction::CREATE;
 
         if (migrating) {
@@ -83,36 +81,31 @@ class BookAccessor
         // "page_data" is what will be written to the EEPROM. Just data
         // with the header and some extra bytes afterwards to fill the
         // page.
-        std::array<uint8_t, types::page_length> page_data{};
-        page_data.fill(0x00);
+        types::PageData page_data{};
+        uint8_t* pd_as_bytes = page_data_begin(page_data);
         // set the length immediately. This is important for CRC calculations,
         // as the length of the data is not necessarily the same as the size of
         // the array passed in
         action_cmd_m.len = len;
-
+        page_data.data_flags = data_flags;
+        page_data.counter = 1;
+        page_data.length = len;
         if (!data.empty()) {
             if (data.size() > types::page_data) {
                 LOG("Warning, sent too much data to initalize, "
                     "truncating to %d",
                     types::page_data);
             }
-            uint16_t counter = 1;
-            uint16_t crc = calc_crc(data);
-
-            // copy CRC, counter, and data to page_data
-            std::memcpy(page_data.data(), &crc, 2);
-            std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
-
-            // copy len into page_data
-            std::memcpy(page_data.data() + 4, &len, sizeof(len));
-
-            std::copy(data.begin(), data.begin() + len,
-                      page_data.begin() + types::book_header_length);
+            std::copy_n(data.begin(), len, page_data.data);
+        } else {
+            std::fill(std::begin(page_data.data), std::end(page_data.data),
+                      0x00);
         }
+        page_data.crc = calc_crc(page_data.data);
         if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
-                // double check if this is writig to the data_table
+                // double check if this is writing to the data_table
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::ot_library_table;
                 write.length = 2 * conf.addr_bytes;
@@ -147,15 +140,16 @@ class BookAccessor
 
                 if (!data.empty()) {
                     this->write_at_offset(
-                        accessor::AccessorBuffer(page_data.begin(),
-                                                 page_data.end()),
+                        accessor::AccessorBuffer(
+                            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                            pd_as_bytes, pd_as_bytes + types::page_length),
                         new_ptr, new_ptr + types::page_length, 0);
                 }
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
                 if (!data.empty()) {
-                    std::copy_n(page_data.begin(), page_data.size(),
+                    std::copy_n(pd_as_bytes, types::page_length,
                                 write_buffer.begin());
                     if (!migrating) {
                         action_cmd_m.action = TableAction::INITALIZE;
@@ -209,33 +203,15 @@ class BookAccessor
 
             LOG("Writing %d bytes to data partition", types::page_length);
 
-            // format data to page
-            std::array<uint8_t, types::page_length> page_data{};
-            page_data.fill(0x00);
+            write_buffer_internal.crc = calc_crc(data.begin());
+            write_buffer_internal.length = len;
+            // 0 out and copy into the write buffer
+            for (int i : write_buffer_internal.data) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                write_buffer_internal.data[i] = 0;
+            }
+            std::copy_n(data.begin(), len, write_buffer_internal.data);
 
-            // counter will be updated in table_action_callback
-            uint16_t counter = 0;
-            uint16_t crc = calc_crc(data);
-
-            // make CRC the first two bytes of the page
-            std::memcpy(page_data.data(), &crc, 2);
-            // make Counter the next two bytes of the page
-            std::memcpy(page_data.data() + 2, &counter, sizeof(counter));
-            // make the length the next two bytes of the page
-            std::memcpy(page_data.data() + 4, &len, sizeof(len));
-
-            // make the data the rest of the page
-            std::copy_n(data.begin(), len,
-                        page_data.begin() + types::book_header_length);
-
-            // copy the data to our internal buffer (write_buffer is used as
-            // an internal buffer so it isn't overwritten by the read that
-            // we have to do to write)
-            std::copy_n(page_data.begin(), page_data.size(),
-                        write_buffer.begin());
-
-            // if we're writing to the same key as the cached key, we can skip
-            // the read and use the data that was already in all_reads
             if (key == cached_key) {
                 read_final(0);
             } else {
@@ -261,7 +237,11 @@ class BookAccessor
         if (read_write_ready()) {
             // reset all_reads
             for (auto& read : all_reads) {
-                read.fill(0x00);
+                read.crc = 0;
+                read.counter = 0;
+                read.length = 0;
+                read.reserved = 0;
+                std::fill(std::begin(read.data), std::end(read.data), 0x00);
             }
 
             auto table_location = calculate_table_entry_start(key);
@@ -310,7 +290,7 @@ class BookAccessor
 
         // save what's in buffer to all_reads
         std::copy_n(intermediate_buffer.begin(), types::page_length,
-                    all_reads[read_count].begin());
+                    page_data_begin(all_reads[read_count]));
 
         // increment read_count
         read_count++;
@@ -342,74 +322,58 @@ class BookAccessor
     uint8_t read_count = 0;
     DataBufferType<BUFFER_SIZE>& buffer;
     types::address current_book_address = addresses::ot_library_begin;
-    std::array<uint8_t, types::page_length> write_buffer_internal{};
-    accessor::AccessorBuffer write_buffer{write_buffer_internal.begin(),
-                                          write_buffer_internal.end()};
-    std::array<std::array<uint8_t, types::page_length>, 4>& all_reads;
+    types::PageData write_buffer_internal{};
+    accessor::AccessorBuffer write_buffer{
+        page_data_begin(write_buffer_internal),
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        page_data_begin(write_buffer_internal) + types::page_length};
+
     // cache the most recent key read to bypass reads wherever necesasry
     int16_t cached_key = -1;
 
     template <size_t num_bytes>
-    auto calc_crc(std::array<uint8_t, num_bytes> data) -> uint16_t {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    auto calc_crc(uint8_t data[num_bytes]) -> uint16_t {
         crc16_init();
-
         // pass the length of the data from action_cmd_m, not the size of the
         // array, since the array may be larger than the actual data being
         // written
         uint16_t crc =
-            crc16_compute(data.begin(), static_cast<uint8_t>(action_cmd_m.len));
+            crc16_compute(data, static_cast<uint8_t>(action_cmd_m.len));
 
         return crc;
     }
 
-    auto check_crc(std::array<uint8_t, types::page_length>& bytes) -> bool {
+    auto calc_crc(uint8_t* data) -> uint16_t {
+        crc16_init();
+        // pass the length of the data from action_cmd_m, not the size of the
+        // array, since the array may be larger than the actual data being
+        // written
+        uint16_t crc =
+            crc16_compute(data, static_cast<uint8_t>(action_cmd_m.len));
+
+        return crc;
+    }
+
+    auto check_crc(types::PageData& page_data) -> bool {
         // if we're testing, we want to bypass CRC calculations to avoid having
         // too worry about hardware acceleration on incompatible platforms
         if (is_testing) {
             return true;
         }
-
-        // Grab CRC from byte array
-        uint16_t given_crc{};
-        std::memcpy(&given_crc, bytes.data(), sizeof(given_crc));
-
-        // calculate the CRC from the given data
-        // Note: only the used bytes will be used in CRC caluclations
-        std::array<uint8_t, types::page_data> given_data{0};
-        std::copy_n(bytes.begin() + types::book_header_length, types::page_data,
-                    given_data.begin());
-
-        uint16_t calculated_crc = calc_crc<types::page_data>(given_data);
-
-        return (calculated_crc == given_crc);
+        return (calc_crc<types::page_data>(page_data.data) == page_data.crc);
     }
 
     void read_final(uint16_t message_index) {
         // create variables representing read page addresses
-        uint16_t read0 = 0;
-        uint16_t read1 = 0;
-        uint16_t read2 = 0;
-        uint16_t read3 = 0;
-        // convert counter from bytes to longs
-
-        std::memcpy(&read0, &all_reads[0][2], sizeof(read0));
-        std::memcpy(&read1, &all_reads[1][2], sizeof(read1));
-        std::memcpy(&read2, &all_reads[2][2], sizeof(read2));
-        std::memcpy(&read3, &all_reads[3][2], sizeof(read3));
-
-        // quickly zero out all reads that are xFFFF
-        if (read0 == 0xFFFF) {
-            read0 = 0x0000;
-        }
-        if (read1 == 0xFFFF) {
-            read1 = 0x0000;
-        }
-        if (read2 == 0xFFFF) {
-            read2 = 0x0000;
-        }
-        if (read3 == 0xFFFF) {
-            read3 = 0x0000;
-        }
+        uint16_t read0 =
+            all_reads[0].counter != 0xFFFF ? all_reads[0].counter : 0;
+        uint16_t read1 =
+            all_reads[1].counter != 0xFFFF ? all_reads[1].counter : 0;
+        uint16_t read2 =
+            all_reads[2].counter != 0xFFFF ? all_reads[2].counter : 0;
+        uint16_t read3 =
+            all_reads[3].counter != 0xFFFF ? all_reads[3].counter : 0;
 
         // find maximum value
         std::array<uint16_t, 4> reads = {read0, read1, read2, read3};
@@ -443,6 +407,9 @@ class BookAccessor
         }
 
         else if (action_cmd_m.action == TableAction::READ_BEFORE_WRITE) {
+            // all reads[0] always has the length and length doesn't change so
+            // copy it from there.
+            write_buffer_internal.length = all_reads[0].length;
             find_next_write(reads, read0, read1, read2, read3);
         }
     }
@@ -450,13 +417,7 @@ class BookAccessor
     void find_most_recent(uint16_t message_index,
                           std::array<uint16_t, 4>& reads, uint16_t read0,
                           uint16_t read1, uint16_t read2, uint16_t read3) {
-        // change action_cmd_m.len to the length of the
-        // data stored in the
-        // page. This information is in bytes 4 and 5 of the header
-        uint16_t data_len = 0;
-        std::memcpy(&data_len, &all_reads[0][4], sizeof(data_len));
-        action_cmd_m.len = data_len;
-
+        action_cmd_m.len = all_reads[0].length;
         // set most recent index and most recent valid again
         uint16_t most_recent_index = 0;
         size_t all_reads_index = 0;
@@ -469,16 +430,13 @@ class BookAccessor
             // until it finds one whose written CRC matches the one
             // calcluated breaks if it has tried more than 4 times (the
             // number of pages in a book)
-            if (most_recent_index >= 4) {
-                std::array<uint8_t, BUFFER_SIZE> error{};
-                error.fill(0xAA);
+            if (most_recent_index >= types::pages_per_book) {
+                this->buffer.fill(0xAA);
                 // writes an error to the buffer
                 // TODO: ? maybe come up with a way to recover the data
                 // when this happens?
 
-                std::copy_n(error.begin(), error.size(), this->buffer.begin());
-
-                // tell object that called that the read is abailable, even
+                // tell object that called that the read is available, even
                 // though it's just an error message, to avoid leaving it
                 // hanging indefinitely or passing the wrong data
                 read_listener.read_complete(message_index);
@@ -507,11 +465,8 @@ class BookAccessor
             most_recent_index++;
         }
 
-        std::array<uint8_t, types::page_length>& relevant_page =
-            all_reads.at(all_reads_index);
-
-        std::copy_n(relevant_page.begin() + types::book_header_length,
-                    BUFFER_SIZE, this->buffer.begin());
+        std::copy_n(all_reads.at(all_reads_index).data, BUFFER_SIZE,
+                    this->buffer.begin());
         // cache the key that was just read so that if we need to do a write
         // right after we can bypass the read and just write to the same
         // place
@@ -524,13 +479,7 @@ class BookAccessor
     void find_next_write(std::array<uint16_t, 4>& reads, uint16_t read0,
                          uint16_t read1, uint16_t read2, uint16_t read3) {
         // create a new eeprom message to send to table_action_callback
-
         message::EepromMessage write_msg{};
-
-        types::address read0_offset = 0;
-        types::address read1_offset = types::page_length;
-        types::address read2_offset = types::page_length * 2;
-        types::address read3_offset = types::page_length * 3;
 
         // because of the wraparound counter logic, we can be assured
         // that the last page is the least recently written page, so we
@@ -553,7 +502,7 @@ class BookAccessor
         }
 
         // clear write_msg.data just in case
-        write_msg.data.fill(0x00);
+        std::fill(std::begin(write_msg.data), std::end(write_msg.data), 0x00);
         // storing this in data instead of memory address because table
         // action callback cheks data to determine write location
         uint8_t* write_iter = write_msg.data.begin();
@@ -570,10 +519,7 @@ class BookAccessor
             // necessary to avoid counter overflow
             new_counter = 0;
         }
-        write_iter = bit_utils::int_to_bytes(
-            new_counter, write_iter,
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            write_iter + conf.addr_bytes);
+        write_buffer_internal.counter = new_counter;
         write_msg.length = conf.addr_bytes;
         // just fill memory address with beginning of lookup table tail
         write_msg.memory_address = addresses::lookup_table_tail_begin;
@@ -685,14 +631,6 @@ class BookAccessor
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
-                // NOTE: To avoid writing to much extra code, when
-                // writing, the "data_len" gets received here (send from
-                // read_final) actually contains the new counter value
-                // to be written.
-
-                // copy directly into internal buffer
-                std::memcpy(write_buffer_internal.data() + 2, &data_len, 2);
-
                 this->write_at_offset(write_buffer, data_addr,
                                       data_addr + types::page_length,
                                       m.message_index);
@@ -706,6 +644,11 @@ class BookAccessor
                     data_addr, data_addr + types::page_length, m.message_index);
                 break;
         }
+    }
+
+    static auto page_data_begin(types::PageData& pd) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        return reinterpret_cast<uint8_t*>(&pd);
     }
 
     static auto table_action_callback(const message::EepromMessage& m,

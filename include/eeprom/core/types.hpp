@@ -25,5 +25,19 @@ using EepromData = std::array<uint8_t, page_length / 2>;
 
 constexpr uint8_t pages_per_book = 4;
 
+constexpr uint8_t READ_ONLY = 0x1;
+
+struct __attribute__((packed)) PageData {
+    uint16_t crc = 0;
+    uint16_t counter = 0;
+    uint16_t length = 0;
+    uint8_t data_flags = 0;
+    uint8_t reserved = 0;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    uint8_t data[types::page_data] = {0};
+};
+
+static_assert(sizeof(PageData) == types::page_length);
+
 }  // namespace types
 }  // namespace eeprom
