@@ -1,6 +1,6 @@
 #pragma once
-
 #include <cstdint>
+#include <vector>
 
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
@@ -40,17 +40,6 @@ using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage,
 template <task::TaskClient EEPromClient>
 class UpdateDataRevHandler : accessor::ReadListener {
   public:
-    UpdateDataRevHandler(const UpdateDataRevHandler&) = delete;
-    auto operator=(const UpdateDataRevHandler&)
-        -> UpdateDataRevHandler& = delete;
-
-    ~UpdateDataRevHandler() override =
-        default;  // Destructor (virtual because it overrides a base class)
-    UpdateDataRevHandler(UpdateDataRevHandler&&) =
-        delete;  // Delete Move Constructor
-    auto operator=(UpdateDataRevHandler&&)
-        -> UpdateDataRevHandler& = delete;  // Delete Move Assignment
-
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor,

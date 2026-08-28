@@ -117,7 +117,6 @@ struct BMockEEpromTaskClient {
         // 1. Read directly from the EEPROM replica
         std::copy_n(&backing[message.memory_address], message.length,
                     data_to_be_sent.begin());
-
         // 2. Identify if this is the first chunk (where the CRC sits in bytes 0
         // and 1)
         bool is_first_chunk =
@@ -322,6 +321,7 @@ SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
 
             // Read to find most recent (Should be Counter 4 / data_3)
             test_book_accessor.get_data(key, len, offset, message_index++);
+
             REQUIRE(buffer[0] == 3);
 
             // Write again to trigger a wrap back to Page 0 (Counter 5)
