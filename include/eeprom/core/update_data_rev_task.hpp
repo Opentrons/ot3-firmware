@@ -105,17 +105,22 @@ class UpdateDataRevHandler : accessor::ReadListener {
         tail_accessor.finish_data_rev();
 
         if (m.data_rev == current_data_rev + 1) {
-            migrating = true;
-            key = m.data_table[0].first;
-            length = m.data_table[0].second;
-            intermediate_data_rev = m.data_rev;
+            for (const auto& i : m.data_table) {
+                migrating = true;
+                key = i.first;
+                length = i.second;
+                intermediate_data_rev = m.data_rev;
 
-            // reset the accessor backing to make sure it's empty for the next
-            // read
-            accessor_backing.fill(0);
+                // reset the accessor backing to make sure it's empty for the
+                // next read
+                accessor_backing.fill(0);
 
-            // get data that was previously at key
-            table_creator.get_data(key, length, 0);
+                // get data that was previously at key
+                table_creator.get_data(key, length, 0);
+                while (this->busy_migrating()) {
+                    vTaskDelay(10);
+                }
+            }
         }
     }
 
@@ -162,7 +167,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
             for (const auto& i : m.data_table) {
                 // add the new data table entry
-                book_table_creator.create_data_part(i.first, i.second);
+                auto dummy = std::array<uint8_t, 0>{};
+                book_table_creator.create_data_part(i.first, i.second, dummy,
+                                                    false, m.data_flags);
                 // wait for the table update to finish
                 while (!table_creator.table_ready()) {
                     vTaskDelay(10);
