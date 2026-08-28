@@ -39,7 +39,6 @@ struct BookAccessorIntermediate {
     DataBufferType<static_cast<size_t>(types::page_length)>
         intermediate_buffer{};
 };
-static std::array<types::PageData, 4> all_reads = {};
 /*Accessor for OT Library. Takes byte arrays as data. Ensure they are in
  * Little Endian (in accordance with STM32 Architecture)
  *
@@ -301,6 +300,7 @@ class BookAccessor
     ReadListener& read_listener;
     uint8_t read_count = 0;
     DataBufferType<BUFFER_SIZE>& buffer;
+    std::array<types::PageData, 4> all_reads = {};
     types::address current_book_address = addresses::ot_library_begin;
     types::PageData write_buffer_internal{};
     accessor::AccessorBuffer write_buffer{

@@ -238,8 +238,10 @@ class UpdateDataRevTask {
         dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor,
         dev_data::DevDataTailAccessor<EEPromClient>* book_tail_accessor,
         const std::vector<eeprom::data_rev_task::TaskMessage>* table_updater) {
-        auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor,
-                                            *book_tail_accessor);
+        // This task deletes itself when finished. The handler must outlive the
+        // task because EEPROM callbacks may still reference its accessors.
+        static UpdateDataRevHandler<EEPromClient> handler(
+            *eeprom_client, *tail_accessor, *book_tail_accessor);
         for (const auto& i : *table_updater) {
             while (!handler.ready()) {
                 vTaskDelay(10);
