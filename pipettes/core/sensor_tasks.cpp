@@ -15,26 +15,26 @@ static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::EnvironmentSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto pressure_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId, uint16_t>(
         can::ids::SensorId::S0, get_pipette_type() == NINETY_SIX_CHANNEL
                                     ? OVERPRESSURE_COUNT_KEY_96
                                     : OVERPRESSURE_COUNT_KEY_SM);
 
 static auto pressure_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId, uint16_t>(
         can::ids::SensorId::S1, get_pipette_type() == NINETY_SIX_CHANNEL
                                     ? OVERPRESSURE_COUNT_KEY_96
