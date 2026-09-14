@@ -84,8 +84,8 @@ class BookAccessor
         write_buffer_internal.data_flags = data_flags;
         write_buffer_internal.counter = 1;
         write_buffer_internal.length = len;
-        std::fill(std::begin(write_buffer_internal.data), std::end(write_buffer_internal.data),
-          0x00);
+        std::fill(std::begin(write_buffer_internal.data),
+                  std::end(write_buffer_internal.data), 0x00);
         if (!data.empty()) {
             if (data.size() > types::page_data) {
                 LOG("Warning, sent too much data to initalize, "
@@ -128,7 +128,8 @@ class BookAccessor
                 if (!migrating) {
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                 }
-                this->write_at_offset(write_buffer, new_ptr, new_ptr + types::page_length, 0);
+                this->write_at_offset(write_buffer, new_ptr,
+                                      new_ptr + types::page_length, 0);
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
@@ -188,7 +189,8 @@ class BookAccessor
             write_buffer_internal.crc = calc_crc(data.begin());
             write_buffer_internal.length = len;
             // 0 out and copy into the write buffer
-            std::fill(std::begin(write_buffer_internal.data), std::end(write_buffer_internal.data), 0);
+            std::fill(std::begin(write_buffer_internal.data),
+                      std::end(write_buffer_internal.data), 0);
             std::copy_n(data.begin(), len, write_buffer_internal.data);
 
             if (key == cached_key) {
