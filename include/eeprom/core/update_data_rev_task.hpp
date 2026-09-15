@@ -1,6 +1,6 @@
 #pragma once
-
 #include <cstdint>
+#include <vector>
 
 #include "book_accessor.hpp"
 #include "common/core/bit_utils.hpp"
@@ -11,10 +11,6 @@
 #include "eeprom/core/types.hpp"
 #include "eeprom/firmware/crc16.h"
 #include "types.hpp"
-
-// to be passed to EEPROM. breaks unless it's statically allocated at the file
-// level for some reason. Likely a quirk of this god forsaken language
-static std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads;
 
 namespace eeprom {
 namespace data_rev_task {
@@ -34,6 +30,7 @@ struct MigrateDataMessage {
 
 struct OTLibraryUpdateMessage {
     uint16_t data_rev;
+    uint8_t data_flags;
     std::vector<std::pair<types::address, types::data_length>> data_table;
 };
 
@@ -43,24 +40,13 @@ using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage,
 template <task::TaskClient EEPromClient>
 class UpdateDataRevHandler : accessor::ReadListener {
   public:
-    UpdateDataRevHandler(const UpdateDataRevHandler&) = delete;
-    auto operator=(const UpdateDataRevHandler&)
-        -> UpdateDataRevHandler& = delete;
-
-    ~UpdateDataRevHandler() override =
-        default;  // Destructor (virtual because it overrides a base class)
-    UpdateDataRevHandler(UpdateDataRevHandler&&) =
-        delete;  // Delete Move Constructor
-    auto operator=(UpdateDataRevHandler&&)
-        -> UpdateDataRevHandler& = delete;  // Delete Move Assignment
-
     UpdateDataRevHandler(
         EEPromClient& eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor,
         dev_data::DevDataTailAccessor<EEPromClient>& book_tail_accessor)
         : table_creator{eeprom_client, *this, accessor_backing, tail_accessor},
           book_table_creator{eeprom_client, *this, accessor_backing,
-                             book_tail_accessor, all_reads},
+                             book_tail_accessor},
           data_rev_accessor{eeprom_client, *this, data_rev_backing},
           eeprom_client(eeprom_client),
           tail_accessor(tail_accessor),
@@ -108,17 +94,22 @@ class UpdateDataRevHandler : accessor::ReadListener {
         tail_accessor.finish_data_rev();
 
         if (m.data_rev == current_data_rev + 1) {
-            migrating = true;
-            key = m.data_table[0].first;
-            length = m.data_table[0].second;
-            intermediate_data_rev = m.data_rev;
+            for (const auto& i : m.data_table) {
+                migrating = true;
+                key = i.first;
+                length = i.second;
+                intermediate_data_rev = m.data_rev;
 
-            // reset the accessor backing to make sure it's empty for the next
-            // read
-            accessor_backing.fill(0);
+                // reset the accessor backing to make sure it's empty for the
+                // next read
+                accessor_backing.fill(0);
 
-            // get data that was previously at key
-            table_creator.get_data(key, length, 0);
+                // get data that was previously at key
+                table_creator.get_data(key, length, 0);
+                while (this->busy_migrating()) {
+                    vTaskDelay(10);
+                }
+            }
         }
     }
 
@@ -165,7 +156,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
 
             for (const auto& i : m.data_table) {
                 // add the new data table entry
-                book_table_creator.create_data_part(i.first, i.second);
+                auto dummy = std::array<uint8_t, 0>{};
+                book_table_creator.create_data_part(i.first, i.second, dummy,
+                                                    false, m.data_flags);
                 // wait for the table update to finish
                 while (!table_creator.table_ready()) {
                     vTaskDelay(10);
@@ -245,8 +238,10 @@ class UpdateDataRevTask {
         dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor,
         dev_data::DevDataTailAccessor<EEPromClient>* book_tail_accessor,
         const std::vector<eeprom::data_rev_task::TaskMessage>* table_updater) {
-        auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor,
-                                            *book_tail_accessor);
+        // This task deletes itself when finished. The handler must outlive the
+        // task because EEPROM callbacks may still reference its accessors.
+        static UpdateDataRevHandler<EEPromClient> handler(
+            *eeprom_client, *tail_accessor, *book_tail_accessor);
         for (const auto& i : *table_updater) {
             while (!handler.ready()) {
                 vTaskDelay(10);

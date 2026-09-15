@@ -137,7 +137,7 @@ class DataAddressWrapper {
 
     // sets the ot_library boundary with old data
     //  FYI: this _boundary_address is the actual address that will be stored at
-    //  the location of the above boundary_address Basicalsy _boundary_address =
+    //  the location of the above boundary_address Basically _boundary_address =
     //  value
     //             boundary_address = header location that contains
     //             _boundary_address

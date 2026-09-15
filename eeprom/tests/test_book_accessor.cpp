@@ -117,7 +117,6 @@ struct BMockEEpromTaskClient {
         // 1. Read directly from the EEPROM replica
         std::copy_n(&backing[message.memory_address], message.length,
                     data_to_be_sent.begin());
-
         // 2. Identify if this is the first chunk (where the CRC sits in bytes 0
         // and 1)
         bool is_first_chunk =
@@ -200,7 +199,6 @@ struct BMockEEpromTaskClient {
     }
 
     void visit(const i2c::messages::TransactionResponse& message) {
-        std::ignore = message;
         messages_received.push_back(message);
     }
 };
@@ -237,7 +235,6 @@ struct BMockEEpromTaskClient {
 SCENARIO("Book Accessor - Data Partition Creation") {
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<8>();
-    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -248,7 +245,7 @@ SCENARIO("Book Accessor - Data Partition Creation") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
+        8>{mock_client, mock_listener, buffer, tail_accessor};
 
     tail_accessor.finish_data_rev();
     test_book_accessor.set_testing(false);
@@ -283,7 +280,6 @@ SCENARIO("Book Accessor - Data Partition Creation") {
 SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<8>();
-    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -294,7 +290,7 @@ SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
+        8>{mock_client, mock_listener, buffer, tail_accessor};
 
     tail_accessor.finish_data_rev();
     test_book_accessor.set_testing(false);
@@ -319,19 +315,13 @@ SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
             REQUIRE(buffer[0] == 0);
 
             // Write 3 times
-            // NOTE: Due to the cached_key logic not updating all_reads after a
-            // write, we MUST interleave gets to avoid overwriting the same page
-            // with stale data!
             test_book_accessor.write_data(key, len, data_1);
-            test_book_accessor.get_data(key, len, offset, message_index++);
-
             test_book_accessor.write_data(key, len, data_2);
-            test_book_accessor.get_data(key, len, offset, message_index++);
-
             test_book_accessor.write_data(key, len, data_3);
 
             // Read to find most recent (Should be Counter 4 / data_3)
             test_book_accessor.get_data(key, len, offset, message_index++);
+
             REQUIRE(buffer[0] == 3);
 
             // Write again to trigger a wrap back to Page 0 (Counter 5)
@@ -360,7 +350,6 @@ SCENARIO("Book Accessor - Reads, Book Wrapping, and CRC Cascade") {
 SCENARIO("Book Accessor - Writes") {
     auto mock_listener = MockListener{};
     auto buffer = eeprom::book_accessor::DataBufferType<8>();
-    std::array<std::array<uint8_t, types::page_length>, 4> all_reads{};
 
     auto mock_client =
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
@@ -371,7 +360,7 @@ SCENARIO("Book Accessor - Writes") {
     auto test_book_accessor = book_accessor::BookAccessor<
         BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
                               test_mocks::MockI2CResponseQueue>,
-        8>{mock_client, mock_listener, buffer, tail_accessor, all_reads};
+        8>{mock_client, mock_listener, buffer, tail_accessor};
 
     tail_accessor.finish_data_rev();
     test_book_accessor.set_testing(false);

@@ -54,7 +54,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
           usage_data_accessor{eeprom_client, *this, accessor_backing,
-                              tail_accessor, all_reads} {}
+                              tail_accessor} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
@@ -194,7 +194,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     eeprom::dev_data::DataBufferType<8> accessor_backing =
         eeprom::dev_data::DataBufferType<8>{};
     eeprom::book_accessor::BookAccessor<EEPromClient, 8> usage_data_accessor;
-    std::array<std::array<uint8_t, eeprom::types::page_length>, 4> all_reads{};
 };
 
 /**
