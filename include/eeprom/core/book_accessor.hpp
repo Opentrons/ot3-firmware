@@ -133,7 +133,7 @@ class BookAccessor
             } else {
                 action_cmd_m.offset = 0;
                 action_cmd_m.len = len;
-                if (!data.empty()) {
+                if (!data.empty() or data_flags != 0) {
                     if (!migrating) {
                         action_cmd_m.action = TableAction::INITALIZE;
                         // call a read to the previous table entry so we know
@@ -359,6 +359,13 @@ class BookAccessor
         return (calc_crc<types::page_data>(page_data.data) == page_data.crc);
     }
 
+    void clear_action() {
+        action_cmd_m = table_entry_action{.key = 0,
+                                  .offset = 0,
+                                  .len = 0,
+                                  .action = TableAction::NONE};
+    }
+
     void read_only_final(uint16_t message_index) {
         if (action_cmd_m.action == TableAction::READ) {
             auto amount_to_read = all_reads.at(0).length;
@@ -378,6 +385,7 @@ class BookAccessor
             cached_key = action_cmd_m.key;
             // tell object that called the read that the read is avaiable
             read_listener.read_complete(message_index);
+            clear_action();
         }
     }
 
@@ -496,6 +504,7 @@ class BookAccessor
 
         // tell object that called the read that the read is avaiable
         read_listener.read_complete(message_index);
+        clear_action();
     }
 
     void find_next_write(std::array<uint16_t, 4>& reads, uint16_t read0,
@@ -656,6 +665,7 @@ class BookAccessor
                 this->write_at_offset(write_buffer, data_addr,
                                       data_addr + types::page_length,
                                       m.message_index);
+                clear_action();
                 break;
             case TableAction::READ_BEFORE_WRITE:
                 [[fallthrough]];
@@ -665,12 +675,16 @@ class BookAccessor
                 this->start_read_at_offset(
                     data_addr, data_addr + types::page_length, m.message_index);
                 break;
+            case TableAction::NONE:
+                LOG("Error got to table action callback with no action.");
+                break;
             case TableAction::INITALIZE_READ_ONLY:
                 auto write_address = data_addr + types::book_header_length;
                 auto as_a_buff = accessor::AccessorBuffer(buffer.begin(), buffer.end());
                 this->write_at_offset(as_a_buff, write_address,
                     write_address + this->action_cmd_m.len,
                     0);
+                clear_action();
                 break;
         }
     }

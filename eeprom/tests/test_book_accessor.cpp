@@ -425,17 +425,31 @@ SCENARIO("Book Accessor - Read only partitions") {
         for (size_t i = 0; i < long_data.size(); i++) {
             long_data[i] = i;
         }
+        // Create parition
+        auto dummy = std::array<uint8_t, 0>{};
+        test_book_accessor.create_data_part(0, 230, dummy, false, eeprom::types::READ_ONLY);
+        // make sure more than just key 0 works.
+        test_book_accessor.create_data_part(1, 230, dummy, false, eeprom::types::READ_ONLY);
+        uint16_t key_0_address = check_write(1);
+        REQUIRE(key_0_address > 0);
+        uint16_t key_1_address = check_write(1);
+        REQUIRE(key_1_address > 0);
 
-        THEN("Create a read only parition") {
-            auto dummy = std::array<uint8_t, 0>{};
-            test_book_accessor.create_data_part(0, 230, dummy, false, eeprom::types::READ_ONLY);
-            uint16_t key_0_address = check_write(1);
-            REQUIRE(key_0_address > 0);
-        }
-        THEN("initialize the data") {
-            std::copy_n(long_data.begin(), long_data.size(), buffer.begin());
-            test_book_accessor.initialize_read_only_data(0, 230);
-        }
+        // write data
+        std::copy_n(long_data.begin(), long_data.size(), buffer.begin());
+        test_book_accessor.initialize_read_only_data(0, 230);
+        // make sure more than just key 0 works.
+        std::copy_n(long_data.begin(), long_data.size(), buffer.begin());
+        test_book_accessor.initialize_read_only_data(1, 230);
+
+        // clear buffer and read
+        buffer.fill(0x00);
+        test_book_accessor.get_data(0, 123);
+        REQUIRE(std::equal(long_data.begin(), long_data.end(), buffer.begin()));
+        // make sure more than just key 0 works.
+        buffer.fill(0x00);
+        test_book_accessor.get_data(1, 1234);
+        REQUIRE(std::equal(long_data.begin(), long_data.end(), buffer.begin()));
 
     }
 }
