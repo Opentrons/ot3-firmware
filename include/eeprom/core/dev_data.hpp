@@ -14,7 +14,7 @@ template <std::size_t SIZE>
 using DataBufferType = std::array<uint8_t, SIZE>;
 using DataTailType = std::array<uint8_t, addresses::lookup_table_tail_length>;
 
-enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE, MIGRATE };
+enum TableAction { READ, WRITE, CREATE, INITALIZE, READ_BEFORE_WRITE, MIGRATE, INITALIZE_READ_ONLY};
 
 struct table_entry_action {
     uint16_t key;
@@ -476,6 +476,9 @@ class DevDataAccessor
                 this->write_at_offset(this->type_data, data_addr,
                                       data_addr + action_cmd_m.len,
                                       m.message_index);
+                break;
+            case TableAction::INITALIZE_READ_ONLY:
+                //No op on this layer
                 break;
         }
     }

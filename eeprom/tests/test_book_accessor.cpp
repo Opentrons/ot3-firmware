@@ -400,3 +400,42 @@ SCENARIO("Book Accessor - Writes") {
         }
     }
 }
+
+SCENARIO("Book Accessor - Read only partitions") {
+    auto mock_listener = MockListener{};
+    auto buffer = eeprom::book_accessor::DataBufferType<248>();
+
+    auto mock_client =
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>{};
+    auto tail_accessor = eeprom::dev_data::DevDataTailAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>>{mock_client};
+    auto test_book_accessor = book_accessor::BookAccessor<
+        BMockEEpromTaskClient<i2c::writer::Writer<test_mocks::MockMessageQueue>,
+                              test_mocks::MockI2CResponseQueue>,
+        248>{mock_client, mock_listener, buffer, tail_accessor};
+
+    tail_accessor.finish_data_rev();
+    test_book_accessor.set_testing(false);
+    DEFINE_CHECK_WRITE_HELPER
+
+    GIVEN("An initialized Book Accessor EEPROM") {
+        std::array<uint8_t, 230> long_data;
+        for (size_t i = 0; i < long_data.size(); i++) {
+            long_data[i] = i;
+        }
+
+        THEN("Create a read only parition") {
+            auto dummy = std::array<uint8_t, 0>{};
+            test_book_accessor.create_data_part(0, 230, dummy, false, eeprom::types::READ_ONLY);
+            uint16_t key_0_address = check_write(1);
+            REQUIRE(key_0_address > 0);
+        }
+        THEN("initialize the data") {
+            std::copy_n(long_data.begin(), long_data.size(), buffer.begin());
+            test_book_accessor.initialize_read_only_data(0, 230);
+        }
+
+    }
+}
