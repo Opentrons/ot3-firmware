@@ -15,15 +15,15 @@ static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::EnvironmentSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<384, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto pressure_sensor_task_builder_rear =
@@ -41,15 +41,15 @@ static auto pressure_sensor_task_builder_front =
                                     : OVERPRESSURE_COUNT_KEY_SM);
 
 static auto tip_notification_task_builder_rear =
-    freertos_task::TaskStarter<256, sensors::tasks::TipPresenceNotificationTask,
+    freertos_task::TaskStarter<64, sensors::tasks::TipPresenceNotificationTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto tip_notification_task_builder_front =
-    freertos_task::TaskStarter<256, sensors::tasks::TipPresenceNotificationTask,
+    freertos_task::TaskStarter<64, sensors::tasks::TipPresenceNotificationTask,
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto sensor_board_reader_task_builder =
-    freertos_task::TaskStarter<256, sensors::tasks::ReadSensorBoardTask>{};
+    freertos_task::TaskStarter<128, sensors::tasks::ReadSensorBoardTask>{};
 
 static auto usage_storage_task_builder =
     freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};

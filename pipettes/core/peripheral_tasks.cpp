@@ -31,7 +31,7 @@ static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto spi_task_builder =
-    freertos_task::TaskStarter<256, spi::tasks::Task>{};
+    freertos_task::TaskStarter<128, spi::tasks::Task>{};
 
 void peripheral_tasks::start_tasks(i2c::hardware::I2CBase& i2c3_interface,
                                    i2c::hardware::I2CBase& i2c1_interface,
