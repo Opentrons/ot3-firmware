@@ -50,7 +50,9 @@ void MotorHardware::read_limit_switch() {
 }
 
 void MotorHardware::read_estop_in() {
-    estop.debounce_update(gpio::is_set(pins.estop_in));
+    if (pins.estop_in.has_value()) {
+        estop.debounce_update(gpio::is_set(pins.estop_in.value()));
+    }
 }
 
 void MotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }

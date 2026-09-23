@@ -162,7 +162,7 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .pin = GPIO_PIN_7,
                      .active_setting = GPIO_PIN_RESET},
                 .estop_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_12,
                      .active_setting = GPIO_PIN_RESET},
@@ -202,11 +202,7 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .estop_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_9,
-                     .active_setting = GPIO_PIN_RESET},
+                .estop_in = std::nullopt,
                 .diag0 =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
@@ -237,11 +233,7 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .estop_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_9,
-                     .active_setting = GPIO_PIN_RESET},
+                .estop_in = std::nullopt,
                 .diag0 =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
@@ -279,7 +271,7 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_RESET},
                 .estop_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
                      .pin = GPIO_PIN_9,
                      .active_setting = GPIO_PIN_RESET},

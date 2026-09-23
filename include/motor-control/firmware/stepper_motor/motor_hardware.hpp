@@ -17,7 +17,7 @@ struct HardwareConfig {
     gpio::PinConfig limit_switch;
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
-    gpio::PinConfig estop_in;
+    std::optional<gpio::PinConfig> estop_in;
     gpio::PinConfig diag0;
     std::optional<gpio::PinConfig> ebrake = std::nullopt;
 };
@@ -46,7 +46,11 @@ class MotorHardware : public StepperMotorHardwareIface {
     void stop_timer_interrupt() final;
     auto is_timer_interrupt_running() -> bool final;
     auto check_limit_switch() -> bool final { return limit.debounce_state(); }
-    auto check_estop_in() -> bool final { return estop.debounce_state(); }
+    auto check_estop_in() -> bool final {
+        if (pins.estop_in.has_value()) {
+            return estop.debounce_state();
+        } else { return false; }
+    }
     auto check_tmc_diag0() -> bool final { return diag.debounce_state(); }
     auto check_sync_in() -> bool final { return sync; }
     void read_limit_switch() final;
