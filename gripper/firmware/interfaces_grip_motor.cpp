@@ -70,7 +70,7 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .pin = NSYNC_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = ESTOP_IN_PORT,
             .pin = ESTOP_IN_PIN,

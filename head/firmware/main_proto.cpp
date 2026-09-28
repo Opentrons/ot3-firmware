@@ -143,7 +143,7 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_4,
@@ -193,7 +193,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_4,

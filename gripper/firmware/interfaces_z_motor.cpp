@@ -98,7 +98,7 @@ struct motion_controller::HardwareConfig motor_pins {
             .pin = NSYNC_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = ESTOP_IN_PORT,
             .pin = ESTOP_IN_PIN,

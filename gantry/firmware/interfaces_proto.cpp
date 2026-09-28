@@ -87,7 +87,7 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOA,
             .pin = GPIO_PIN_10,
@@ -132,7 +132,7 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .pin = GPIO_PIN_5,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
-        {
+        gpio::PinConfig{
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOA,
             .pin = GPIO_PIN_10,
