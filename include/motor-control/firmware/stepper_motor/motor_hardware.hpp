@@ -49,7 +49,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto check_estop_in() -> bool final {
         if (pins.estop_in.has_value()) {
             return estop.debounce_state();
-        } else { return false; }
+        } else {
+            return false;
+        }
     }
     auto check_tmc_diag0() -> bool final { return diag.debounce_state(); }
     auto check_sync_in() -> bool final { return sync; }

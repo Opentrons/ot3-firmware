@@ -162,10 +162,11 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .pin = GPIO_PIN_7,
                      .active_setting = GPIO_PIN_RESET},
                 .estop_in =
-                    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_12,
-                     .active_setting = GPIO_PIN_RESET},
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOC,
+                        .pin = GPIO_PIN_12,
+                        .active_setting = GPIO_PIN_RESET},
                 .diag0 =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -271,10 +272,11 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_RESET},
                 .estop_in =
-                    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_9,
-                     .active_setting = GPIO_PIN_RESET},
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOB,
+                        .pin = GPIO_PIN_9,
+                        .active_setting = GPIO_PIN_RESET},
                 .diag0 =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOB,
