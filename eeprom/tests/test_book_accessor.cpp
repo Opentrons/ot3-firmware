@@ -427,9 +427,11 @@ SCENARIO("Book Accessor - Read only partitions") {
         }
         // Create parition
         auto dummy = std::array<uint8_t, 0>{};
-        test_book_accessor.create_data_part(0, 230, dummy, false, eeprom::types::READ_ONLY);
+        test_book_accessor.create_data_part(0, 230, dummy, false,
+                                            eeprom::types::READ_ONLY);
         // make sure more than just key 0 works.
-        test_book_accessor.create_data_part(1, 230, dummy, false, eeprom::types::READ_ONLY);
+        test_book_accessor.create_data_part(1, 230, dummy, false,
+                                            eeprom::types::READ_ONLY);
         uint16_t key_0_address = check_write(1);
         REQUIRE(key_0_address > 0);
         uint16_t key_1_address = check_write(1);
@@ -450,6 +452,5 @@ SCENARIO("Book Accessor - Read only partitions") {
         buffer.fill(0x00);
         test_book_accessor.get_data(1, 1234);
         REQUIRE(std::equal(long_data.begin(), long_data.end(), buffer.begin()));
-
     }
 }

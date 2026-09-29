@@ -178,7 +178,6 @@ class BookAccessor
         }
     }
 
-
     template <std::size_t NUM_BYTES>
     void write_data(uint16_t key, uint16_t len, uint16_t offset,
                     std::array<uint8_t, NUM_BYTES>& data) {
@@ -239,8 +238,8 @@ class BookAccessor
 
             auto table_location = calculate_table_entry_start(key);
 
-            if (!(action_cmd_m.action == TableAction::READ_BEFORE_WRITE)
-            and !(action_cmd_m.action == TableAction::INITALIZE_READ_ONLY)) {
+            if (!(action_cmd_m.action == TableAction::READ_BEFORE_WRITE) and
+                !(action_cmd_m.action == TableAction::INITALIZE_READ_ONLY)) {
                 action_cmd_m = table_entry_action{.key = key,
                                                   .offset = offset,
                                                   .len = len,
@@ -360,25 +359,24 @@ class BookAccessor
     }
 
     void clear_action() {
-        action_cmd_m = table_entry_action{.key = 0,
-                                  .offset = 0,
-                                  .len = 0,
-                                  .action = TableAction::NONE};
+        action_cmd_m = table_entry_action{
+            .key = 0, .offset = 0, .len = 0, .action = TableAction::NONE};
     }
 
     void read_only_final(uint16_t message_index) {
         if (action_cmd_m.action == TableAction::READ) {
             auto amount_to_read = all_reads.at(0).length;
-            // The first page still includes the header so we can read a little less here.
+            // The first page still includes the header so we can read a little
+            // less here.
             auto next_read = std::max(amount_to_read, types::page_data);
             auto buff_ptr = std::copy_n(all_reads.at(0).data, next_read,
-                    this->buffer.begin());
+                                        this->buffer.begin());
             amount_to_read -= next_read;
             auto next_page = 1;
             while (amount_to_read > 0) {
                 next_read = std::max(amount_to_read, types::page_length);
-                buff_ptr = std::copy_n(page_data_begin(all_reads.at(next_page)), next_read,
-                    buff_ptr);
+                buff_ptr = std::copy_n(page_data_begin(all_reads.at(next_page)),
+                                       next_read, buff_ptr);
                 amount_to_read -= next_read;
                 next_page++;
             }
@@ -680,10 +678,11 @@ class BookAccessor
                 break;
             case TableAction::INITALIZE_READ_ONLY:
                 auto write_address = data_addr + types::book_header_length;
-                auto as_a_buff = accessor::AccessorBuffer(buffer.begin(), buffer.end());
+                auto as_a_buff =
+                    accessor::AccessorBuffer(buffer.begin(), buffer.end());
                 this->write_at_offset(as_a_buff, write_address,
-                    write_address + this->action_cmd_m.len,
-                    0);
+                                      write_address + this->action_cmd_m.len,
+                                      0);
                 clear_action();
                 break;
         }
