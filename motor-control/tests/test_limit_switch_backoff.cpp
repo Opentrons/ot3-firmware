@@ -242,6 +242,16 @@ SCENARIO(
                     REQUIRE(test_objs.hw.position_flags.check_flag(
                         MotorPositionStatus::Flags::stepper_position_ok));
                 }
+                AND_WHEN("Motion happens after the move.") {
+                    test_objs.hw.sim_set_encoder_pulses(200);
+                    test_objs.reporter.messages.clear();
+                    for (int i = 0; i < 10; ++i) {
+                        test_objs.handler.run_interrupt();
+                    }
+                    THEN("No error is sent.") {
+                        REQUIRE(test_objs.reporter.messages.size() == 0);
+                    }
+                }
             }
         }
     }
